@@ -14,14 +14,178 @@ function jsonResponse(data, status = 200) {
 
 const COMMON_FILLERS = ["um", "uh", "er", "ah", "like", "basically", "actually", "literally", "you know", "i mean", "sort of", "kind of"];
 
+const UPGRADE_DICTIONARY = [
+  { phrase: "make sure", upgrade: "verify / substantiate / guarantee" },
+  { phrase: "talk about", upgrade: "articulate / delineate / elucidate" },
+  { phrase: "find out", upgrade: "ascertain / investigate / determine" },
+  { phrase: "look at", upgrade: "examine / scrutinize / evaluate" },
+  { phrase: "deal with", upgrade: "reconcile / negotiate / navigate" },
+  { phrase: "work on", upgrade: "execute / engineer / refine" },
+  { phrase: "point out", upgrade: "emphasize / highlight / indicate" },
+  { phrase: "set up", upgrade: "establish / configure / institute" },
+  { phrase: "give up", upgrade: "relinquish / concede" },
+  { phrase: "carry out", upgrade: "implement / execute" },
+  { phrase: "think", upgrade: "hypothesize / deduce / surmise" },
+  { phrase: "good", upgrade: "exemplary / optimal / formidable" },
+  { phrase: "help", upgrade: "facilitate / expedite / bolster" },
+  { phrase: "try", upgrade: "endeavor / strive / undertake" },
+  { phrase: "tell", upgrade: "articulate / delineate / apprise" },
+  { phrase: "show", upgrade: "illustrate / demonstrate / substantiate" },
+  { phrase: "fix", upgrade: "rectify / remediate / resolve" },
+  { phrase: "start", upgrade: "initiate / commence / inaugurate" },
+  { phrase: "need", upgrade: "mandate / require / necessitate" },
+  { phrase: "give", upgrade: "allocate / furnish / bestow" },
+  { phrase: "get", upgrade: "acquire / procure / obtain" },
+  { phrase: "do", upgrade: "execute / implement / conduct" },
+  { phrase: "big", upgrade: "substantial / pivotal / paramount" },
+  { phrase: "small", upgrade: "marginal / incremental / negligible" },
+  { phrase: "problem", upgrade: "impediment / vulnerability / discrepancy" },
+  { phrase: "change", upgrade: "transform / calibrate / transition" },
+  { phrase: "stop", upgrade: "halt / cease / terminate" },
+  { phrase: "fast", upgrade: "expeditious / rapid / accelerated" },
+  { phrase: "ask", upgrade: "inquire / solicit / petition" },
+  { phrase: "way", upgrade: "methodology / framework / paradigm" },
+  { phrase: "clear", upgrade: "lucid / unequivocal / transparent" },
+  { phrase: "important", upgrade: "paramount / pivotal / imperative" },
+  { phrase: "job", upgrade: "vocation / stewardship / enterprise" },
+  { phrase: "use", upgrade: "leverage / deploy / capitalize on" },
+  { phrase: "say", upgrade: "assert / state / articulate" },
+  { phrase: "check", upgrade: "audit / validate / verify" },
+  { phrase: "plan", upgrade: "strategic roadmap / blueprint" },
+  { phrase: "idea", upgrade: "conceptual thesis / proposition" },
+  { phrase: "money", upgrade: "capital expenditure / fiscal allocation" },
+  { phrase: "boss", upgrade: "executive director / principal" },
+  { phrase: "team", upgrade: "cross-functional cohort / syndicate" },
+  { phrase: "bad", upgrade: "adverse / sub-optimal / detrimental" },
+  { phrase: "happy", upgrade: "gratified / commended" },
+  { phrase: "sorry", upgrade: "express regret / tender conciliation" },
+  { phrase: "meet", upgrade: "convene / confer with" },
+  { phrase: "keep", upgrade: "preserve / sustain / retain" },
+  { phrase: "end", upgrade: "culminate / terminate / conclude" },
+  { phrase: "buy", upgrade: "procure / acquire" },
+  { phrase: "build", upgrade: "construct / architect / engineer" },
+  { phrase: "see", upgrade: "observe / discern / perceive" },
+  { phrase: "know", upgrade: "comprehend / discern / recognize" }
+];
+
+const ROLE_DOMAIN_UPGRADES = {
+  pilot: [
+    { phrase: "final approach", upgrade: "stabilized instrument arrival" },
+    { phrase: "declaring", upgrade: "broadcasting / asserting" },
+    { phrase: "emergency", upgrade: "distress state / Mayday condition" },
+    { phrase: "due to", upgrade: "attributable to / contingent upon" },
+    { phrase: "requesting", upgrade: "requisitioning priority clearance" },
+    { phrase: "immediate", upgrade: "expedited / urgent operational" },
+    { phrase: "landing", upgrade: "touchdown / runway rollout" }
+  ],
+  doctor: [
+    { phrase: "good morning", upgrade: "esteemed family members / colleagues" },
+    { phrase: "team", upgrade: "surgical cadre / clinical unit" },
+    { phrase: "satisfactorily", upgrade: "within optimal physiological parameters" },
+    { phrase: "patient", upgrade: "clinical subject" },
+    { phrase: "recovering", upgrade: "convalescing" },
+    { phrase: "observation", upgrade: "continuous hemodynamic surveillance" },
+    { phrase: "completed", upgrade: "concluded with clinical precision" }
+  ],
+  anchor: [
+    { phrase: "good evening", upgrade: "greetings viewers / welcome to this live dispatch" },
+    { phrase: "leading", upgrade: "foremost international" },
+    { phrase: "delegates", upgrade: "plenipotentiaries / ministerial envoys" },
+    { phrase: "ratified", upgrade: "formalized a binding multilateral accord on" },
+    { phrase: "targeting", upgrade: "mandating strict compliance for" },
+    { phrase: "corridors", upgrade: "geopolitical industrial corridors" }
+  ],
+  founder: [
+    { phrase: "platform", upgrade: "proprietary software architecture" },
+    { phrase: "slashing", upgrade: "drastically curtailing" },
+    { phrase: "overhead", upgrade: "operational expenditure (OpEx)" },
+    { phrase: "devices", upgrade: "distributed edge hardware" },
+    { phrase: "guaranteeing", upgrade: "substantiating cryptographic" },
+    { phrase: "confidentiality", upgrade: "zero-knowledge privacy isolation" }
+  ],
+  lawyer: [
+    { phrase: "court", upgrade: "honorable tribunal" },
+    { phrase: "brought forward", upgrade: "adduced / submitted into record" },
+    { phrase: "relies on", upgrade: "is predicated upon" },
+    { phrase: "conjecture", upgrade: "unsubstantiated speculation" },
+    { phrase: "cannot stand", upgrade: "fails to satisfy the statutory burden of proof" },
+    { phrase: "prosecution", upgrade: "adversary counsel" }
+  ],
+  hotel: [
+    { phrase: "sincere apologies", upgrade: "profound contrition and goodwill" },
+    { phrase: "delay", upgrade: "procedural deferral" },
+    { phrase: "check-in", upgrade: "arrival reception" },
+    { phrase: "upgraded", upgrade: "accorded elevated accommodations" },
+    { phrase: "compliments", upgrade: "gratis VIP courtesies" },
+    { phrase: "family", upgrade: "esteemed party / delegation" }
+  ]
+};
+
+const ROLE_COACHING_GUIDES = {
+  pilot: "Adopt strict radiotelephony brevity: modulate downward at the close of emergency transmissions to project unflinching command authority.",
+  doctor: "Balance clinical precision with empathetic reassurance by softening consonant attacks slightly during patient family briefings.",
+  anchor: "Modulate pitch dynamically across headline transitions to sustain broadcast momentum and command audience retention.",
+  founder: "Amplify dynamic vocal energy during your value proposition climax to sustain investor engagement and conviction.",
+  lawyer: "Pace your statutory citations deliberately; decelerate by 10% during precedent references to accentuate judicial gravity.",
+  hotel: "Infuse warm harmonic overtones into concierge apologies while maintaining formal, diplomatic diction that restores trust."
+};
+
+function extractDynamicVocabularyUpgrades(cleanText, targetRole) {
+  const lower = cleanText.toLowerCase();
+  const upgrades = [];
+  const seen = new Set();
+
+  for (const item of UPGRADE_DICTIONARY) {
+    const reg = new RegExp("\\b" + item.phrase.replace(/\s+/g, "\\s+") + "\\b", "i");
+    if (reg.test(lower) && !seen.has(item.phrase)) {
+      seen.add(item.phrase);
+      upgrades.push({ original: item.phrase, upgraded: item.upgrade });
+    }
+  }
+
+  const roleKey = Object.keys(ROLE_DOMAIN_UPGRADES).find(k => (targetRole || "").toLowerCase().includes(k));
+  if (roleKey && ROLE_DOMAIN_UPGRADES[roleKey]) {
+    for (const item of ROLE_DOMAIN_UPGRADES[roleKey]) {
+      const reg = new RegExp("\\b" + item.phrase.replace(/\s+/g, "\\s+") + "\\b", "i");
+      if (reg.test(lower) && !seen.has(item.phrase)) {
+        seen.add(item.phrase);
+        upgrades.push({ original: item.phrase, upgraded: item.upgrade });
+      }
+    }
+  }
+
+  if (upgrades.length === 0) {
+    const wordList = lower.split(/[^a-z]+/).filter(w => w.length >= 3);
+    for (const w of wordList) {
+      if (!seen.has(w)) {
+        seen.add(w);
+        upgrades.push({ original: w, upgraded: `elevate / substantiate (${w})` });
+        if (upgrades.length >= 2) break;
+      }
+    }
+  }
+
+  if (upgrades.length === 0) {
+    upgrades.push(
+      { original: "think", upgraded: "hypothesize / deduce" },
+      { original: "make sure", upgraded: "verify / substantiate" }
+    );
+  }
+
+  return upgrades.slice(0, 4);
+}
+
 function analyzeSpeechLocally(text, targetRole = "General Professional") {
-  const words = (text || "").trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const cleanText = (text || "").trim();
+  const words = cleanText.toLowerCase().split(/\s+/).filter(Boolean);
   const wordCount = words.length;
-  
+
   if (wordCount === 0) {
+    const roleKey = Object.keys(ROLE_COACHING_GUIDES).find(k => (targetRole || "").toLowerCase().includes(k));
+    const roleTip = roleKey ? ROLE_COACHING_GUIDES[roleKey] : "Project authoritative downward inflection at terminal clauses to convey commanding leadership.";
     return {
       provider: "Local Heuristics",
-      transcript: text || "",
+      transcript: "",
       scores: {
         overall: 60,
         pronunciation: 65,
@@ -33,9 +197,18 @@ function analyzeSpeechLocally(text, targetRole = "General Professional") {
         fillersCount: 0,
         fillersFound: []
       },
-      strengths: ["Clear voice signal recorded"],
-      improvements: ["Try speaking a longer response with more details and technical terms."],
-      vocabularyUpgrades: [{ original: "good", upgraded: "exemplary" }, { original: "help", upgraded: "facilitate" }]
+      strengths: [
+        "Acoustic receiver initialized and receptive to speech input.",
+        "System ready to evaluate articulation, cadence, and professional presence."
+      ],
+      improvements: [
+        roleTip,
+        "Speak a complete response with role-specific terminology to trigger deep acoustic and lexical evaluation."
+      ],
+      vocabularyUpgrades: [
+        { original: "think", upgraded: "hypothesize / deduce" },
+        { original: "make sure", upgraded: "verify / substantiate" }
+      ]
     };
   }
 
@@ -81,17 +254,49 @@ function analyzeSpeechLocally(text, targetRole = "General Professional") {
 
   const strengths = [];
   const improvements = [];
-  if (fillerCount === 0) strengths.push("Excellent elimination of conversational filler words like 'um' and 'like'.");
-  else improvements.push(`Detected ${fillerCount} filler word${fillerCount > 1 ? "s" : ""} (${foundFillers.join(", ")}). Practice comfortable silence instead.`);
 
-  if (lexicalDiversity > 0.6) strengths.push("High vocabulary variation showing linguistic flexibility.");
-  else improvements.push("Try varying your word choices instead of repeating key nouns and adjectives.");
+  if (fillerCount === 0) {
+    strengths.push("Excellent elimination of conversational filler words like 'um' and 'like'.");
+  } else {
+    improvements.push(`Detected ${fillerCount} conversational filler word${fillerCount > 1 ? "s" : ""} (${foundFillers.join(", ")}). Practice comfortable silence instead of vocalized pauses.`);
+  }
 
-  if (paceScore >= 85) strengths.push(`Ideal conversational cadence around ${estWpm} words per minute.`);
-  else improvements.push(`Pace was measured at ${estWpm} WPM. Aim for 120-140 WPM for maximum executive clarity.`);
+  if (lexicalDiversity > 0.6) {
+    strengths.push("High vocabulary variation showing linguistic flexibility.");
+  } else {
+    improvements.push("Diversify sentence structure and vary key adjectives instead of repeating identical descriptors.");
+  }
 
-  if (advancedCount > 2) strengths.push("Naturally integrated technical and formal vocabulary suited for professional dialogue.");
-  else improvements.push(`Incorporate more role-specific terminology for ${targetRole}.`);
+  if (paceScore >= 85) {
+    strengths.push(`Ideal conversational cadence around ${estWpm} words per minute.`);
+  } else {
+    improvements.push(`Speaking pace was measured at ${estWpm} WPM. Aim for 120-140 WPM for maximum executive clarity.`);
+  }
+
+  if (advancedCount > 2) {
+    strengths.push("Naturally integrated technical and formal vocabulary suited for professional dialogue.");
+  } else {
+    improvements.push(`Incorporate more domain-specific terminology tailored for a ${targetRole}.`);
+  }
+
+  const roleKey = Object.keys(ROLE_COACHING_GUIDES).find(k => (targetRole || "").toLowerCase().includes(k));
+  const selectedRoleCoaching = roleKey ? ROLE_COACHING_GUIDES[roleKey] : "Project authoritative downward inflection at terminal clauses to convey commanding professional leadership.";
+
+  if (!improvements.includes(selectedRoleCoaching)) {
+    improvements.push(selectedRoleCoaching);
+  }
+
+  const executivePauseTip = "Integrate intentional 0.8-second micro-pauses before quantitative or critical claims to allow listeners to absorb key data.";
+  if (improvements.length < 2) {
+    improvements.push(executivePauseTip);
+  }
+
+  const assertiveSignpostTip = "Replace passive conjunctions with decisive strategic signposts (e.g. 'The operational imperative is...', 'To substantiate this protocol...').";
+  if (improvements.length < 3) {
+    improvements.push(assertiveSignpostTip);
+  }
+
+  const vocabularyUpgrades = extractDynamicVocabularyUpgrades(cleanText, targetRole);
 
   return {
     provider: "On-Device Natural Language Heuristics",
@@ -109,12 +314,7 @@ function analyzeSpeechLocally(text, targetRole = "General Professional") {
     },
     strengths,
     improvements,
-    vocabularyUpgrades: [
-      { original: "think", upgraded: "hypothesize / deduce" },
-      { original: "make sure", upgraded: "verify / substantiate" },
-      { original: "start", upgraded: "initiate / commence" },
-      { original: "talk about", upgraded: "articulate / delineate" }
-    ]
+    vocabularyUpgrades
   };
 }
 
@@ -209,8 +409,11 @@ export async function onRequest(context) {
       const role = payload.role || "Professional Candidate";
 
       if (text && text.trim().length > 0) {
-        const systemPrompt = `You are a world-class speech and English communication coach evaluating a high school student aspiring to be a ${role}. Provide an honest, inspiring evaluation in valid JSON matching this schema:
-        {"scores": {"overall": 85, "pronunciation": 88, "fluency": 82, "vocabulary": 85, "pace": 88, "confidence": 84, "wpm": 130, "fillersCount": 1, "fillersFound": ["um"]}, "strengths": ["string", "string"], "improvements": ["string", "string"], "vocabularyUpgrades": [{"original": "word", "upgraded": "professional synonym"}]}`;
+        const systemPrompt = `You are a world-class executive voice and speech coach evaluating a student aspiring to be a ${role}. Provide an honest, inspiring evaluation in valid JSON matching this schema:
+        {"scores": {"overall": 88, "pronunciation": 87, "fluency": 90, "vocabulary": 88, "pace": 130, "confidence": 89, "wpm": 130, "fillersCount": 0, "fillersFound": []}, "strengths": ["...", "..."], "improvements": ["...", "..."], "vocabularyUpgrades": [{"original": "word_from_text", "upgraded": "executive_alternative"}]}
+        CRITICAL REQUIREMENTS:
+        1. improvements MUST NEVER be empty. Even for near-perfect speech, provide executive coaching on micro-pauses, downward terminal inflection, diaphragmatic projection, or assertiveness.
+        2. In vocabularyUpgrades, the original word or phrase MUST actually appear in the speech transcript.`;
 
         let aiText = await callWorkersAI(env, `Analyze this speech: "${text}"`, systemPrompt);
         let provider = "Cloudflare Workers AI (Llama 3.1)";
@@ -234,6 +437,13 @@ export async function onRequest(context) {
             const parsed = JSON.parse(cleanJson);
             parsed.provider = provider;
             parsed.transcript = text;
+            if (!parsed.improvements || !Array.isArray(parsed.improvements) || parsed.improvements.length === 0) {
+              const fallback = analyzeSpeechLocally(text, role);
+              parsed.improvements = fallback.improvements;
+            }
+            if (!parsed.vocabularyUpgrades || !Array.isArray(parsed.vocabularyUpgrades) || parsed.vocabularyUpgrades.length === 0) {
+              parsed.vocabularyUpgrades = extractDynamicVocabularyUpgrades(text, role);
+            }
             return jsonResponse(parsed);
           } catch (e) {
             const fallback = analyzeSpeechLocally(text, role);

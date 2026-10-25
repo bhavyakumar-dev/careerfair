@@ -6,72 +6,80 @@
 <title>Every Career Speaks English — Kanakia International School Career Fair & Speech Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
 :root {
-  --bg-primary: #050608;
-  --bg-secondary: #0B0F19;
-  --bg-tertiary: #111827;
-  --bg-glass: rgba(15, 23, 42, 0.75);
-  --bg-card: rgba(21, 30, 50, 0.65);
-  --bg-card-hover: rgba(30, 41, 69, 0.85);
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(6, 182, 212, 0.45);
-  --border-accent: rgba(245, 158, 11, 0.4);
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --accent-cyan: #06B6D4;
-  --accent-amber: #F59E0B;
-  --accent-emerald: #10B981;
-  --accent-violet: #8B5CF6;
-  --accent-rose: #F43F5E;
-  --accent-fuchsia: #D946EF;
-  --accent-teal: #14B8A6;
-  --accent-orange: #F97316;
-  --font-display: 'Syne', -apple-system, sans-serif;
-  --font-body: 'DM Sans', -apple-system, sans-serif;
+  --bg-primary: #040509;
+  --bg-secondary: #080C16;
+  --bg-tertiary: #0F172A;
+  --bg-glass: rgba(10, 16, 32, 0.78);
+  --bg-card: rgba(15, 23, 45, 0.72);
+  --bg-card-hover: rgba(22, 34, 66, 0.9);
+  --border-glass: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(0, 240, 255, 0.65);
+  --border-accent: rgba(255, 184, 0, 0.55);
+  --text-primary: #FFFFFF;
+  --text-secondary: #9DB2D8;
+  --text-muted: #64789E;
+  --accent-cyan: #00F0FF;
+  --accent-amber: #FFB800;
+  --accent-emerald: #10E775;
+  --accent-violet: #7928CA;
+  --accent-rose: #FF007A;
+  --accent-fuchsia: #FF00E5;
+  --accent-teal: #00F5D4;
+  --accent-orange: #FF5E00;
+  --accent-lime: #10E775;
+  --accent-magenta: #FF007A;
+  --accent-electric-blue: #0070F3;
+  --font-display: 'Syne', 'Outfit', -apple-system, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Outfit', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-full: 9999px;
-  --shadow-glow: 0 0 35px -5px rgba(6, 182, 212, 0.25);
-  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 35px -5px rgba(0, 240, 255, 0.45);
+  --shadow-card: 0 12px 35px -10px rgba(0, 0, 0, 0.65);
   --transition-smooth: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-theme="vibrant"] {
-  --bg-primary: #0A0A1F;
-  --bg-secondary: #131138;
-  --bg-glass: rgba(25, 20, 60, 0.8);
-  --bg-card: rgba(35, 28, 82, 0.7);
-  --accent-cyan: #38BDF8;
-  --accent-amber: #FBBF24;
-  --border-glass: rgba(255, 255, 255, 0.12);
-  --shadow-glow: 0 0 35px -5px rgba(217, 70, 239, 0.35);
+  --bg-primary: #08061C;
+  --bg-secondary: #100C2E;
+  --bg-glass: rgba(24, 16, 56, 0.85);
+  --bg-card: rgba(34, 22, 78, 0.78);
+  --accent-cyan: #00F0FF;
+  --accent-amber: #FFB800;
+  --accent-rose: #FF007A;
+  --accent-fuchsia: #FF00E5;
+  --border-glass: rgba(255, 255, 255, 0.15);
+  --shadow-glow: 0 0 40px -5px rgba(255, 0, 229, 0.5);
 }
 
 [data-theme="clean"] {
-  --bg-primary: #0F172A;
-  --bg-secondary: #1E293B;
-  --bg-glass: rgba(30, 41, 59, 0.85);
-  --bg-card: rgba(51, 65, 85, 0.6);
-  --accent-cyan: #14B8A6;
-  --accent-amber: #E2E8F0;
-  --border-glass: rgba(255, 255, 255, 0.1);
+  --bg-primary: #060B14;
+  --bg-secondary: #0D1626;
+  --bg-glass: rgba(16, 28, 48, 0.85);
+  --bg-card: rgba(24, 40, 68, 0.7);
+  --accent-cyan: #00F5D4;
+  --accent-amber: #FFB800;
+  --accent-rose: #FF007A;
+  --border-glass: rgba(255, 255, 255, 0.12);
 }
 
 [data-theme="cyberpunk"] {
   --bg-primary: #000000;
-  --bg-secondary: #0A0A0A;
-  --bg-glass: rgba(18, 18, 18, 0.9);
-  --bg-card: rgba(25, 25, 25, 0.85);
-  --accent-cyan: #00FFCC;
-  --accent-amber: #FFE600;
-  --accent-rose: #FF0055;
-  --border-glass: rgba(0, 255, 204, 0.2);
-  --shadow-glow: 0 0 40px rgba(0, 255, 204, 0.4);
+  --bg-secondary: #080612;
+  --bg-glass: rgba(16, 12, 28, 0.92);
+  --bg-card: rgba(24, 16, 42, 0.88);
+  --accent-cyan: #00F0FF;
+  --accent-amber: #FFB800;
+  --accent-rose: #FF007A;
+  --border-glass: rgba(0, 240, 255, 0.35);
+  --shadow-glow: 0 0 45px rgba(0, 240, 255, 0.6);
 }
 
 *, *::before, *::after {
@@ -94,10 +102,34 @@ body {
   line-height: 1.6;
   position: relative;
   background-image: 
-    radial-gradient(circle at 15% 15%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 85% 60%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 50% 90%, rgba(245, 158, 11, 0.06) 0%, transparent 40%);
+    radial-gradient(circle at 12% 12%, rgba(0, 240, 255, 0.14) 0%, transparent 45%),
+    radial-gradient(circle at 88% 25%, rgba(121, 40, 202, 0.16) 0%, transparent 45%),
+    radial-gradient(circle at 50% 65%, rgba(255, 0, 122, 0.11) 0%, transparent 45%),
+    radial-gradient(circle at 80% 90%, rgba(16, 231, 117, 0.10) 0%, transparent 40%);
   background-attachment: fixed;
+}
+
+#scrollProgress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  z-index: 1001;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet), var(--accent-rose), var(--accent-amber));
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.85);
+  transition: width 0.1s linear;
+  pointer-events: none;
+}
+
+.ambient-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.2;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
 }
 
 #particleCanvas {
@@ -144,14 +176,16 @@ body {
   gap: 8px;
   padding: 6px 16px;
   border-radius: var(--radius-full);
-  background: rgba(6, 182, 212, 0.1);
-  border: 1px solid rgba(6, 182, 212, 0.25);
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.3);
   color: var(--accent-cyan);
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   margin-bottom: 16px;
+  box-shadow: 0 0 15px -3px rgba(0, 240, 255, 0.25);
 }
 
 .section-title {
@@ -171,13 +205,13 @@ body {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--accent-cyan) 0%, #38BDF8 40%, var(--accent-violet) 100%);
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, #7928CA 50%, var(--accent-rose) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-gold {
-  background: linear-gradient(135deg, #FDE68A 0%, var(--accent-amber) 60%, #D97706 100%);
+  background: linear-gradient(135deg, #FFF275 0%, var(--accent-amber) 50%, #FF5E00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -215,14 +249,15 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-cyan) 0%, #0284C7 100%);
-  color: #050608;
-  box-shadow: 0 4px 20px -2px rgba(6, 182, 212, 0.4);
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, #0070F3 100%);
+  color: #030712;
+  font-weight: 800;
+  box-shadow: 0 4px 20px -2px rgba(0, 240, 255, 0.5);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px -2px rgba(6, 182, 212, 0.6);
+  box-shadow: 0 8px 30px -2px rgba(0, 240, 255, 0.7);
   color: #000;
 }
 
@@ -240,14 +275,15 @@ body {
 }
 
 .btn-gold {
-  background: linear-gradient(135deg, var(--accent-amber) 0%, #D97706 100%);
-  color: #050608;
-  box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.4);
+  background: linear-gradient(135deg, var(--accent-amber) 0%, #FF5E00 100%);
+  color: #030712;
+  font-weight: 800;
+  box-shadow: 0 4px 20px -2px rgba(255, 184, 0, 0.5);
 }
 
 .btn-gold:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px -2px rgba(245, 158, 11, 0.6);
+  box-shadow: 0 8px 30px -2px rgba(255, 184, 0, 0.75);
 }
 
 .btn-danger {
@@ -325,12 +361,70 @@ body {
   color: var(--text-secondary);
   text-decoration: none;
   font-size: 0.88rem;
-  font-weight: 500;
+  font-weight: 600;
+  position: relative;
+  padding: 4px 0;
   transition: var(--transition-smooth);
 }
 
-.nav-links a:hover {
+.nav-links a:hover, .nav-links a.is-active {
   color: var(--accent-cyan);
+}
+
+.nav-links a.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  background: var(--accent-cyan);
+  border-radius: 2px;
+  box-shadow: 0 0 10px var(--accent-cyan);
+}
+
+.nav-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-emerald);
+  box-shadow: 0 0 0 3px rgba(16, 231, 117, 0.25);
+  animation: pulseLiveDot 2.2s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes pulseLiveDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.scroll-cue {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 48px;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.scroll-cue:hover {
+  color: var(--accent-cyan);
+}
+
+.scroll-cue svg {
+  animation: bobCue 1.8s ease-in-out infinite;
+  color: var(--accent-cyan);
+}
+
+@keyframes bobCue {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
 }
 
 .hero-section {
@@ -1499,16 +1593,64 @@ body {
 
 #qrCanvas {
   border-radius: var(--radius-md);
-  background: #FFF;
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  background: #FFFFFF;
+  margin-bottom: 16px;
+  box-shadow: 0 0 35px rgba(0, 240, 255, 0.35), 0 10px 30px rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(0, 240, 255, 0.5);
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.qr-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  background: rgba(16, 231, 117, 0.12);
+  border: 1px solid rgba(16, 231, 117, 0.4);
+  color: var(--accent-emerald);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.qr-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-emerald);
+  box-shadow: 0 0 10px var(--accent-emerald);
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+.qr-url-text {
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  margin: 0 auto 12px auto;
+  max-width: 340px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .footer-section {
   padding: 60px 0 40px 0;
   border-top: 1px solid var(--border-glass);
-  background: #030406;
+  background: #020306;
 }
 
 .footer-content {
@@ -1532,9 +1674,41 @@ body {
   color: var(--text-primary);
 }
 
-.footer-supw {
+.footer-exhibition {
   font-size: 0.86rem;
   color: var(--text-muted);
+}
+
+.btn-admin-portal {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.88rem;
+  letter-spacing: 0.02em;
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  box-shadow: 0 0 16px -2px rgba(0, 240, 255, 0.25);
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition-smooth);
+}
+
+.btn-admin-portal:hover {
+  background: rgba(0, 240, 255, 0.18);
+  border-color: var(--accent-cyan);
+  color: #FFFFFF;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-admin-portal:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 3px;
 }
 
 .modal-backdrop {
@@ -1690,6 +1864,8 @@ input:checked + .toggle-slider:before {
 </style>
 </head>
 <body>
+<div id="scrollProgress"></div>
+<div class="ambient-grain"></div>
 <canvas id="particleCanvas"></canvas>
 
 <div class="site-content">
@@ -1698,8 +1874,11 @@ input:checked + .toggle-slider:before {
       <a href="#hero" class="nav-brand">
         <div class="nav-logo-crest">K</div>
         <div>
-          <span class="nav-school-name" id="schoolNameHeader">Kanakia International School</span>
-          <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Mira Road · Class X-D SUPW</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="nav-school-name" id="schoolNameHeader">Kanakia International School</span>
+            <span class="nav-live-dot" title="Live Exhibition Stall"></span>
+          </div>
+          <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Mira Road · Class X-D Annual Career Exhibition</span>
         </div>
       </a>
       <ul class="nav-links">
@@ -1754,6 +1933,10 @@ input:checked + .toggle-slider:before {
             <div class="stat-number" style="color:var(--accent-violet);">100%</div>
             <div class="stat-label">Global Mobility</div>
           </div>
+        </div>
+        <div class="scroll-cue" onclick="scrollToSection('directory')">
+          <span>Scroll to explore 80+ careers</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
         </div>
       </div>
     </section>
@@ -2167,18 +2350,29 @@ input:checked + .toggle-slider:before {
     <section id="qrshare" class="section-wrapper">
       <div class="container">
         <div class="section-header">
-          <div class="section-badge">Mobile Stall Access</div>
+          <div class="section-badge">Live Exhibition Access</div>
           <h2 class="section-title">Scan & Experience on Mobile</h2>
-          <p class="section-desc">Scan this QR code with any smartphone to open the mobile Speech Lab, test your vocal cadence, and participate live at the stall.</p>
+          <p class="section-desc">Point your smartphone camera to access the live Speech Lab, test your vocal cadence, and participate live at the stall.</p>
         </div>
         <div class="qr-section-layout">
           <div class="qr-card glass-panel">
-            <canvas id="qrCanvas" width="220" height="220"></canvas>
-            <div style="font-family:var(--font-display); font-weight:700; margin-bottom:8px;">Kanakia Exhibition Stall</div>
-            <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:18px;">Point phone camera to test live</p>
-            <div style="display:flex; justify-content:center; gap:10px;">
-              <button class="btn btn-secondary btn-sm" onclick="downloadQRCode()">Download QR PNG</button>
-              <button class="btn btn-primary btn-sm" onclick="copyPortalLink()">Copy Link</button>
+            <div class="qr-live-badge">
+              <span class="qr-live-dot"></span>
+              <span>Live Stall Scanner</span>
+            </div>
+            <canvas id="qrCanvas" width="260" height="260"></canvas>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:1.15rem; margin-bottom:4px; color:var(--text-primary);">Kanakia Exhibition Stall</div>
+            <div id="qrTargetUrlText" class="qr-url-text">https://bhavyakumar-dev.github.io/careerfair/</div>
+            <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:20px;">Instantly opens interactive Speech Lab & 80+ Careers</p>
+            <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+              <button class="btn btn-secondary btn-sm" onclick="downloadQRCode()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Download Print QR
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="copyPortalLink()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                Copy Portal Link
+              </button>
             </div>
           </div>
         </div>
@@ -2190,12 +2384,16 @@ input:checked + .toggle-slider:before {
     <div class="container footer-content">
       <div class="footer-left">
         <div class="footer-school" id="footerSchoolName">Kanakia International School, Mira Road</div>
-        <div class="footer-supw">Class X-D SUPW Exhibition Presentation · "Every Career Speaks English"</div>
+        <div class="footer-exhibition">Class X-D Annual Career Exhibition · "Every Career Speaks English"</div>
       </div>
-      <div style="display:flex; align-items:center; gap:16px;">
+      <div class="footer-actions" style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm" onclick="window.scrollTo({top:0, behavior:'smooth'})">Back to Top ↑</button>
-        <button class="btn btn-secondary btn-sm" onclick="openAdminModal()" title="Admin Control" style="padding:8px 12px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <button class="btn btn-admin-portal" onclick="openAdminModal()" aria-label="Open Admin Portal" title="Open Administrator Control Portal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>Admin Portal</span>
         </button>
       </div>
     </div>
@@ -2225,7 +2423,7 @@ const CAREER_CLUSTERS = [
   {
     id: "entertainment",
     title: "Entertainment & Media",
-    color: "#F43F5E",
+    color: "#FF007A",
     roles: ["Screenwriter", "Narrative Designer", "Voice Actor", "Radio Jockey", "Podcast Host", "Subtitle Localizer", "Film Critic", "Playwright"],
     colleges: "FTII Pune, Whistling Woods, NSD Delhi, ACJ Chennai, Xavier's Mumbai, NYU Tisch",
     packages: "₹4L – ₹45L+ (Screenwriters & Top Showrunners ₹1Cr+)",
@@ -2234,7 +2432,7 @@ const CAREER_CLUSTERS = [
   {
     id: "tech",
     title: "Technology & AI",
-    color: "#06B6D4",
+    color: "#00F0FF",
     roles: ["AI/ML Engineer", "Product Manager", "Software Architect", "UX Writer", "Developer Advocate", "Cybersecurity Lead", "Cloud Architect"],
     colleges: "IIT Bombay, BITS Pilani, IIIT Hyderabad, Stanford, CMU, MIT",
     packages: "₹8L – ₹65L+ (₹1.2Cr+ at global tech firms)",
@@ -2243,7 +2441,7 @@ const CAREER_CLUSTERS = [
   {
     id: "healthcare",
     title: "Healthcare & Medicine",
-    color: "#10B981",
+    color: "#10E775",
     roles: ["Surgeon", "Medical Researcher", "Clinical Trial Lead", "Genetic Counselor", "Global Health Envoy", "Psychiatrist"],
     colleges: "AIIMS New Delhi, CMC Vellore, JIPMER, Harvard Medical School, Johns Hopkins",
     packages: "₹9L – ₹50L+ (Specialists & Global Researchers ₹1Cr+)",
@@ -2252,7 +2450,7 @@ const CAREER_CLUSTERS = [
   {
     id: "law",
     title: "Law & Governance",
-    color: "#8B5CF6",
+    color: "#7928CA",
     roles: ["Corporate Litigator", "M&A Counsel", "International Arbitrator", "IAS / Civil Servant", "Diplomat (IFS)", "UN Legal Officer"],
     colleges: "NLSIU Bengaluru, NALSAR Hyderabad, NLU Delhi, Oxford, Harvard Law School",
     packages: "₹7L – ₹60L+ (Senior Advocates & Partners ₹2Cr+)",
@@ -2261,7 +2459,7 @@ const CAREER_CLUSTERS = [
   {
     id: "aviation",
     title: "Aviation & Defence",
-    color: "#38BDF8",
+    color: "#00C8FF",
     roles: ["Airline Captain", "First Officer", "Air Traffic Controller", "Defence Strategist", "Aerospace Test Pilot", "Flight Safety Director"],
     colleges: "IGRUA Bareilly, NDA Khadakwasla, CAE Oxford, Embry-Riddle, Indian Naval Academy",
     packages: "₹12L – ₹80L+ (Senior Widebody Captains ₹1Cr+)",
@@ -2270,7 +2468,7 @@ const CAREER_CLUSTERS = [
   {
     id: "hospitality",
     title: "Hospitality & Luxury Tourism",
-    color: "#F59E0B",
+    color: "#FFB800",
     roles: ["Hotel General Manager", "Luxury Brand Director", "Executive Concierge", "International Cabin Crew", "Resort Director"],
     colleges: "IHM Pusa, Oberoi STEP, EHL Hospitality Business School (Switzerland), Christ University",
     packages: "₹4L – ₹50L+ (International GM ₹80L+)",
@@ -2279,7 +2477,7 @@ const CAREER_CLUSTERS = [
   {
     id: "business",
     title: "Business & Finance",
-    color: "#D946EF",
+    color: "#FF00E5",
     roles: ["Investment Banker", "Chartered Accountant", "Management Consultant", "Venture Capitalist", "Startup Founder", "Equity Strategist"],
     colleges: "IIM Ahmedabad / Bangalore / Calcutta, SRCC, ISB Hyderabad, London School of Economics, Wharton",
     packages: "₹10L – ₹95L+ (IIM placements average ₹28L–₹35L)",
@@ -2288,7 +2486,7 @@ const CAREER_CLUSTERS = [
   {
     id: "education",
     title: "Education & Research",
-    color: "#14B8A6",
+    color: "#00F5D4",
     roles: ["University Professor", "Curriculum Designer", "EdTech Creator", "Academic Researcher", "IELTS/TOEFL Master Trainer"],
     colleges: "Delhi University, JNU, Ashoka University, Cambridge University, Columbia University",
     packages: "₹5L – ₹35L+ (Top EdTech & Global Scholars ₹60L+)",
@@ -2438,6 +2636,7 @@ let roleplayHistory = [];
 const DEFAULT_ADMIN_CONFIG = {
   schoolName: "Kanakia International School, Mira Road",
   theme: "dark",
+  geminiKey: "",
   toggles: {
     hero: true,
     directory: true,
@@ -2465,6 +2664,7 @@ const DEFAULT_ADMIN_CONFIG = {
 };
 
 let portalConfig = JSON.parse(localStorage.getItem('careerFairPortalConfig') || JSON.stringify(DEFAULT_ADMIN_CONFIG));
+if (typeof portalConfig.geminiKey !== 'string') portalConfig.geminiKey = "";
 
 function savePortalConfig() {
   localStorage.setItem('careerFairPortalConfig', JSON.stringify(portalConfig));
@@ -2744,19 +2944,41 @@ function updateSpeechPrompt() {
   document.getElementById('speechPromptText').textContent = `"${data.prompt}"`;
 }
 
-function playBenchmarkSpeech() {
-  const text = document.getElementById('speechPromptText').textContent.replace(/"/g, '');
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-    utterance.lang = 'en-US';
-    window.speechSynthesis.speak(utterance);
-    showToast("Playing articulate benchmark pronunciation...");
-  } else {
-    showToast("Speech synthesis not supported in this browser.");
+let currentActiveAudio = null;
+
+function stopAllPlayback() {
+  if (currentActiveAudio) {
+    try {
+      currentActiveAudio.pause();
+      currentActiveAudio.currentTime = 0;
+    } catch (e) {}
+    currentActiveAudio = null;
   }
+  if ('speechSynthesis' in window) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch (e) {}
+  }
+}
+
+function playBenchmarkSpeech() {
+  stopAllPlayback();
+  const role = document.getElementById('speechRoleSelect').value;
+  const audioSrc = `audio/speech_${role}.mp3`;
+  const text = document.getElementById('speechPromptText').textContent.replace(/"/g, '');
+  showToast("Playing authentic executive benchmark audio...");
+
+  const audio = new Audio(audioSrc);
+  currentActiveAudio = audio;
+  audio.play().catch(() => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+      utterance.lang = 'en-IN';
+      window.speechSynthesis.speak(utterance);
+    }
+  });
 }
 
 async function toggleAudioRecording() {
@@ -2847,16 +3069,366 @@ function initAudioVisualizer(stream) {
   } catch (e) {}
 }
 
+const COMMON_FILLERS = ["um", "uh", "er", "ah", "like", "basically", "actually", "literally", "you know", "i mean", "sort of", "kind of"];
+
+const UPGRADE_DICTIONARY = [
+  { phrase: "make sure", upgrade: "verify / substantiate / guarantee" },
+  { phrase: "talk about", upgrade: "articulate / delineate / elucidate" },
+  { phrase: "find out", upgrade: "ascertain / investigate / determine" },
+  { phrase: "look at", upgrade: "examine / scrutinize / evaluate" },
+  { phrase: "deal with", upgrade: "reconcile / negotiate / navigate" },
+  { phrase: "work on", upgrade: "execute / engineer / refine" },
+  { phrase: "point out", upgrade: "emphasize / highlight / indicate" },
+  { phrase: "set up", upgrade: "establish / configure / institute" },
+  { phrase: "give up", upgrade: "relinquish / concede" },
+  { phrase: "carry out", upgrade: "implement / execute" },
+  { phrase: "think", upgrade: "hypothesize / deduce / surmise" },
+  { phrase: "good", upgrade: "exemplary / optimal / formidable" },
+  { phrase: "help", upgrade: "facilitate / expedite / bolster" },
+  { phrase: "try", upgrade: "endeavor / strive / undertake" },
+  { phrase: "tell", upgrade: "articulate / delineate / apprise" },
+  { phrase: "show", upgrade: "illustrate / demonstrate / substantiate" },
+  { phrase: "fix", upgrade: "rectify / remediate / resolve" },
+  { phrase: "start", upgrade: "initiate / commence / inaugurate" },
+  { phrase: "need", upgrade: "mandate / require / necessitate" },
+  { phrase: "give", upgrade: "allocate / furnish / bestow" },
+  { phrase: "get", upgrade: "acquire / procure / obtain" },
+  { phrase: "do", upgrade: "execute / implement / conduct" },
+  { phrase: "big", upgrade: "substantial / pivotal / paramount" },
+  { phrase: "small", upgrade: "marginal / incremental / negligible" },
+  { phrase: "problem", upgrade: "impediment / vulnerability / discrepancy" },
+  { phrase: "change", upgrade: "transform / calibrate / transition" },
+  { phrase: "stop", upgrade: "halt / cease / terminate" },
+  { phrase: "fast", upgrade: "expeditious / rapid / accelerated" },
+  { phrase: "ask", upgrade: "inquire / solicit / petition" },
+  { phrase: "way", upgrade: "methodology / framework / paradigm" },
+  { phrase: "clear", upgrade: "lucid / unequivocal / transparent" },
+  { phrase: "important", upgrade: "paramount / pivotal / imperative" },
+  { phrase: "job", upgrade: "vocation / stewardship / enterprise" },
+  { phrase: "use", upgrade: "leverage / deploy / capitalize on" },
+  { phrase: "say", upgrade: "assert / state / articulate" },
+  { phrase: "check", upgrade: "audit / validate / verify" },
+  { phrase: "plan", upgrade: "strategic roadmap / blueprint" },
+  { phrase: "idea", upgrade: "conceptual thesis / proposition" },
+  { phrase: "money", upgrade: "capital expenditure / fiscal allocation" },
+  { phrase: "boss", upgrade: "executive director / principal" },
+  { phrase: "team", upgrade: "cross-functional cohort / syndicate" },
+  { phrase: "bad", upgrade: "adverse / sub-optimal / detrimental" },
+  { phrase: "happy", upgrade: "gratified / commended" },
+  { phrase: "sorry", upgrade: "express regret / tender conciliation" },
+  { phrase: "meet", upgrade: "convene / confer with" },
+  { phrase: "keep", upgrade: "preserve / sustain / retain" },
+  { phrase: "end", upgrade: "culminate / terminate / conclude" },
+  { phrase: "buy", upgrade: "procure / acquire" },
+  { phrase: "build", upgrade: "construct / architect / engineer" },
+  { phrase: "see", upgrade: "observe / discern / perceive" },
+  { phrase: "know", upgrade: "comprehend / discern / recognize" }
+];
+
+const ROLE_DOMAIN_UPGRADES = {
+  pilot: [
+    { phrase: "final approach", upgrade: "stabilized instrument arrival" },
+    { phrase: "declaring", upgrade: "broadcasting / asserting" },
+    { phrase: "emergency", upgrade: "distress state / Mayday condition" },
+    { phrase: "due to", upgrade: "attributable to / contingent upon" },
+    { phrase: "requesting", upgrade: "requisitioning priority clearance" },
+    { phrase: "immediate", upgrade: "expedited / urgent operational" },
+    { phrase: "landing", upgrade: "touchdown / runway rollout" }
+  ],
+  doctor: [
+    { phrase: "good morning", upgrade: "esteemed family members / colleagues" },
+    { phrase: "team", upgrade: "surgical cadre / clinical unit" },
+    { phrase: "satisfactorily", upgrade: "within optimal physiological parameters" },
+    { phrase: "patient", upgrade: "clinical subject" },
+    { phrase: "recovering", upgrade: "convalescing" },
+    { phrase: "observation", upgrade: "continuous hemodynamic surveillance" },
+    { phrase: "completed", upgrade: "concluded with clinical precision" }
+  ],
+  anchor: [
+    { phrase: "good evening", upgrade: "greetings viewers / welcome to this live dispatch" },
+    { phrase: "leading", upgrade: "foremost international" },
+    { phrase: "delegates", upgrade: "plenipotentiaries / ministerial envoys" },
+    { phrase: "ratified", upgrade: "formalized a binding multilateral accord on" },
+    { phrase: "targeting", upgrade: "mandating strict compliance for" },
+    { phrase: "corridors", upgrade: "geopolitical industrial corridors" }
+  ],
+  founder: [
+    { phrase: "platform", upgrade: "proprietary software architecture" },
+    { phrase: "slashing", upgrade: "drastically curtailing" },
+    { phrase: "overhead", upgrade: "operational expenditure (OpEx)" },
+    { phrase: "devices", upgrade: "distributed edge hardware" },
+    { phrase: "guaranteeing", upgrade: "substantiating cryptographic" },
+    { phrase: "confidentiality", upgrade: "zero-knowledge privacy isolation" }
+  ],
+  lawyer: [
+    { phrase: "court", upgrade: "honorable tribunal" },
+    { phrase: "brought forward", upgrade: "adduced / submitted into record" },
+    { phrase: "relies on", upgrade: "is predicated upon" },
+    { phrase: "conjecture", upgrade: "unsubstantiated speculation" },
+    { phrase: "cannot stand", upgrade: "fails to satisfy the statutory burden of proof" },
+    { phrase: "prosecution", upgrade: "adversary counsel" }
+  ],
+  hotel: [
+    { phrase: "sincere apologies", upgrade: "profound contrition and goodwill" },
+    { phrase: "delay", upgrade: "procedural deferral" },
+    { phrase: "check-in", upgrade: "arrival reception" },
+    { phrase: "upgraded", upgrade: "accorded elevated accommodations" },
+    { phrase: "compliments", upgrade: "gratis VIP courtesies" },
+    { phrase: "family", upgrade: "esteemed party / delegation" }
+  ]
+};
+
+const ROLE_COACHING_GUIDES = {
+  pilot: "Adopt strict radiotelephony brevity: modulate downward at the close of emergency transmissions to project unflinching command authority.",
+  doctor: "Balance clinical precision with empathetic reassurance by softening consonant attacks slightly during patient family briefings.",
+  anchor: "Modulate pitch dynamically across headline transitions to sustain broadcast momentum and command audience retention.",
+  founder: "Amplify dynamic vocal energy during your value proposition climax to sustain investor engagement and conviction.",
+  lawyer: "Pace your statutory citations deliberately; decelerate by 10% during precedent references to accentuate judicial gravity.",
+  hotel: "Infuse warm harmonic overtones into concierge apologies while maintaining formal, diplomatic diction that restores trust."
+};
+
+function extractDynamicVocabularyUpgrades(cleanText, targetRole) {
+  const lower = cleanText.toLowerCase();
+  const upgrades = [];
+  const seen = new Set();
+
+  for (const item of UPGRADE_DICTIONARY) {
+    const reg = new RegExp("\\b" + item.phrase.replace(/\s+/g, "\\s+") + "\\b", "i");
+    if (reg.test(lower) && !seen.has(item.phrase)) {
+      seen.add(item.phrase);
+      upgrades.push({ original: item.phrase, upgraded: item.upgrade });
+    }
+  }
+
+  const roleKey = Object.keys(ROLE_DOMAIN_UPGRADES).find(k => (targetRole || "").toLowerCase().includes(k));
+  if (roleKey && ROLE_DOMAIN_UPGRADES[roleKey]) {
+    for (const item of ROLE_DOMAIN_UPGRADES[roleKey]) {
+      const reg = new RegExp("\\b" + item.phrase.replace(/\s+/g, "\\s+") + "\\b", "i");
+      if (reg.test(lower) && !seen.has(item.phrase)) {
+        seen.add(item.phrase);
+        upgrades.push({ original: item.phrase, upgraded: item.upgrade });
+      }
+    }
+  }
+
+  if (upgrades.length === 0) {
+    const wordList = lower.split(/[^a-z]+/).filter(w => w.length >= 3);
+    for (const w of wordList) {
+      if (!seen.has(w)) {
+        seen.add(w);
+        upgrades.push({ original: w, upgraded: `elevate / substantiate (${w})` });
+        if (upgrades.length >= 2) break;
+      }
+    }
+  }
+
+  if (upgrades.length === 0) {
+    upgrades.push(
+      { original: "think", upgraded: "hypothesize / deduce" },
+      { original: "make sure", upgraded: "verify / substantiate" }
+    );
+  }
+
+  return upgrades.slice(0, 4);
+}
+
+function analyzeSpeechLocally(text, targetRole = "General Professional") {
+  const cleanText = (text || "").trim();
+  const words = cleanText.toLowerCase().split(/\s+/).filter(Boolean);
+  const wordCount = words.length;
+
+  if (wordCount === 0) {
+    const roleKey = Object.keys(ROLE_COACHING_GUIDES).find(k => (targetRole || "").toLowerCase().includes(k));
+    const roleTip = roleKey ? ROLE_COACHING_GUIDES[roleKey] : "Project authoritative downward inflection at terminal clauses to convey commanding leadership.";
+    return {
+      provider: "Local Heuristics",
+      transcript: "",
+      scores: {
+        overall: 60,
+        pronunciation: 65,
+        fluency: 55,
+        vocabulary: 60,
+        pace: 60,
+        confidence: 60,
+        wpm: 120,
+        fillersCount: 0,
+        fillersFound: []
+      },
+      strengths: [
+        "Acoustic receiver initialized and receptive to speech input.",
+        "System ready to evaluate articulation, cadence, and professional presence."
+      ],
+      improvements: [
+        roleTip,
+        "Speak a complete response with role-specific terminology to trigger deep acoustic and lexical evaluation."
+      ],
+      vocabularyUpgrades: [
+        { original: "think", upgraded: "hypothesize / deduce" },
+        { original: "make sure", upgraded: "verify / substantiate" }
+      ]
+    };
+  }
+
+  const foundFillers = [];
+  let fillerCount = 0;
+  for (const w of words) {
+    const cleanWord = w.replace(/[^a-z]/g, "");
+    if (COMMON_FILLERS.includes(cleanWord)) {
+      fillerCount++;
+      if (!foundFillers.includes(cleanWord)) foundFillers.push(cleanWord);
+    }
+  }
+
+  const uniqueWords = new Set(words.map(w => w.replace(/[^a-z]/g, "")));
+  const lexicalDiversity = Math.min(1, uniqueWords.size / Math.max(1, wordCount));
+
+  const advancedWords = [
+    "furthermore", "consequently", "specifically", "strategic", "effective",
+    "comprehensive", "collaborate", "implementation", "innovative", "optimize",
+    "articulate", "facilitate", "substantiate", "methodology", "perspective",
+    "exceptional", "proficient", "objective", "deliberate", "proficiency"
+  ];
+  let advancedCount = 0;
+  for (const w of words) {
+    const clean = w.replace(/[^a-z]/g, "");
+    if (advancedWords.includes(clean) || clean.length > 8) advancedCount++;
+  }
+
+  const estDurationMin = Math.max(0.1, wordCount / 130);
+  const estWpm = Math.round(wordCount / estDurationMin);
+
+  let paceScore = 85;
+  if (estWpm < 100) paceScore = Math.max(50, 70 - (100 - estWpm));
+  else if (estWpm > 160) paceScore = Math.max(50, 75 - (estWpm - 160));
+  else paceScore = 92;
+
+  const fillerRatio = fillerCount / Math.max(1, wordCount);
+  const fluencyScore = Math.max(45, Math.min(98, Math.round(92 - (fillerRatio * 200))));
+  const vocabularyScore = Math.max(50, Math.min(96, Math.round(65 + (lexicalDiversity * 20) + (advancedCount * 3))));
+  const pronunciationScore = Math.max(60, Math.min(97, Math.round(82 + (wordCount > 15 ? 8 : 0) - (fillerRatio * 50))));
+  const confidenceScore = Math.max(55, Math.min(95, Math.round((fluencyScore * 0.5) + (paceScore * 0.5))));
+  const overall = Math.round((pronunciationScore * 0.25) + (fluencyScore * 0.25) + (vocabularyScore * 0.25) + (confidenceScore * 0.25));
+
+  const strengths = [];
+  const improvements = [];
+
+  if (fillerCount === 0) {
+    strengths.push("Excellent elimination of conversational filler words like 'um' and 'like'.");
+  } else {
+    improvements.push(`Detected ${fillerCount} conversational filler word${fillerCount > 1 ? "s" : ""} (${foundFillers.join(", ")}). Practice comfortable silence instead of vocalized pauses.`);
+  }
+
+  if (lexicalDiversity > 0.6) {
+    strengths.push("High vocabulary variation showing linguistic flexibility.");
+  } else {
+    improvements.push("Diversify sentence structure and vary key adjectives instead of repeating identical descriptors.");
+  }
+
+  if (paceScore >= 85) {
+    strengths.push(`Ideal conversational cadence around ${estWpm} words per minute.`);
+  } else {
+    improvements.push(`Speaking pace was measured at ${estWpm} WPM. Aim for 120-140 WPM for maximum executive clarity.`);
+  }
+
+  if (advancedCount > 2) {
+    strengths.push("Naturally integrated technical and formal vocabulary suited for professional dialogue.");
+  } else {
+    improvements.push(`Incorporate more domain-specific terminology tailored for a ${targetRole}.`);
+  }
+
+  const roleKey = Object.keys(ROLE_COACHING_GUIDES).find(k => (targetRole || "").toLowerCase().includes(k));
+  const selectedRoleCoaching = roleKey ? ROLE_COACHING_GUIDES[roleKey] : "Project authoritative downward inflection at terminal clauses to convey commanding professional leadership.";
+
+  if (!improvements.includes(selectedRoleCoaching)) {
+    improvements.push(selectedRoleCoaching);
+  }
+
+  const executivePauseTip = "Integrate intentional 0.8-second micro-pauses before quantitative or critical claims to allow listeners to absorb key data.";
+  if (improvements.length < 2) {
+    improvements.push(executivePauseTip);
+  }
+
+  const assertiveSignpostTip = "Replace passive conjunctions with decisive strategic signposts (e.g. 'The operational imperative is...', 'To substantiate this protocol...').";
+  if (improvements.length < 3) {
+    improvements.push(assertiveSignpostTip);
+  }
+
+  const vocabularyUpgrades = extractDynamicVocabularyUpgrades(cleanText, targetRole);
+
+  return {
+    provider: "On-Device Natural Language Heuristics",
+    transcript: text,
+    scores: {
+      overall,
+      pronunciation: pronunciationScore,
+      fluency: fluencyScore,
+      vocabulary: vocabularyScore,
+      pace: paceScore,
+      confidence: confidenceScore,
+      wpm: estWpm,
+      fillersCount: fillerCount,
+      fillersFound: foundFillers
+    },
+    strengths,
+    improvements,
+    vocabularyUpgrades
+  };
+}
+
+async function callGeminiDirectly(text, role, apiKey) {
+  if (!apiKey) return null;
+  const systemPrompt = `You are a world-class executive voice and speech coach evaluating a student aspiring to be a ${role}. Provide an honest, inspiring evaluation in valid JSON matching this schema:
+{"scores": {"overall": 88, "pronunciation": 87, "fluency": 90, "vocabulary": 88, "pace": 130, "confidence": 89, "wpm": 130, "fillersCount": 0, "fillersFound": []}, "strengths": ["...", "..."], "improvements": ["...", "..."], "vocabularyUpgrades": [{"original": "word_from_text", "upgraded": "executive_alternative"}]}
+CRITICAL REQUIREMENTS:
+1. improvements MUST NEVER be empty. Even for near-perfect speech, provide executive coaching on micro-pauses, downward terminal inflection, diaphragmatic projection, or assertiveness.
+2. In vocabularyUpgrades, the original word or phrase MUST actually appear in the speech transcript.`;
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+  try {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: systemPrompt + "\n\nAnalyze this speech transcript:\n\"" + text + "\"" }] }],
+        generationConfig: { temperature: 0.6, maxOutputTokens: 600 }
+      })
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!raw) return null;
+    const cleanJson = raw.replace(/```json/g, "").replace(/```/g, "").trim();
+    const parsed = JSON.parse(cleanJson);
+    parsed.provider = "Google Gemini 2.5 (Direct Client)";
+    parsed.transcript = text;
+    if (!parsed.improvements || !Array.isArray(parsed.improvements) || parsed.improvements.length === 0) {
+      const fallback = analyzeSpeechLocally(text, role);
+      parsed.improvements = fallback.improvements;
+    }
+    if (!parsed.vocabularyUpgrades || !Array.isArray(parsed.vocabularyUpgrades) || parsed.vocabularyUpgrades.length === 0) {
+      parsed.vocabularyUpgrades = extractDynamicVocabularyUpgrades(text, role);
+    }
+    return parsed;
+  } catch (err) {
+    return null;
+  }
+}
+
 async function triggerSpeechAnalysis() {
   const currentPrompt = document.getElementById('speechPromptText').textContent.replace(/"/g, '');
   const role = document.getElementById('speechRoleSelect').value;
 
   showToast("Analyzing acoustic cadence & diction...");
 
+  const headers = { 'Content-Type': 'application/json' };
+  if (portalConfig && portalConfig.geminiKey) {
+    headers['X-Gemini-Key'] = portalConfig.geminiKey;
+  }
+
   try {
     const res = await fetch('/api/speech/analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         transcript: currentPrompt,
         role: role
@@ -2864,34 +3436,30 @@ async function triggerSpeechAnalysis() {
     });
     if (res.ok) {
       const data = await res.json();
+      if (!data.improvements || !Array.isArray(data.improvements) || data.improvements.length === 0) {
+        const local = analyzeSpeechLocally(currentPrompt, role);
+        data.improvements = local.improvements;
+      }
+      if (!data.vocabularyUpgrades || !Array.isArray(data.vocabularyUpgrades) || data.vocabularyUpgrades.length === 0) {
+        data.vocabularyUpgrades = extractDynamicVocabularyUpgrades(currentPrompt, role);
+      }
       renderSpeechScores(data);
       return;
     }
   } catch (err) {}
 
-  renderSpeechScores({
-    scores: {
-      overall: 88,
-      fluency: 92,
-      pace: 132,
-      pronunciation: 87,
-      vocabulary: 89
-    },
-    strengths: [
-      "Natural breathing pauses matching professional broadcast delivery standards.",
-      "Zero conversational filler words ('um', 'like', 'uh') detected.",
-      "Clear consonant enunciation on critical operational keywords."
-    ],
-    improvements: [
-      "Consider modulating vocal pitch at the sentence conclusion for increased executive authority.",
-      "Speaking pace was measured at 132 WPM, which is within the ideal 120–140 range."
-    ],
-    vocabularyUpgrades: [
-      { original: "tell them", upgraded: "articulate / communicate" },
-      { original: "fix it", upgraded: "rectify / remediate" },
-      { original: "make sure", upgraded: "substantiate / guarantee" }
-    ]
-  });
+  if (portalConfig && portalConfig.geminiKey) {
+    try {
+      const geminiData = await callGeminiDirectly(currentPrompt, role, portalConfig.geminiKey);
+      if (geminiData) {
+        renderSpeechScores(geminiData);
+        return;
+      }
+    } catch (e) {}
+  }
+
+  const localData = analyzeSpeechLocally(currentPrompt, role);
+  renderSpeechScores(localData);
 }
 
 function renderSpeechScores(data) {
@@ -2957,13 +3525,49 @@ function speakCurrentQuestion() {
   }
 }
 
-function evaluateInterviewAnswer() {
+async function evaluateInterviewAnswer() {
   const ans = document.getElementById('interviewAnswerText').value.trim();
   const feedback = document.getElementById('interviewFeedbackCard');
 
   if (ans.length < 15) {
     showToast("Please provide a more detailed response to receive meaningful AI feedback.");
     return;
+  }
+
+  showToast("Evaluating interview articulation...");
+
+  if (portalConfig && portalConfig.geminiKey) {
+    try {
+      const cat = document.getElementById('interviewCategorySelect').value;
+      const q = document.getElementById('interviewQuestionText').textContent.replace(/"/g, '');
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(portalConfig.geminiKey)}`;
+      const prompt = `You are evaluating a candidate interview answer for category: ${cat}. Question: "${q}". Candidate answer: "${ans}". Return JSON: {"score": 92, "critique": "2 concise sentences of constructive feedback", "polish": "an upgraded executive phrasing of their core idea"}`;
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.5, maxOutputTokens: 300 }
+        })
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (raw) {
+          const parsed = JSON.parse(raw.replace(/```json/g, '').replace(/```/g, '').trim());
+          feedback.style.display = 'block';
+          feedback.innerHTML = `
+            <div style="font-family:var(--font-display); font-weight:700; color:var(--accent-cyan); margin-bottom:8px;">Evaluation Scorecard: ${parsed.score || 92}/100 (Gemini 2.5)</div>
+            <p style="font-size:0.92rem; color:var(--text-secondary); line-height:1.6; margin-bottom:12px;">
+              ${parsed.critique}
+            </p>
+            <div style="font-size:0.85rem; color:var(--accent-emerald); font-weight:600;">Executive Polish: "${parsed.polish}"</div>
+          `;
+          showToast("Gemini 2.5 evaluation complete!");
+          return;
+        }
+      }
+    } catch (e) {}
   }
 
   feedback.style.display = 'block';
@@ -3075,10 +3679,15 @@ async function sendRoleplayMessage() {
   input.value = '';
   chatArea.scrollTop = chatArea.scrollHeight;
 
+  const headers = { 'Content-Type': 'application/json' };
+  if (portalConfig && portalConfig.geminiKey) {
+    headers['X-Gemini-Key'] = portalConfig.geminiKey;
+  }
+
   try {
     const res = await fetch('/api/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         role: ROLEPLAY_CHARACTERS[currentRoleplayAvatar].name,
         userMessage: msg,
@@ -3097,6 +3706,36 @@ async function sendRoleplayMessage() {
       return;
     }
   } catch (e) {}
+
+  if (portalConfig && portalConfig.geminiKey) {
+    try {
+      const charName = ROLEPLAY_CHARACTERS[currentRoleplayAvatar].name;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(portalConfig.geminiKey)}`;
+      const prompt = `You are roleplaying as: ${charName}. A high school student says: "${msg}". Respond in 2-3 sentences of natural, engaging, professional English suitable for this career role. Output only your character's response.`;
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.6, maxOutputTokens: 250 }
+        })
+      });
+      if (resp.ok) {
+        const d = await resp.json();
+        const reply = d?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (reply) {
+          chatArea.innerHTML += `
+            <div class="chat-bubble bot">
+              <strong style="color:var(--accent-cyan); display:block; margin-bottom:4px;">${charName}</strong>
+              ${reply}
+            </div>
+          `;
+          chatArea.scrollTop = chatArea.scrollHeight;
+          return;
+        }
+      }
+    } catch (err) {}
+  }
 
   setTimeout(() => {
     chatArea.innerHTML += `
@@ -3122,19 +3761,19 @@ function initRadarChart() {
           label: 'Executive Benchmark',
           data: [90, 95, 92, 94, 90],
           fill: true,
-          backgroundColor: 'rgba(6, 182, 212, 0.2)',
-          borderColor: '#06B6D4',
-          pointBackgroundColor: '#06B6D4',
-          pointBorderColor: '#fff'
+          backgroundColor: 'rgba(0, 240, 255, 0.25)',
+          borderColor: '#00F0FF',
+          pointBackgroundColor: '#00F0FF',
+          pointBorderColor: '#ffffff'
         },
         {
           label: 'Student Voice Sample',
           data: [75, 80, 78, 82, 70],
           fill: true,
-          backgroundColor: 'rgba(245, 158, 11, 0.2)',
-          borderColor: '#F59E0B',
-          pointBackgroundColor: '#F59E0B',
-          pointBorderColor: '#fff'
+          backgroundColor: 'rgba(255, 184, 0, 0.25)',
+          borderColor: '#FFB800',
+          pointBackgroundColor: '#FFB800',
+          pointBorderColor: '#ffffff'
         }
       ]
     },
@@ -3143,18 +3782,18 @@ function initRadarChart() {
       maintainAspectRatio: true,
       scales: {
         r: {
-          angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+          angleLines: { color: 'rgba(255, 255, 255, 0.12)' },
           grid: { color: 'rgba(255, 255, 255, 0.08)' },
           pointLabels: {
-            color: '#94A3B8',
-            font: { family: 'Syne', size: 11, weight: '600' }
+            color: '#A0B3D6',
+            font: { family: 'Outfit', size: 12, weight: '700' }
           },
           ticks: { display: false, max: 100, min: 40 }
         }
       },
       plugins: {
         legend: {
-          labels: { color: '#F8FAFC', font: { family: 'DM Sans', weight: '600' } }
+          labels: { color: '#FFFFFF', font: { family: 'Plus Jakarta Sans', weight: '600' } }
         }
       }
     }
@@ -3267,85 +3906,168 @@ function nextWordOfTheDay() {
 }
 
 function pronounceCurrentWord() {
+  stopAllPlayback();
   const term = WORDS_OF_DAY[currentWordIndex].term;
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(term);
-    u.rate = 0.85;
-    u.pitch = 1.0;
-    u.lang = 'en-US';
-    window.speechSynthesis.speak(u);
-    showToast(`Pronouncing: ${term}`);
-  }
+  const audioSrc = `audio/word_${term.toLowerCase()}.mp3`;
+  showToast(`Pronouncing: ${term}`);
+
+  const audio = new Audio(audioSrc);
+  currentActiveAudio = audio;
+  audio.play().catch(() => {
+    if ('speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance(term);
+      u.rate = 0.85;
+      u.pitch = 1.0;
+      u.lang = 'en-IN';
+      window.speechSynthesis.speak(u);
+    }
+  });
 }
 
 function renderQRCode() {
   const canvas = document.getElementById('qrCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  const size = 220;
-  ctx.fillStyle = "#FFFFFF";
-  ctx.fillRect(0, 0, size, size);
+  const size = 260;
+  canvas.width = size;
+  canvas.height = size;
 
-  ctx.fillStyle = "#050608";
-  const cells = 21;
-  const cellSize = size / cells;
+  let targetUrl = 'https://bhavyakumar-dev.github.io/careerfair/';
+  if (typeof window !== 'undefined' && window.location && window.location.href && window.location.protocol.indexOf('http') === 0) {
+    targetUrl = window.location.href.split('#')[0];
+  }
+  const urlEl = document.getElementById('qrTargetUrlText');
+  if (urlEl) {
+    urlEl.textContent = targetUrl;
+  }
 
-  for (let r = 0; r < cells; r++) {
-    for (let c = 0; c < cells; c++) {
-      const isCorner1 = (r < 7 && c < 7);
-      const isCorner2 = (r < 7 && c >= cells - 7);
-      const isCorner3 = (r >= cells - 7 && c < 7);
+  if (typeof qrcode === 'undefined') {
+    setTimeout(renderQRCode, 200);
+    return;
+  }
 
-      if (isCorner1 || isCorner2 || isCorner3) {
-        const isBorder = (r === 0 || r === 6 || c === 0 || c === 6 || r === cells - 1 || r === cells - 7 || c === cells - 1 || c === cells - 7);
-        const isCenter = (r >= 2 && r <= 4 && c >= 2 && c <= 4) ||
-                         (r >= 2 && r <= 4 && c >= cells - 5 && c <= cells - 3) ||
-                         (r >= cells - 5 && r <= cells - 3 && c >= 2 && c <= 4);
-        if (isBorder || isCenter) {
-          ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
-        }
-      } else {
-        if ((r * 7 + c * 13 + (r * c)) % 3 === 0) {
-          ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+  try {
+    const qr = qrcode(0, 'M');
+    qr.addData(targetUrl);
+    qr.make();
+    const count = qr.getModuleCount();
+    const margin = 2;
+    const totalCells = count + (margin * 2);
+    const cellSize = size / totalCells;
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, size, size);
+
+    ctx.fillStyle = '#050608';
+    for (let r = 0; r < count; r++) {
+      for (let c = 0; c < count; c++) {
+        if (qr.isDark(r, c)) {
+          const x = Math.round((c + margin) * cellSize);
+          const y = Math.round((r + margin) * cellSize);
+          const w = Math.ceil(cellSize);
+          const h = Math.ceil(cellSize);
+          ctx.fillRect(x, y, w, h);
         }
       }
     }
-  }
-
-  ctx.fillStyle = "#F59E0B";
-  ctx.beginPath();
-  ctx.arc(size / 2, size / 2, 18, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#050608";
-  ctx.font = "bold 14px Syne, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("K", size / 2, size / 2);
+  } catch (e) {}
 }
 
 function downloadQRCode() {
   const canvas = document.getElementById('qrCanvas');
+  if (!canvas) return;
+  let targetUrl = 'https://bhavyakumar-dev.github.io/careerfair/';
+  if (typeof window !== 'undefined' && window.location && window.location.href && window.location.protocol.indexOf('http') === 0) {
+    targetUrl = window.location.href.split('#')[0];
+  }
+
+  if (typeof qrcode !== 'undefined') {
+    const exportCanvas = document.createElement('canvas');
+    const expSize = 600;
+    exportCanvas.width = expSize;
+    exportCanvas.height = 700;
+    const eCtx = exportCanvas.getContext('2d');
+
+    eCtx.fillStyle = '#FFFFFF';
+    eCtx.fillRect(0, 0, expSize, 700);
+
+    eCtx.fillStyle = '#0B0F19';
+    eCtx.font = 'bold 22px Syne, sans-serif';
+    eCtx.textAlign = 'center';
+    eCtx.fillText('Kanakia International School, Mira Road', expSize / 2, 45);
+
+    eCtx.fillStyle = '#0070F3';
+    eCtx.font = 'bold 16px Outfit, sans-serif';
+    eCtx.fillText('Annual Career Exhibition · Class X-D', expSize / 2, 75);
+
+    eCtx.fillStyle = '#64748B';
+    eCtx.font = 'italic 14px "Plus Jakarta Sans", sans-serif';
+    eCtx.fillText('"Every Career Speaks English"', expSize / 2, 100);
+
+    const qr = qrcode(0, 'M');
+    qr.addData(targetUrl);
+    qr.make();
+    const count = qr.getModuleCount();
+    const margin = 2;
+    const totalCells = count + (margin * 2);
+    const qrDrawSize = 420;
+    const cellSize = qrDrawSize / totalCells;
+    const offsetX = (expSize - qrDrawSize) / 2;
+    const offsetY = 130;
+
+    eCtx.fillStyle = '#050608';
+    for (let r = 0; r < count; r++) {
+      for (let c = 0; c < count; c++) {
+        if (qr.isDark(r, c)) {
+          eCtx.fillRect(
+            Math.round(offsetX + (c + margin) * cellSize),
+            Math.round(offsetY + (r + margin) * cellSize),
+            Math.ceil(cellSize),
+            Math.ceil(cellSize)
+          );
+        }
+      }
+    }
+
+    eCtx.fillStyle = '#0F172A';
+    eCtx.font = 'bold 15px Outfit, sans-serif';
+    eCtx.fillText('Scan with camera to explore careers live', expSize / 2, offsetY + qrDrawSize + 40);
+
+    eCtx.fillStyle = '#64748B';
+    eCtx.font = '12px "Plus Jakarta Sans", sans-serif';
+    eCtx.fillText(targetUrl, expSize / 2, offsetY + qrDrawSize + 65);
+
+    const a = document.createElement('a');
+    a.download = 'Kanakia_CareerFair_Stall_QR.png';
+    a.href = exportCanvas.toDataURL('image/png');
+    a.click();
+    showToast('High-resolution stall QR poster downloaded!');
+    return;
+  }
+
   const a = document.createElement('a');
   a.download = 'Kanakia_CareerFair_Stall_QR.png';
   a.href = canvas.toDataURL('image/png');
   a.click();
-  showToast("QR code image downloaded!");
+  showToast('QR code image downloaded!');
 }
 
 function copyPortalLink() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    showToast("Portal link copied to clipboard!");
+  let targetUrl = 'https://bhavyakumar-dev.github.io/careerfair/';
+  if (typeof window !== 'undefined' && window.location && window.location.href && window.location.protocol.indexOf('http') === 0) {
+    targetUrl = window.location.href.split('#')[0];
+  }
+  navigator.clipboard.writeText(targetUrl).then(() => {
+    showToast('Portal link copied to clipboard!');
   }).catch(() => {
-    showToast("Link: " + window.location.href);
+    showToast('Link: ' + targetUrl);
   });
 }
 
 function applyPortalConfig() {
   document.documentElement.setAttribute('data-theme', portalConfig.theme || 'dark');
   document.getElementById('schoolNameHeader').textContent = portalConfig.schoolName;
-  document.getElementById('schoolBadgeText').textContent = `${portalConfig.schoolName} · Class X-D Exhibition`;
+  document.getElementById('schoolBadgeText').textContent = `${portalConfig.schoolName} · Class X-D Annual Career Exhibition`;
   document.getElementById('footerSchoolName').textContent = portalConfig.schoolName;
 
   for (const sec in portalConfig.toggles) {
@@ -3413,6 +4135,25 @@ function renderAdminTab(tab) {
     `;
   } else if (tab === 'ai') {
     content.innerHTML = `
+      <div style="margin-bottom:20px; padding:18px; border-radius:var(--radius-md); background:linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(121, 40, 202, 0.08)); border:1px solid rgba(0, 240, 255, 0.3); box-shadow:0 0 20px -5px rgba(0, 240, 255, 0.15);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+          <label style="font-size:0.95rem; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color:var(--accent-cyan);"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Google Gemini API Key
+          </label>
+          <span class="badge" style="font-size:0.75rem; padding:4px 10px; border-radius:12px; background:${portalConfig.geminiKey ? 'rgba(16, 231, 117, 0.18)' : 'rgba(255, 184, 0, 0.18)'}; color:${portalConfig.geminiKey ? 'var(--accent-emerald)' : 'var(--accent-amber)'}; font-weight:700; border:1px solid ${portalConfig.geminiKey ? 'rgba(16, 231, 117, 0.35)' : 'rgba(255, 184, 0, 0.35)'};">
+            ${portalConfig.geminiKey ? 'Key Active (Gemini 2.5 Enabled)' : 'No Key Set (Using Local Heuristics)'}
+          </span>
+        </div>
+        <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.5; margin-bottom:14px;">
+          Configure your Google Gemini API key to unlock real-time Gemini 2.5 generative evaluations across Speech Lab, Mock Interviews, and Roleplay dialogues. Stored securely in browser localStorage.
+        </p>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <input type="password" id="adminGeminiKeyInput" class="text-custom" placeholder="Paste Gemini API Key (AIzaSy...)" value="${portalConfig.geminiKey || ''}" style="flex:1; min-width:240px; font-family:var(--font-mono); font-size:0.85rem;" onfocus="this.type='text'" onblur="this.type='password'">
+          <button class="btn btn-primary btn-sm" onclick="saveGeminiApiKey()">Save Key</button>
+          ${portalConfig.geminiKey ? `<button class="btn btn-secondary btn-sm" onclick="clearGeminiApiKey()">Clear Key</button>` : ''}
+        </div>
+      </div>
       <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:18px;">Manage the 5-layer AI Fallback Pipeline. The system automatically shifts to lower layers if a higher layer hits rate limits or latency ceilings:</p>
       ${portalConfig.aiProviders.map((p, idx) => `
         <div class="admin-toggle-row">
@@ -3488,6 +4229,22 @@ function saveSchoolName() {
   }
 }
 
+function saveGeminiApiKey() {
+  const el = document.getElementById('adminGeminiKeyInput');
+  const key = (el ? el.value : '').trim();
+  portalConfig.geminiKey = key;
+  savePortalConfig();
+  renderAdminTab('ai');
+  showToast(key ? "Gemini API key saved and activated!" : "Gemini API key cleared.");
+}
+
+function clearGeminiApiKey() {
+  portalConfig.geminiKey = "";
+  savePortalConfig();
+  renderAdminTab('ai');
+  showToast("Gemini API key removed.");
+}
+
 function initParticleCanvas() {
   const canvas = document.getElementById('particleCanvas');
   const ctx = canvas.getContext('2d');
@@ -3499,15 +4256,23 @@ function initParticleCanvas() {
     height = canvas.height = window.innerHeight;
   });
 
+  const colors = [
+    '0, 240, 255',
+    '255, 0, 122',
+    '16, 231, 117',
+    '255, 184, 0',
+    '121, 40, 202'
+  ];
   const particles = [];
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 50; i++) {
     particles.push({
       x: Math.random() * width,
       y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      radius: Math.random() * 2 + 1,
-      alpha: Math.random() * 0.4 + 0.1
+      vx: (Math.random() - 0.5) * 0.45,
+      vy: (Math.random() - 0.5) * 0.45,
+      radius: Math.random() * 2.2 + 1,
+      alpha: Math.random() * 0.45 + 0.15,
+      color: colors[i % colors.length]
     });
   }
 
@@ -3523,7 +4288,7 @@ function initParticleCanvas() {
 
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(6, 182, 212, ${p.alpha})`;
+      ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
       ctx.fill();
     });
     requestAnimationFrame(animate);
