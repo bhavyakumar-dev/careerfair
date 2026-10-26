@@ -1,4 +1,4 @@
-import {json,parseJson,safeString,originAllowed} from '../_shared.js';
+import {json,parseJson,safeString,originAllowed,isIpBanned} from '../_shared.js';
 
 export async function onRequestGet({request,env}) {
   if(!env.DB)return json({entries:[],count:0,average:5.0,summary:'Students love practicing spoken English, speech analysis, and interactive career exploration.'});
@@ -23,6 +23,7 @@ export async function onRequestGet({request,env}) {
 
 export async function onRequestPost({request,env}) {
   if(!originAllowed(request))return json({error:'Origin check failed.'},403);
+  if(await isIpBanned(request,env))return json({error:'Your IP address is restricted.'},403);
   if(!env.DB)return json({error:'Feedback server storage is not configured yet. Your note has not been sent to the server.'},503);
   const body=await parseJson(request);if(!body)return json({error:'Invalid feedback request.'},400);
   if(body.consent!==true)return json({error:'Please agree to the feedback storage notice before sending.'},400);

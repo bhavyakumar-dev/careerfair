@@ -1,4 +1,4 @@
-import {json,parseJson,safeString} from '../_shared.js';
+import {json,parseJson,safeString,isIpBanned} from '../_shared.js';
 
 const WEIGHTS={speech:30,editor:15,newsroom:20,words:15,debate:10,interview:10};
 const COLUMNS={overall:'score',score:'score',fluency:'fluency',clarity:'clarity',editor:'editor_score',newsroom:'newsroom_score',games:'games_score'};
@@ -11,6 +11,7 @@ export async function onRequestGet({request,env}) {
   catch {return json({entries:[],error:'Leaderboard migration 0002_v8.sql has not been applied.'},503);}
 }
 export async function onRequestPost({request,env}) {
+  if(await isIpBanned(request,env))return json({error:'Your IP address is restricted.'},403);
   if(!env.DB)return json({error:'Shared leaderboard is not configured.'},503);
   const body=await parseJson(request);if(!body)return json({error:'Invalid request.'},400);
   if(body.consent!==true)return json({error:'Explicit consent is required to join the shared board.'},400);

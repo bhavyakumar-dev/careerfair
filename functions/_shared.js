@@ -1,6 +1,6 @@
 export const FEATURE_KEYS = ['hero','whyEnglish','careers','quiz','plan','careerChat','speechLab','mockInterview','roleplay','anchor','compare','speakers','leaderboard','wordOfDay','emailGame','pronunciation','debate','feedback','games','closing'];
 export const DEFAULTS = {
-  theme:'mix',language:'en',showSchoolName:true,schoolName:'Kanakia International School Mira Road',automaticFallback:true,preferredProvider:'cloudflare',speechProvider:'auto',qualityMode:'balanced',providerOrder:['cloudflare','gemini','free','laptop'],providerEnabled:{cloudflare:true,gemini:true,free:true,laptop:false,elevenlabs:false},features:Object.fromEntries(FEATURE_KEYS.map(key=>[key,true]))
+  theme:'mix',language:'en',showSchoolName:true,schoolName:'Kanakia International School Mira Road',automaticFallback:true,preferredProvider:'gemini',speechProvider:'auto',ttsProvider:'cartesia',qualityMode:'balanced',providerOrder:['gemini','cloudflare','free','laptop'],providerEnabled:{gemini:true,cloudflare:true,free:true,laptop:false,elevenlabs:false,cartesia:true,openai:true,deepgram:true,kokoro:false},features:Object.fromEntries(FEATURE_KEYS.map(key=>[key,true]))
 };
 export function json(data,status=200,headers={}) { return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store',...headers}}); }
 export async function parseJson(request) { try { return await request.json(); } catch { return null; } }
@@ -11,14 +11,27 @@ function bytesFromBase64(value) { const raw=atob(value); return Uint8Array.from(
 export async function getSettings(env) {
   let saved={};
   try { if(env.DB){const row=await env.DB.prepare('SELECT value FROM settings WHERE key = ?').bind('app_config').first();if(row?.value)saved=JSON.parse(row.value); } } catch {}
-  return {...DEFAULTS,...saved,features:{...DEFAULTS.features,...(saved.features||{})},providerEnabled:{...DEFAULTS.providerEnabled,...(saved.providerEnabled||{})},providerOrder:Array.isArray(saved.providerOrder)?saved.providerOrder.filter(key=>['cloudflare','gemini','free','laptop'].includes(key)):DEFAULTS.providerOrder};
+  return {...DEFAULTS,...saved,features:{...DEFAULTS.features,...(saved.features||{})},providerEnabled:{...DEFAULTS.providerEnabled,...(saved.providerEnabled||{})},providerOrder:Array.isArray(saved.providerOrder)?saved.providerOrder.filter(key=>['gemini','cloudflare','free','laptop'].includes(key)):DEFAULTS.providerOrder};
 }
 export async function saveSettings(env,settings) {
   if(!env.DB)throw new Error('D1 database binding DB is not configured.');
   await env.DB.prepare('INSERT INTO settings (key,value,updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at').bind('app_config',JSON.stringify(settings),new Date().toISOString()).run();
 }
 export async function getProviderSecrets(env) {
-  const result={geminiKeys:[],elevenlabsKey:env.ELEVENLABS_API_KEY||'',freeUrl:env.FREE_LLM_URL||'',freeKey:env.FREE_LLM_KEY||'',freeModel:env.FREE_LLM_MODEL||'default',laptopUrl:env.LAPTOP_URL||'',laptopToken:env.LAPTOP_TOKEN||'',laptopModel:env.LAPTOP_MODEL||'llama3.2:3b'};
+  const result={
+    geminiKeys:[],
+    elevenlabsKey:env.ELEVENLABS_API_KEY||'',
+    cartesiaKey:env.CARTESIA_API_KEY||'',
+    openaiKey:env.OPENAI_API_KEY||'',
+    deepgramKey:env.DEEPGRAM_API_KEY||'',
+    kokoroUrl:env.KOKORO_URL||'',
+    freeUrl:env.FREE_LLM_URL||'',
+    freeKey:env.FREE_LLM_KEY||'',
+    freeModel:env.FREE_LLM_MODEL||'default',
+    laptopUrl:env.LAPTOP_URL||'',
+    laptopToken:env.LAPTOP_TOKEN||'',
+    laptopModel:env.LAPTOP_MODEL||'llama3.2:3b'
+  };
   const envKeys=String(env.GEMINI_API_KEYS||env.GEMINI_API_KEY||'').split(/[\r\n,]+/).map(value=>value.trim()).filter(Boolean);
   result.geminiKeys=envKeys;
   if(!env.DB)return result;
@@ -34,9 +47,18 @@ export async function getProviderSecrets(env) {
     const plaintext=await crypto.subtle.decrypt({name:'AES-GCM',iv},cryptoKey,encrypted);
     const stored=JSON.parse(new TextDecoder().decode(plaintext));
     return {
-      geminiKeys:envKeys.length?envKeys:(Array.isArray(stored.geminiKeys)?stored.geminiKeys:[]),elevenlabsKey:env.ELEVENLABS_API_KEY||stored.elevenlabsKey||'',
-      freeUrl:env.FREE_LLM_URL||stored.freeUrl||'',freeKey:env.FREE_LLM_KEY||stored.freeKey||'',freeModel:env.FREE_LLM_MODEL||stored.freeModel||'default',
-      laptopUrl:env.LAPTOP_URL||stored.laptopUrl||'',laptopToken:env.LAPTOP_TOKEN||stored.laptopToken||'',laptopModel:env.LAPTOP_MODEL||stored.laptopModel||'llama3.2:3b'
+      geminiKeys:envKeys.length?envKeys:(Array.isArray(stored.geminiKeys)?stored.geminiKeys:[]),
+      elevenlabsKey:env.ELEVENLABS_API_KEY||stored.elevenlabsKey||'',
+      cartesiaKey:env.CARTESIA_API_KEY||stored.cartesiaKey||'',
+      openaiKey:env.OPENAI_API_KEY||stored.openaiKey||'',
+      deepgramKey:env.DEEPGRAM_API_KEY||stored.deepgramKey||'',
+      kokoroUrl:env.KOKORO_URL||stored.kokoroUrl||'',
+      freeUrl:env.FREE_LLM_URL||stored.freeUrl||'',
+      freeKey:env.FREE_LLM_KEY||stored.freeKey||'',
+      freeModel:env.FREE_LLM_MODEL||stored.freeModel||'default',
+      laptopUrl:env.LAPTOP_URL||stored.laptopUrl||'',
+      laptopToken:env.LAPTOP_TOKEN||stored.laptopToken||'',
+      laptopModel:env.LAPTOP_MODEL||stored.laptopModel||'llama3.2:3b'
     };
   } catch { return result; }
 }
@@ -85,6 +107,44 @@ export function originAllowed(request) {
   const origin=request.headers.get('Origin');if(!origin)return true;
   try{return new URL(origin).origin===new URL(request.url).origin;}catch{return false;}
 }
+export async function isIpBanned(request,env) {
+  if(!env.DB)return false;
+  const ip=request.headers.get('cf-connecting-ip')||request.headers.get('x-real-ip')||request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  if(!ip)return false;
+  try {
+    const row=await env.DB.prepare('SELECT value FROM settings WHERE key = ?').bind('banned_ips').first();
+    if(!row?.value)return false;
+    const list=JSON.parse(row.value);
+    return Array.isArray(list)&&list.some(item=>(typeof item==='string'?item===ip:item.ip===ip));
+  } catch { return false; }
+}
+export async function getBannedIps(env) {
+  if(!env.DB)return [];
+  try {
+    const row=await env.DB.prepare('SELECT value FROM settings WHERE key = ?').bind('banned_ips').first();
+    if(!row?.value)return [];
+    const parsed=JSON.parse(row.value);
+    return Array.isArray(parsed)?parsed:[];
+  } catch { return []; }
+}
+export async function addBannedIp(env,ip,reason='') {
+  if(!env.DB)throw new Error('D1 database binding DB is not configured.');
+  const cleanIp=safeString(ip,60).trim();
+  if(!cleanIp)throw new Error('IP address is required.');
+  const current=await getBannedIps(env);
+  if(current.some(item=>(typeof item==='string'?item===cleanIp:item.ip===cleanIp)))return current;
+  const next=[...current,{ip:cleanIp,reason:safeString(reason,200).trim(),bannedAt:new Date().toISOString()}];
+  await env.DB.prepare('INSERT INTO settings (key,value,updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at').bind('banned_ips',JSON.stringify(next),new Date().toISOString()).run();
+  return next;
+}
+export async function removeBannedIp(env,ip) {
+  if(!env.DB)throw new Error('D1 database binding DB is not configured.');
+  const cleanIp=safeString(ip,60).trim();
+  const current=await getBannedIps(env);
+  const next=current.filter(item=>(typeof item==='string'?item!==cleanIp:item.ip!==cleanIp));
+  await env.DB.prepare('INSERT INTO settings (key,value,updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at').bind('banned_ips',JSON.stringify(next),new Date().toISOString()).run();
+  return next;
+}
 export async function saveAdminSettings(env,body) {
   const current=await getSettings(env);
   const next={...current,...body,features:{...current.features,...(body.features||{})},providerEnabled:{...current.providerEnabled,...(body.providerEnabled||{})}};
@@ -92,19 +152,35 @@ export async function saveAdminSettings(env,body) {
   next.language=['en','hi'].includes(next.language)?next.language:'en';
   next.schoolName=safeString(next.schoolName||'Kanakia International School Mira Road',90);
   next.automaticFallback=next.automaticFallback!==false;
-  next.preferredProvider=['cloudflare','gemini','free','laptop'].includes(next.preferredProvider)?next.preferredProvider:'cloudflare';
+  next.preferredProvider=['gemini','cloudflare','free','laptop'].includes(next.preferredProvider)?next.preferredProvider:'gemini';
   next.speechProvider=['auto','elevenlabs','cloudflare','gemini'].includes(next.speechProvider)?next.speechProvider:'auto';
+  next.ttsProvider=['cartesia','openai','deepgram','kokoro','elevenlabs','browser','auto'].includes(next.ttsProvider)?next.ttsProvider:'cartesia';
   next.qualityMode=['best','balanced','saver'].includes(next.qualityMode)?next.qualityMode:'balanced';
   next.features=Object.fromEntries(FEATURE_KEYS.map(key=>[key,body.features?.[key]===undefined?current.features[key]:!!body.features[key]]));
-  next.providerEnabled=Object.fromEntries(['cloudflare','gemini','free','laptop','elevenlabs'].map(key=>[key,body.providerEnabled?.[key]===undefined?current.providerEnabled[key]:!!body.providerEnabled[key]]));
-  const order=Array.isArray(body.providerOrder)?body.providerOrder.filter((key,index,array)=>['cloudflare','gemini','free','laptop'].includes(key)&&array.indexOf(key)===index):current.providerOrder;
-  next.providerOrder=[...order,...['cloudflare','gemini','free','laptop'].filter(key=>!order.includes(key))];
+  const validProviders=['gemini','cloudflare','free','laptop','elevenlabs','cartesia','openai','deepgram','kokoro'];
+  next.providerEnabled=Object.fromEntries(validProviders.map(key=>[key,body.providerEnabled?.[key]===undefined?current.providerEnabled[key]:!!body.providerEnabled[key]]));
+  const order=Array.isArray(body.providerOrder)?body.providerOrder.filter((key,index,array)=>['gemini','cloudflare','free','laptop'].includes(key)&&array.indexOf(key)===index):current.providerOrder;
+  next.providerOrder=[...order,...['gemini','cloudflare','free','laptop'].filter(key=>!order.includes(key))];
   await saveSettings(env,next);
   return next;
 }
 export async function providerStatus(env) {
   const secrets=await getProviderSecrets(env);
-  let elevenlabsEnabled=false;
-  try { const s=await getSettings(env); elevenlabsEnabled=s.providerEnabled?.elevenlabs===true; } catch {}
-  return {cloudflareConfigured:!!env.AI,geminiCount:secrets.geminiKeys.length,elevenlabsConfigured:!!secrets.elevenlabsKey,elevenlabsEnabled,freeConfigured:!!(secrets.freeUrl&&secrets.freeKey&&secrets.freeModel),laptopConfigured:!!secrets.laptopUrl,laptopHasToken:!!secrets.laptopToken};
+  let s={};
+  try { s=await getSettings(env); } catch {}
+  return {
+    cloudflareConfigured:!!env.AI,
+    geminiCount:secrets.geminiKeys.length,
+    elevenlabsConfigured:!!secrets.elevenlabsKey,
+    cartesiaConfigured:!!secrets.cartesiaKey,
+    openaiConfigured:!!secrets.openaiKey,
+    deepgramConfigured:!!secrets.deepgramKey,
+    kokoroConfigured:!!secrets.kokoroUrl,
+    freeConfigured:!!(secrets.freeUrl&&secrets.freeKey&&secrets.freeModel),
+    laptopConfigured:!!secrets.laptopUrl,
+    laptopHasToken:!!secrets.laptopToken,
+    providerEnabled:s.providerEnabled||DEFAULTS.providerEnabled,
+    providerOrder:s.providerOrder||DEFAULTS.providerOrder,
+    ttsProvider:s.ttsProvider||DEFAULTS.ttsProvider
+  };
 }

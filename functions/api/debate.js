@@ -1,4 +1,4 @@
-import {json,parseJson,safeString,originAllowed} from '../_shared.js';
+import {json,parseJson,safeString,originAllowed,isIpBanned} from '../_shared.js';
 const cleanRoom=value=>safeString(value,8).toUpperCase().replace(/[^A-Z0-9]/g,'');
 export async function onRequestGet({request,env}) {
   if(!env.DB)return json({error:'Live debate rooms require the D1 database.'},503);
@@ -6,7 +6,9 @@ export async function onRequestGet({request,env}) {
   try{const exists=await env.DB.prepare('SELECT room_code FROM debate_rooms WHERE room_code=?').bind(room).first();if(!exists)return json({error:'Room not found. Create it first.'},404);const result=await env.DB.prepare('SELECT display_name AS name,message,created_at AS createdAt FROM debate_messages WHERE room_code=? ORDER BY id ASC LIMIT 100').bind(room).all();return json({room,messages:result.results||[]});}catch{return json({error:'Debate storage migration is not applied.'},503);}
 }
 export async function onRequestPost({request,env}) {
-  if(!originAllowed(request))return json({error:'Origin check failed.'},403);if(!env.DB)return json({error:'Live debate rooms require the D1 database.'},503);
+  if(!originAllowed(request))return json({error:'Origin check failed.'},403);
+  if(await isIpBanned(request,env))return json({error:'Your IP address is restricted.'},403);
+  if(!env.DB)return json({error:'Live debate rooms require the D1 database.'},503);
   const body=await parseJson(request);if(!body)return json({error:'Invalid request.'},400);if(body.consent!==true)return json({error:'Consent is required before storing debate messages.'},400);
   const action=safeString(body.action,20),name=safeString(body.name,24).trim(),message=safeString(body.message,1200).trim();let room=cleanRoom(body.room);
   if(!name)return json({error:'Enter a nickname.'},400);

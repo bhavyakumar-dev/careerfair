@@ -1,4 +1,4 @@
-import {json,getProviderSecrets,getSettings,logRequest,safeString} from '../_shared.js';
+import {json,getProviderSecrets,getSettings,logRequest,safeString,isIpBanned} from '../_shared.js';
 
 async function whisper(env,file) {
   if(!env.AI)throw new Error('Workers AI binding AI is unavailable.');
@@ -48,6 +48,7 @@ async function elevenLabsTranscribe(secrets,file) {
 }
 export async function onRequestPost({request,env}) {
   const started=Date.now();
+  if(await isIpBanned(request,env))return json({error:'Your IP address is restricted.'},403);
   if(!request.headers.get('content-type')?.includes('multipart/form-data'))return json({error:'Submit audio or video as multipart form data.'},400);
   let form;try{form=await request.formData();}catch{return json({error:'Could not read the media upload.'},400);}
   const file=form.get('audio')||form.get('file');if(!file||typeof file.arrayBuffer!=='function')return json({error:'Audio or video file is missing.'},400);

@@ -1,4 +1,4 @@
-import {json,parseJson,safeString,originAllowed,verifyAdmin} from '../_shared.js';
+import {json,parseJson,safeString,originAllowed,verifyAdmin,isIpBanned} from '../_shared.js';
 
 const VIDEO_CACHE = new Map();
 
@@ -14,6 +14,7 @@ export async function onRequest({request,env}) {
   const url=new URL(request.url);const method=request.method.toUpperCase();
   if(method==='POST') {
     if(!originAllowed(request))return json({error:'Origin check failed.'},403);
+    if(await isIpBanned(request,env))return json({error:'Your IP address is restricted.'},403);
     if(!env.DB)return json({error:'D1 database binding DB is not configured.'},503);
     if(!request.headers.get('content-type')?.includes('multipart/form-data'))return json({error:'Send the recording as multipart form data.'},400);
     let form;try{form=await request.formData();}catch{return json({error:'The upload could not be read.'},400);}

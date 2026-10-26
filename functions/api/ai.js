@@ -1,4 +1,4 @@
-import {json,parseJson,safeString,getSettings,getProviderSecrets,logRequest} from '../_shared.js';
+import {json,parseJson,safeString,getSettings,getProviderSecrets,logRequest,isIpBanned} from '../_shared.js';
 
 function buildSystem(task) {
   const common='You are an encouraging English communication coach for school students. Focus on clear meaning, structure, tone and practical next steps. Do not shame accents, dialects, grammar mistakes, or fluency. Do not make claims about intelligence, social status, or job suitability. Keep feedback age-appropriate and specific. Never claim you heard audio when only text is supplied.';
@@ -109,6 +109,7 @@ async function runProvider(provider,env,secrets,system,user) {
 }
 export async function onRequestPost({request,env}) {
   const started=Date.now();
+  if(await isIpBanned(request,env))return json({error:'Your IP address is restricted.'},403);
   if(request.headers.get('content-length')&&Number(request.headers.get('content-length'))>300000)return json({error:'Request is too large. Reduce the number or size of video frames.'},413);
   const body=await parseJson(request);if(!body)return json({error:'Invalid request.'},400);
   const allowedTasks=['speech-feedback','mock-interview','roleplay-feedback','compare-communication','career-chat','newsroom-video-review','general'];
@@ -116,7 +117,7 @@ export async function onRequestPost({request,env}) {
   const text=buildUserText(task,body);if(text.length>26000)return json({error:'Request is too large.'},413);
   const settings=await getSettings(env);const secrets=await getProviderSecrets(env);
   const automatic=settings.automaticFallback!==false;
-  let order=automatic?(settings.providerOrder||['cloudflare','gemini','free','laptop']):[settings.preferredProvider||'cloudflare'];
+  let order=automatic?(settings.providerOrder||['gemini','cloudflare','free','laptop']):[settings.preferredProvider||'gemini'];
   if(task==='newsroom-video-review'&&Array.isArray(body.frames)&&body.frames.length&&automatic)order=['gemini',...order.filter(key=>key!=='gemini')];
   if(settings.qualityMode==='saver'&&automatic&&task!=='newsroom-video-review')order=[...order.filter(key=>key==='laptop'||key==='free'),...order.filter(key=>key!=='laptop'&&key!=='free')];
   order=order.filter((provider,index,array)=>['cloudflare','gemini','free','laptop'].includes(provider)&&array.indexOf(provider)===index&&settings.providerEnabled?.[provider]!==false);
