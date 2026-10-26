@@ -6,6 +6,8 @@ import { onRequestPost as handleOpenMicFeedbackPost } from "./functions/api/feed
 import { onRequest as handleOpenMicMedia } from "./functions/api/media.js";
 import { onRequestGet as handleOpenMicDebateGet, onRequestPost as handleOpenMicDebatePost } from "./functions/api/debate.js";
 import { onRequestPost as handleOpenMicTtsPost } from "./functions/api/tts.js";
+import { onRequestPost as handleOpenMicTelegramPost } from "./functions/api/telegram.js";
+import { onRequestPost as handleOpenMicGithubVaultPost } from "./functions/api/github-vault.js";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -603,6 +605,22 @@ export default {
         }
       }
 
+      if (pathname === "/api/telegram" && request.method === "POST") {
+        try {
+          return await handleOpenMicTelegramPost({ request, env, ctx });
+        } catch (e) {
+          return jsonResponse({ error: e.message }, 500);
+        }
+      }
+
+      if (pathname === "/api/github-vault" && request.method === "POST") {
+        try {
+          return await handleOpenMicGithubVaultPost({ request, env, ctx });
+        } catch (e) {
+          return jsonResponse({ error: e.message }, 500);
+        }
+      }
+
 
       const geminiKeyHeader = request.headers.get("X-Gemini-Key");
       const freeLlmUrlHeader = request.headers.get("X-Free-LLM-URL");
@@ -811,6 +829,18 @@ export default {
       }
       if (pathname === "/v8" || pathname === "/v8/" || pathname === "/v8.html") {
         return env.ASSETS.fetch(new Request(new URL("/v8.html", request.url), request));
+      }
+      if (pathname === "/v9" || pathname === "/v9/" || pathname === "/v9.html") {
+        return env.ASSETS.fetch(new Request(new URL("/v9.html", request.url), request));
+      }
+      if (pathname === "/v10" || pathname === "/v10/" || pathname === "/v10.html") {
+        return env.ASSETS.fetch(new Request(new URL("/v10.html", request.url), request));
+      }
+      if (pathname === "/v12" || pathname === "/v12/" || pathname === "/v12.html") {
+        return env.ASSETS.fetch(new Request(new URL("/v12.html", request.url), request));
+      }
+      if (pathname === "/v14" || pathname === "/v14/" || pathname === "/v14.html") {
+        return env.ASSETS.fetch(new Request(new URL("/v14.html", request.url), request));
       }
       return env.ASSETS.fetch(request);
     }

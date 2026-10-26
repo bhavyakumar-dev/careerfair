@@ -109,7 +109,19 @@ const files = [
   "public/v12-app.js",
   "public/v12/index.html",
   "public/v12/styles.css",
-  "public/v12/app.js"
+  "public/v12/app.js",
+  "v14.html",
+  "v14-styles.css",
+  "v14-app.js",
+  "v14/index.html",
+  "v14/styles.css",
+  "v14/app.js",
+  "public/v14.html",
+  "public/v14-styles.css",
+  "public/v14-app.js",
+  "public/v14/index.html",
+  "public/v14/styles.css",
+  "public/v14/app.js"
 ];
 
 let totalIssues = 0;

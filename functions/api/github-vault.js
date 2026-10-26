@@ -3,9 +3,10 @@ import {json,parseJson,safeString,originAllowed} from '../_shared.js';
 export async function onRequestPost({request,env}) {
   if(!originAllowed(request))return json({error:'Origin check failed.'},403);
   const body=await parseJson(request);if(!body)return json({error:'Invalid request body.'},400);
-  const token=safeString(body.token||env.GITHUB_TOKEN||'',200).trim();
-  const owner=safeString(body.owner||env.GITHUB_OWNER||'',100).trim();
-  const repo=safeString(body.repo||env.GITHUB_REPO||'',100).trim();
+  const token=safeString(body.token||env.GITHUB_VAULT_TOKEN||env.GITHUB_TOKEN||'',200).trim();
+  let owner=safeString(body.owner||env.GITHUB_OWNER||'',100).trim();
+  let repo=safeString(body.repo||env.GITHUB_VAULT_REPO||env.GITHUB_REPO||'',100).trim();
+  if(repo.includes('/')&&!owner){const parts=repo.split('/');owner=parts[0];repo=parts[1];}
   const branch=safeString(body.branch||'main',60).trim();
   const path=safeString(body.path||'',300).trim();
   const content=body.content;

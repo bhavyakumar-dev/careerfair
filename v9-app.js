@@ -707,8 +707,8 @@ async function toggleAnchorRecording() {
       if(cameraVideo.videoWidth){const scale=Math.max(canvas.width/cameraVideo.videoWidth,canvas.height/cameraVideo.videoHeight);const width=cameraVideo.videoWidth*scale,height=cameraVideo.videoHeight*scale;context.save();context.translate(canvas.width,0);context.scale(-1,1);context.drawImage(cameraVideo,(canvas.width-width)/2,(canvas.height-height)/2,width,height);context.restore();}
       const gradient=context.createLinearGradient(0,420,0,720);gradient.addColorStop(0,'rgba(17,19,25,0)');gradient.addColorStop(.35,'rgba(17,19,25,.8)');gradient.addColorStop(1,'rgba(17,19,25,.96)');context.fillStyle=gradient;context.fillRect(0,410,canvas.width,310);
       context.fillStyle='#ff6b3d';context.fillRect(54,566,7,78);context.fillStyle='#ffffff';context.font='700 20px DM Sans, sans-serif';context.fillText('OPEN MIC  ·  NEWSROOM',78,532);
-      context.font='800 43px Syne, sans-serif';const headline=($('#anchor-headline').value.trim()||'Student newsroom').slice(0,72);wrapCanvasText(context,headline,78,590,1100,48,2);
-      context.fillStyle='#f3eee5';context.font='500 22px DM Sans, sans-serif';context.fillText(($('#anchor-subheadline').value.trim()||'Open Mic').slice(0,90),78,663);
+      context.font='800 43px Syne, sans-serif';const headline=($('#anchor-headline')?.value.trim()||'Student newsroom').slice(0,72);wrapCanvasText(context,headline,78,590,1100,48,2);
+      context.fillStyle='#f3eee5';context.font='500 22px DM Sans, sans-serif';context.fillText(($('#anchor-subheadline')?.value.trim()||'Open Mic').slice(0,90),78,663);
       anchorCanvasFrame=requestAnimationFrame(drawFrame);
     };
     const canvasStream=canvas.captureStream(30);anchorComposedStream=canvasStream;anchorCameraStream.getAudioTracks().forEach(track=>canvasStream.addTrack(track));
@@ -721,9 +721,9 @@ async function toggleAnchorRecording() {
       anchorVideoBlob=new Blob(anchorRecorderChunks,{type:anchorRecorder.mimeType||'video/webm'});
       if(anchorVideoUrl)URL.revokeObjectURL(anchorVideoUrl);anchorVideoUrl=URL.createObjectURL(anchorVideoBlob);
       state.hidden=false;state.innerHTML=`<video controls playsinline class="newsroom-preview-video" src="${anchorVideoUrl}"></video><a class="button button-light" download="open-mic-newsroom-final.webm" href="${anchorVideoUrl}">Download final video ↓</a><p class="muted-small">Your headline and subheading are burned into this file. To analyse and store it, tick the consent box and choose Analyze video &amp; save.</p>`;
-      $('#anchor-record').textContent='Record me';$('#anchor-analyze-save').disabled=!$('#anchor-upload-consent').checked;$('#anchor-upload-consent').checked=false;$('#newsroom-analysis').hidden=true;
+      $('#anchor-record').textContent='Record me';if($('#anchor-analyze-save'))$('#anchor-analyze-save').disabled=!($('#anchor-upload-consent')?.checked);if($('#anchor-upload-consent'))$('#anchor-upload-consent').checked=false;if($('#newsroom-analysis'))$('#newsroom-analysis').hidden=true;
     };
-    drawFrame();anchorRecorder.start(800);$('#anchor-record').textContent='Stop recording';state.hidden=false;state.textContent='Recording with your headline and subheading overlay. Select Stop recording when you are done.';$('#anchor-analyze-save').disabled=true;
+    drawFrame();anchorRecorder.start(800);$('#anchor-record').textContent='Stop recording';state.hidden=false;state.textContent='Recording with your headline and subheading overlay. Select Stop recording when you are done.';if($('#anchor-analyze-save'))$('#anchor-analyze-save').disabled=true;
   } catch(error) {anchorCameraStream?.getTracks().forEach(track=>track.stop());anchorCameraStream=null;showToast(`Camera or microphone permission was not granted: ${error.message||'check browser permissions'}.`);}
 }
 function wrapCanvasText(context,text,x,y,maxWidth,lineHeight,maxLines=2){const words=String(text).split(/\s+/);let line='',lineCount=0;for(const word of words){const test=line?`${line} ${word}`:word;if(context.measureText(test).width>maxWidth&&line){context.fillText(line,x,y+lineCount*lineHeight);line=word;lineCount++;if(lineCount>=maxLines-1)break;}else line=test;}if(lineCount<maxLines)context.fillText(line,x,y+lineCount*lineHeight);}
@@ -1424,11 +1424,11 @@ function init() {
   initGames();
   loadCareerChat();
   loadLocalFeedback();
-  $('#anchor-upload-consent').addEventListener('change',()=>$('#anchor-analyze-save').disabled=!$('#anchor-upload-consent').checked||!anchorVideoBlob);
+  $('#anchor-upload-consent')?.addEventListener('change',()=>$('#anchor-analyze-save')?$('#anchor-analyze-save').disabled=!$('#anchor-upload-consent')?.checked||!anchorVideoBlob:null);
   $('#feedback-rating-picker').addEventListener('click',event=>{const button=event.target.closest('[data-rating]');if(!button)return;feedbackRating=Number(button.dataset.rating);$('#feedback-rating').value=String(feedbackRating);$$('[data-rating]').forEach(item=>{item.classList.toggle('active',Number(item.dataset.rating)<=feedbackRating);item.setAttribute('aria-pressed',String(item===button));});});
   $('#feedback-form').addEventListener('submit',submitFeedback);
   $('#career-chat-form').addEventListener('submit',sendCareerChat);
-  $('#anchor-analyze-save').addEventListener('click',analyzeAndSaveNewsroomVideo);
+  $('#anchor-analyze-save')?.addEventListener('click',analyzeAndSaveNewsroomVideo);
   $('#career-chat-messages').addEventListener('click',event=>{const choice=event.target.closest('[data-career-chat-choice]');if(choice){$('#career-chat-input').value=choice.dataset.careerChatChoice;$('#career-chat-input').focus();}});
   $('#games-level').addEventListener('change',()=>{const level=$('#games-level').value;$('#game-level-note').textContent=level==='starter'?'Everyday words and clear, short sentences.':level==='advanced'?'Advanced vocabulary and more subtle grammar choices.':'Words you may meet at school, work and presentations.';startWordle();startMatchingRound();renderSentenceQuestion();});
   $$('.game-tab').forEach(tab=>tab.addEventListener('click',()=>{const key=tab.dataset.gameTab;$$('.game-tab').forEach(item=>{item.classList.toggle('active',item===tab);item.setAttribute('aria-selected',String(item===tab));});$$('[data-game-panel]').forEach(panel=>panel.hidden=panel.dataset.gamePanel!==key);}));
