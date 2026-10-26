@@ -59,7 +59,19 @@ const files = [
   "public/v7-app.js",
   "public/v7/index.html",
   "public/v7/styles.css",
-  "public/v7/app.js"
+  "public/v7/app.js",
+  "v8.html",
+  "v8-styles.css",
+  "v8-app.js",
+  "v8/index.html",
+  "v8/styles.css",
+  "v8/app.js",
+  "public/v8.html",
+  "public/v8-styles.css",
+  "public/v8-app.js",
+  "public/v8/index.html",
+  "public/v8/styles.css",
+  "public/v8/app.js"
 ];
 
 let totalIssues = 0;

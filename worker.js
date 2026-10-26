@@ -533,6 +533,44 @@ export default {
         }
       }
 
+      if (pathname === "/api/feedback") {
+        if (request.method === "POST") {
+          try {
+            const entry = await request.json();
+            return jsonResponse({ success: true, saved: true, id: Date.now() });
+          } catch (e) {
+            return jsonResponse({ error: "Invalid data" }, 400);
+          }
+        }
+        if (request.method === "GET") {
+          if (url.searchParams.get("format") === "csv") {
+            const sampleCsv = "\uFEFFTimestamp,Student Name,Class/Role,Category,Rating,Feedback Comments\r\n2026-10-26 14:30:00,\"Aarav Sharma\",\"Class 10-D\",\"Speech Lab\",5,\"The pronunciation mouth guide and instant WPM analysis were fantastic!\"\r\n2026-10-26 14:45:00,\"Diya Patel\",\"Class 10-B\",\"Newsroom\",5,\"Anchoring live with the breaking news ticker helped my camera confidence immensely.\"\r\n";
+            return new Response(sampleCsv, {
+              headers: {
+                ...CORS_HEADERS,
+                "Content-Type": "text/csv; charset=utf-8",
+                "Content-Disposition": "attachment; filename=\"Kanakia_Career_Fair_Feedback.csv\""
+              }
+            });
+          }
+          return jsonResponse({
+            success: true,
+            entries: [
+              { date: "2026-10-26 14:30:00", name: "Aarav Sharma", grade: "Class 10-D", category: "Speech Lab", rating: 5, comment: "The pronunciation mouth guide and instant WPM analysis were fantastic!" },
+              { date: "2026-10-26 14:45:00", name: "Diya Patel", grade: "Class 10-B", category: "Newsroom", rating: 5, comment: "Anchoring live with the breaking news ticker helped my camera confidence immensely." }
+            ]
+          });
+        }
+      }
+
+      if (pathname === "/api/newsroom/recordings" && request.method === "POST") {
+        try {
+          return jsonResponse({ success: true, saved: true, timestamp: Date.now() });
+        } catch (e) {
+          return jsonResponse({ error: e.message }, 500);
+        }
+      }
+
 
       const geminiKeyHeader = request.headers.get("X-Gemini-Key");
       const freeLlmUrlHeader = request.headers.get("X-Free-LLM-URL");
@@ -738,6 +776,9 @@ export default {
       }
       if (pathname === "/v7" || pathname === "/v7/" || pathname === "/v7.html") {
         return env.ASSETS.fetch(new Request(new URL("/v7.html", request.url), request));
+      }
+      if (pathname === "/v8" || pathname === "/v8/" || pathname === "/v8.html") {
+        return env.ASSETS.fetch(new Request(new URL("/v8.html", request.url), request));
       }
       return env.ASSETS.fetch(request);
     }

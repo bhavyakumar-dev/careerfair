@@ -11,6 +11,7 @@ An interactive exhibition and AI voice laboratory designed for Career Fair 2026 
 5. **v5 — Sovereign Mobility (`v5.html`)**: International transit and global mobility theme with world flight vectors, diplomatic career maps, and executive diction training.
 6. **v6 — Theatrical Suite (`v6.html` / `v6/index.html`)**: Five-act classical theatrical play with Three.js particle dynamics, Lenis smooth scrolling, curtain-parting prologue, 3D kinetic book pages for language history, revolving 3D ring for careers, horizontal film-strip reel for top Indian English universities, and 14 interactive revels.
 7. **v7 — Open Mic Fixed (`v7.html` / `v7/index.html`)**: Enhanced and audited Open Mic laboratory with resolved pronunciation engine, dynamic practice score integration, Wikimedia orator portraits, clinical safety disclaimers, and universal 7-version navigation.
+8. **v8 — Master Career & Voice Suite (`v8.html` / `v8/index.html`)**: The flagship synthesis featuring the Interactive AI College & Career Counselor with tailored Indian & Global university blueprints, live Broadcast Newsroom Studio with camera preview, TV lower-third chyrons, breaking news tickers, and posture/gaze telemetry saved to server, modern career English games (Career Wordle, Word & Meaning Speed Matching, Sentence Clinic Diction Doctor, and Diction Speedrun), Unified Composite Mastery Leaderboard balancing all 5 activity disciplines, Feedback collection with instant Excel spreadsheet (.csv) export, support drawer, and resilient speech capture.
 
 ## Core Capabilities
 
