@@ -1,0 +1,691 @@
+import fs from "fs";
+
+function cleanCode(str) {
+  let out = str.replace(/<!--[\s\S]*?-->/g, "");
+  out = out.replace(/\/\*[\s\S]*?\*\//g, "");
+  let lines = out.split("\n");
+  let cleanedLines = lines.map(line => {
+    let inString = false;
+    let quoteChar = "";
+    for (let i = 0; i < line.length; i++) {
+      let char = line[i];
+      let nextChar = line[i + 1] || "";
+      if ((char === '"' || char === "'" || char === '`') && (i === 0 || line[i - 1] !== '\\')) {
+        if (!inString) {
+          inString = true;
+          quoteChar = char;
+        } else if (char === quoteChar) {
+          inString = false;
+        }
+      }
+      if (!inString && char === '/' && nextChar === '/') {
+        return line.substring(0, i).trimEnd();
+      }
+    }
+    return line;
+  });
+  return cleanedLines.filter(l => l.trim().length > 0).join("\n");
+}
+
+const v5Raw = `<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VERBUM TELEMETRY | Global Mobility & Sovereign Articulation Exchange</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#F59E0B",
+            "primary-container": "#D97706",
+            "primary-fixed": "#FEF3C7",
+            "secondary": "#EAB308",
+            "tertiary": "#FCD34D",
+            "surface-dim": "#06080C",
+            "surface": "#0C101A",
+            "surface-container": "#131926",
+            "surface-container-high": "#1B2436",
+            "surface-container-highest": "#243048",
+            "on-surface": "#F8FAFC",
+            "on-surface-variant": "#94A3B8",
+            "outline": "#64748B",
+            "outline-variant": "#334155",
+            "background": "#05070B"
+          },
+          fontFamily: {
+            "display": ["Syne", "sans-serif"],
+            "headline": ["Plus Jakarta Sans", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"],
+            "serif": ["Cinzel", "serif"]
+          }
+        }
+      }
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #05070B;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E293B;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #F59E0B;
+    }
+</style>
+</head>
+<body class="bg-background text-on-surface antialiased selection:bg-primary selection:text-black min-h-screen relative overflow-x-hidden font-body">
+<div class="fixed top-0 left-0 h-1 bg-gradient-to-r from-primary via-secondary to-tertiary z-[70] w-0 transition-all duration-75" id="scroll-progress-bar"></div>
+
+<header class="bg-surface/90 backdrop-blur-md docked full-width top-0 fixed z-50 border-b border-outline-variant/30">
+<div class="w-full px-4 md:px-8 max-w-7xl mx-auto flex items-center justify-between h-16">
+<div class="flex items-center gap-3 select-none" id="brand-logo-seal">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high border border-primary/40 flex items-center justify-center text-primary relative overflow-hidden group">
+<span class="material-symbols-outlined text-[22px]">public</span>
+</div>
+<div>
+<span class="text-lg font-display font-extrabold tracking-tight text-white flex items-center gap-2">
+VERBUM TELEMETRY
+<span class="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded bg-primary/15 text-primary border border-primary/30 font-mono font-bold hidden sm:inline-block">v5 Mobility</span>
+</span>
+</div>
+</div>
+
+<nav class="hidden lg:flex items-center space-x-6 text-sm font-headline font-medium">
+<a class="text-primary border-b-2 border-primary pb-1 font-semibold" href="#mobility-globe">Global Flight Vectors</a>
+<a class="text-on-surface-variant hover:text-white pb-1 transition-colors" href="#calculator">Compensation Calculator</a>
+<a class="text-on-surface-variant hover:text-white pb-1 transition-colors" href="#spectrometer">Formant Spectrometer</a>
+<a class="text-on-surface-variant hover:text-white pb-1 transition-colors" href="#voiceprint-radar">Voiceprint Radar</a>
+<a class="text-on-surface-variant hover:text-white pb-1 transition-colors" href="#crisis-matrix">Crisis Room</a>
+</nav>
+
+<div class="flex items-center gap-2 sm:gap-3">
+<div class="flex items-center bg-surface-container rounded-lg p-1 border border-outline-variant/40 text-xs">
+<a href="index.html" class="px-2 py-1 rounded text-on-surface-variant hover:text-white transition-all font-mono" title="v1 Pavilion">v1</a>
+<a href="v2.html" class="px-2 py-1 rounded text-on-surface-variant hover:text-white transition-all font-mono" title="v2 Premier">v2</a>
+<a href="v3.html" class="px-2 py-1 rounded text-on-surface-variant hover:text-white transition-all font-mono" title="v3 Open Mic">v3</a>
+<a href="v4.html" class="px-2 py-1 rounded text-on-surface-variant hover:text-white transition-all font-mono" title="v4 Alexandria">v4</a>
+<span class="px-2 py-1 rounded bg-primary text-black font-mono font-bold" title="Current: v5 Mobility">v5</span>
+</div>
+
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-white transition-all" onclick="toggleAdminModal()" title="Admin Console">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+
+<a class="hidden sm:inline-flex items-center justify-center bg-primary hover:bg-primary-container text-black font-headline font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-lg transition-all shadow-[0_0_16px_rgba(245,158,11,0.3)] active:scale-95" href="#spectrometer">
+Test Mic Spectrum
+</a>
+</div>
+</div>
+</header>
+
+<main class="relative pt-16">
+<section class="relative min-h-[850px] flex items-center justify-center overflow-hidden border-b border-outline-variant/20 px-4 md:px-8 py-16" id="mobility-globe">
+<div class="absolute inset-0 w-full h-full opacity-70 pointer-events-none" id="globe-container"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-surface-dim/40 via-surface/60 to-surface-dim pointer-events-none"></div>
+
+<div class="relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center">
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container/90 border border-primary/30 backdrop-blur-md mb-6">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="text-xs font-mono text-primary tracking-widest uppercase font-bold">Kanakia International School Mira Road</span>
+</div>
+
+<h1 class="text-4xl sm:text-6xl lg:text-7xl font-display font-extrabold tracking-tight text-white max-w-4xl leading-[1.1]">
+Global Articulation Telemetry & Sovereign Mobility Exchange
+</h1>
+
+<p class="mt-6 text-base sm:text-lg font-body text-on-surface-variant max-w-3xl leading-relaxed">
+When communication transcends borders: Real-time telemetry benchmark for transnational careers where spoken precision commands visas, tribunals, flight decks, and boardrooms across Geneva, London, New York, Singapore, and Dubai.
+</p>
+
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-8 w-full max-w-4xl font-mono text-xs">
+<div class="p-4 rounded-xl bg-surface-container/80 border border-outline-variant/30 text-left">
+<span class="text-primary font-bold block text-sm">Geneva Hub</span>
+<span class="text-on-surface-variant">Arbitration & Diplomacy</span>
+<span class="text-white font-bold block mt-1">₹1.2Cr+ Base</span>
+</div>
+<div class="p-4 rounded-xl bg-surface-container/80 border border-outline-variant/30 text-left">
+<span class="text-secondary font-bold block text-sm">London Control</span>
+<span class="text-on-surface-variant">Aviation & Radiotelephony</span>
+<span class="text-white font-bold block mt-1">ICAO Level 6</span>
+</div>
+<div class="p-4 rounded-xl bg-surface-container/80 border border-outline-variant/30 text-left">
+<span class="text-tertiary font-bold block text-sm">New York Room</span>
+<span class="text-on-surface-variant">OTT Pilot Showrunners</span>
+<span class="text-white font-bold block mt-1">₹65L+ Spec Deals</span>
+</div>
+<div class="p-4 rounded-xl bg-surface-container/80 border border-outline-variant/30 text-left">
+<span class="text-primary font-bold block text-sm">Singapore Node</span>
+<span class="text-on-surface-variant">SIAC Cross-Border</span>
+<span class="text-white font-bold block mt-1">Zero Statutory Drift</span>
+</div>
+</div>
+
+<div class="flex flex-wrap items-center justify-center gap-4">
+<a class="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-black font-headline font-bold text-sm px-6 py-3.5 rounded-xl shadow-[0_0_24px_rgba(245,158,11,0.45)] transition-all active:scale-95" href="#calculator">
+<span class="material-symbols-outlined text-[20px]">calculate</span>
+Launch Mobility Calculator
+</a>
+<a class="inline-flex items-center gap-2 bg-surface-container-high/80 hover:bg-surface-container-high border border-outline-variant text-white font-headline font-semibold text-sm px-6 py-3.5 rounded-xl backdrop-blur-md transition-all active:scale-95" href="#spectrometer">
+<span class="material-symbols-outlined text-[20px]">graphic_eq</span>
+Acoustic Spectrometer
+</a>
+</div>
+</div>
+</section>
+
+<section class="py-24 px-4 md:px-8 max-w-7xl mx-auto border-b border-outline-variant/20" id="calculator">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+<div>
+<div class="inline-flex items-center gap-2 text-xs font-mono text-primary tracking-widest uppercase mb-2">
+<span class="material-symbols-outlined text-[16px]">travel_explore</span>
+Cross-Border Mobility Index
+</div>
+<h2 class="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight">
+Sovereign Compensation & Mobility Calculator
+</h2>
+<p class="text-sm font-body text-on-surface-variant max-w-2xl mt-2">
+Select your target international financial hub and career trajectory to view linguistic benchmark standards, regulatory certifications, and package ceilings.
+</p>
+</div>
+
+<div class="flex flex-wrap gap-2 font-mono text-xs" id="hub-buttons">
+<button class="px-3.5 py-1.5 rounded-lg bg-primary text-black font-bold" onclick="selectHub('geneva')">Geneva</button>
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container text-on-surface-variant hover:text-white" onclick="selectHub('london')">London</button>
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container text-on-surface-variant hover:text-white" onclick="selectHub('newyork')">New York</button>
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container text-on-surface-variant hover:text-white" onclick="selectHub('singapore')">Singapore</button>
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container text-on-surface-variant hover:text-white" onclick="selectHub('dubai')">Dubai</button>
+</div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-5 bg-surface-container-low p-6 sm:p-8 rounded-2xl border border-outline-variant/30 space-y-5">
+<div>
+<span class="text-xs font-mono text-primary font-bold uppercase tracking-wider" id="hub-title">GENEVA JURISDICTIONAL HUB</span>
+<h3 class="text-2xl font-headline font-bold text-white mt-1" id="hub-role">International Commercial Arbitrator</h3>
+<p class="text-xs text-on-surface-variant mt-2 leading-relaxed" id="hub-desc">
+Presiding over multilateral maritime disputes, cross-border intellectual property infringement, and sovereign debt restructuring.
+</p>
+</div>
+
+<div class="space-y-3 pt-3 border-t border-outline-variant/20 font-mono text-xs">
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant">Compensation Range:</span>
+<span class="text-secondary font-bold text-sm" id="hub-comp">₹1.2Cr - ₹2.4Cr</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant">Linguistic Standard:</span>
+<span class="text-white font-bold" id="hub-lang">C2 Mastery / Legal Latinate</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant">Mandatory Visa Gateway:</span>
+<span class="text-primary font-bold" id="hub-visa">Swiss F-Permit / SIAC Panel</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant">Auditory Tolerable Error:</span>
+<span class="text-emerald-400 font-bold" id="hub-err">0.00% Statutory Ambiguity</span>
+</div>
+</div>
+
+<div class="p-4 rounded-xl bg-surface-container text-xs text-primary border border-primary/20">
+<strong>Linguistic Leverage:</strong> A single comma misplaced in multi-jurisdiction treaty clauses can trigger sovereign liability disputes.
+</div>
+</div>
+
+<div class="lg:col-span-7 bg-surface-container-low p-6 sm:p-8 rounded-2xl border border-outline-variant/30 flex flex-col justify-between">
+<h4 class="text-lg font-headline font-bold text-white mb-4">Competency Radar vs. Global Benchmark</h4>
+<div class="w-full flex items-center justify-center py-4">
+<svg class="w-64 h-64 overflow-visible" viewBox="0 0 200 200">
+<polygon points="100,20 180,60 180,140 100,180 20,140 20,60" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"></polygon>
+<polygon points="100,45 155,75 155,125 100,155 45,125 45,75" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"></polygon>
+<polygon points="100,70 130,85 130,115 100,130 70,115 70,85" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"></polygon>
+<polygon id="radar-shape" points="100,28 172,66 168,136 100,172 32,132 30,68" fill="rgba(245,158,11,0.25)" stroke="#F59E0B" stroke-width="2"></polygon>
+<text x="100" y="10" text-anchor="middle" fill="#F59E0B" font-size="9" font-family="monospace">PROSODY</text>
+<text x="195" y="60" text-anchor="start" fill="#F8FAFC" font-size="9" font-family="monospace">LEXICAL</text>
+<text x="195" y="145" text-anchor="start" fill="#F8FAFC" font-size="9" font-family="monospace">SYNTAX</text>
+<text x="100" y="195" text-anchor="middle" fill="#F59E0B" font-size="9" font-family="monospace">GRAVITAS</text>
+<text x="5" y="145" text-anchor="end" fill="#F8FAFC" font-size="9" font-family="monospace">CADENCE</text>
+<text x="5" y="60" text-anchor="end" fill="#F8FAFC" font-size="9" font-family="monospace">PHONETICS</text>
+</svg>
+</div>
+<div class="flex justify-between items-center text-xs font-mono pt-4 border-t border-outline-variant/20">
+<span class="text-on-surface-variant">Composite Articulation Rating:</span>
+<span class="text-secondary font-bold text-sm">96.8 / 100 (Sovereign Tier)</span>
+</div>
+</div>
+</div>
+</section>
+
+<section class="py-24 px-4 md:px-8 max-w-7xl mx-auto border-b border-outline-variant/20" id="spectrometer">
+<div class="text-center max-w-3xl mx-auto mb-14">
+<div class="inline-flex items-center gap-2 text-xs font-mono text-secondary tracking-widest uppercase mb-2">
+<span class="material-symbols-outlined text-[16px]">equalizer</span>
+Live Acoustic Telemetry
+</div>
+<h2 class="text-3xl sm:text-4xl font-display font-bold text-white">Real-Time Formant & Pitch Spectrometer</h2>
+<p class="text-sm font-body text-on-surface-variant mt-2">
+Activate microphone input or synthetic test oscillator to calculate formant envelope harmonics, pitch stability, and speech tempo.
+</p>
+</div>
+
+<div class="p-6 sm:p-8 rounded-2xl bg-surface-container-low border border-outline-variant/30">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-outline-variant/20">
+<div>
+<h4 class="text-lg font-headline font-bold text-white">Audio Formant Spectrum Analyzer</h4>
+<p class="text-xs font-mono text-on-surface-variant">Web Audio API FFT Resolution: 1024 Bins (20Hz - 20kHz)</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-black font-headline font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all active:scale-95" id="mic-toggle-btn" onclick="toggleMic()">
+<span class="material-symbols-outlined text-base" id="mic-icon">mic</span>
+<span id="mic-label">Activate Microphone</span>
+</button>
+<button class="px-4 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-white font-mono text-xs" onclick="toggleTestTone()">
+Simulate Orator Formant
+</button>
+</div>
+</div>
+
+<div class="my-6 relative w-full h-48 bg-surface-container-lowest rounded-xl border border-outline-variant/20 overflow-hidden">
+<canvas class="w-full h-full" id="spectrogram-canvas"></canvas>
+<div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-on-surface-variant/50 pointer-events-none" id="spectrogram-hint">
+Microphone idle. Click 'Activate Microphone' to stream vocal formant frequencies.
+</div>
+</div>
+
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono text-xs">
+<div class="p-3 rounded-xl bg-surface-container">
+<span class="text-on-surface-variant block">Fundamental (F0)</span>
+<span class="text-primary font-bold text-base" id="val-f0">124.2 Hz</span>
+</div>
+<div class="p-3 rounded-xl bg-surface-container">
+<span class="text-on-surface-variant block">Formant 1 (Vowel Height)</span>
+<span class="text-secondary font-bold text-base" id="val-f1">540 Hz</span>
+</div>
+<div class="p-3 rounded-xl bg-surface-container">
+<span class="text-on-surface-variant block">Formant 2 (Vowel Frontness)</span>
+<span class="text-tertiary font-bold text-base" id="val-f2">1820 Hz</span>
+</div>
+<div class="p-3 rounded-xl bg-surface-container">
+<span class="text-on-surface-variant block">Jitter / Shimmer Perturbation</span>
+<span class="text-emerald-400 font-bold text-base" id="val-jitter">0.42% (Optimal)</span>
+</div>
+</div>
+</div>
+</section>
+
+<section class="py-24 px-4 md:px-8 max-w-7xl mx-auto border-b border-outline-variant/20" id="crisis-matrix">
+<div class="text-center max-w-3xl mx-auto mb-14">
+<div class="inline-flex items-center gap-2 text-xs font-mono text-primary tracking-widest uppercase mb-2">
+<span class="material-symbols-outlined text-[16px]">gavel</span>
+C-Suite Rhetorical Decision Tree
+</div>
+<h2 class="text-3xl sm:text-4xl font-display font-bold text-white">Transnational Crisis Command Room</h2>
+<p class="text-sm font-body text-on-surface-variant mt-2">
+A high-stakes hostile press conference is unfolding. Select your rhetorical interventions and examine their simulated market valuation impact.
+</p>
+</div>
+
+<div class="max-w-3xl mx-auto bg-surface-container-low p-6 sm:p-8 rounded-2xl border border-outline-variant/30 space-y-6">
+<div class="p-4 rounded-xl bg-surface-container border border-error/30 text-xs sm:text-sm leading-relaxed">
+<span class="text-error font-mono font-bold uppercase block mb-1">Incoming Press Interrogation: Reuters Global</span>
+"CEO Vance, allegations claim your proprietary aerospace navigation engine suffered telemetry desynchronization over Oceanic Sector 7. Was flight safety compromised, and why was regulatory disclosure withheld for forty-eight hours?"
+</div>
+
+<div class="space-y-3 font-mono text-xs">
+<button class="w-full text-left p-4 rounded-xl bg-surface-container hover:border-primary border border-outline-variant/30 transition-all text-white flex items-start gap-3" onclick="selectCrisisOption(1)">
+<span class="w-6 h-6 rounded-lg bg-surface-container-high flex items-center justify-center font-bold text-primary shrink-0">A</span>
+<span>"Flight safety was never compromised. The automated diagnostic was a planned cold-restart within standard FAA fail-safe parameters, and all regulatory filings were submitted strictly within statutory schedules."</span>
+</button>
+<button class="w-full text-left p-4 rounded-xl bg-surface-container hover:border-primary border border-outline-variant/30 transition-all text-white flex items-start gap-3" onclick="selectCrisisOption(2)">
+<span class="w-6 h-6 rounded-lg bg-surface-container-high flex items-center justify-center font-bold text-primary shrink-0">B</span>
+<span>"We are still examining the telemetry logs and hope to have more clarity once our third-party auditing partner completes their review later this week."</span>
+</button>
+</div>
+
+<div class="hidden p-4 rounded-xl bg-surface-container border border-secondary/40 text-xs space-y-2 font-mono" id="crisis-feedback">
+<div class="text-secondary font-bold uppercase">Telemetry Evaluation: Option A Delivered</div>
+<p class="text-on-surface-variant">
+Decisive phrasing and statutory citation neutralized panic. Market volatility index dropped 4.2%; institutional trust rating maintained at 98.4%.
+</p>
+</div>
+</div>
+</section>
+</main>
+
+<div class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 hidden" id="admin-modal">
+<div class="w-full max-w-4xl bg-surface border border-outline-variant rounded-2xl shadow-2xl p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto">
+<button class="absolute top-6 right-6 p-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-white transition-all" onclick="toggleAdminModal()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+
+<div class="flex items-center gap-3 pb-6 border-b border-outline-variant/20">
+<div class="w-10 h-10 rounded-xl bg-primary/20 border border-primary/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">terminal</span>
+</div>
+<div>
+<h3 class="text-xl font-headline font-bold text-white">Institutional Router & Infrastructure Console</h3>
+<p class="text-xs font-mono text-on-surface-variant">5-Version Multi-Experience Switcher & 5-Tier AI Orchestrator</p>
+</div>
+</div>
+
+<div class="my-6 p-4 rounded-xl bg-surface-container border border-primary/40">
+<h4 class="text-xs font-mono text-primary font-bold uppercase tracking-wider mb-2">5-Version Multi-Experience Switcher</h4>
+<p class="text-xs text-on-surface-variant mb-4">Instantly navigate across all 5 distinct career fair experiences:</p>
+<div class="grid grid-cols-2 sm:grid-cols-5 gap-2 font-mono text-xs">
+<a href="index.html" class="p-2.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-center text-white border border-outline-variant/30 flex flex-col items-center gap-1">
+<span class="font-bold text-primary">v1</span>
+<span>Pavilion</span>
+</a>
+<a href="v2.html" class="p-2.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-center text-white border border-outline-variant/30 flex flex-col items-center gap-1">
+<span class="font-bold text-secondary">v2</span>
+<span>Premier</span>
+</a>
+<a href="v3.html" class="p-2.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-center text-white border border-outline-variant/30 flex flex-col items-center gap-1">
+<span class="font-bold text-tertiary">v3</span>
+<span>Open Mic</span>
+</a>
+<a href="v4.html" class="p-2.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-center text-white border border-outline-variant/30 flex flex-col items-center gap-1">
+<span class="font-bold text-primary">v4</span>
+<span>Alexandria</span>
+</a>
+<a href="v5.html" class="p-2.5 rounded-lg bg-primary text-black font-bold text-center border border-primary flex flex-col items-center gap-1">
+<span>v5</span>
+<span>Mobility</span>
+</a>
+</div>
+</div>
+
+<div class="my-6">
+<div class="flex items-center justify-between mb-3">
+<h4 class="text-xs font-mono text-white font-bold uppercase tracking-wider">5-Tier Failover Telemetry</h4>
+<span class="text-xs font-mono text-secondary font-bold">Zero-Downtime Pipeline</span>
+</div>
+<div class="space-y-3 font-mono text-xs">
+<div class="p-3.5 rounded-xl bg-surface-container border border-secondary/40 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
+<div>
+<span class="text-white font-bold">Tier 1: Cloudflare Workers AI</span>
+<span class="text-[11px] text-on-surface-variant block font-sans">Primary edge compute pool</span>
+</div>
+</div>
+<span class="text-[11px] px-2.5 py-1 rounded bg-secondary/15 text-secondary font-bold">ACTIVE (14ms)</span>
+</div>
+
+<div class="p-3.5 rounded-xl bg-surface-container-high border border-outline-variant/30 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<div>
+<span class="text-white font-bold">Tier 2: Gemini Multi-Key Gateway</span>
+<span class="text-[11px] text-on-surface-variant block font-sans">Browser local storage key pool</span>
+</div>
+</div>
+<span class="text-[11px] px-2.5 py-1 rounded bg-primary/10 text-primary font-bold">HOT STANDBY</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<footer class="bg-surface-container-lowest border-t border-outline-variant/20 py-12 mt-20">
+<div class="w-full px-4 md:px-8 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="flex flex-col items-center md:items-start gap-1">
+<span class="text-xs font-mono text-on-surface-variant">
+© 2026 Verbum Sovereign Career Consortium. Global Telemetry & Cross-Border Mobility.
+</span>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs font-mono font-bold text-primary px-2.5 py-0.5 rounded bg-primary/10 border border-primary/25">
+© Kanakia International School Mira Road
+</span>
+<span class="text-[11px] text-on-surface-variant/70">Annual Career Exhibition Showcase</span>
+</div>
+</div>
+
+<div class="flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="index.html">v1 Pavilion</a>
+<a class="hover:text-primary transition-colors" href="v2.html">v2 Premier</a>
+<a class="hover:text-primary transition-colors" href="v3.html">v3 Open Mic</a>
+<a class="hover:text-primary transition-colors" href="v4.html">v4 Alexandria</a>
+<a class="hover:text-primary transition-colors" href="v5.html">v5 Mobility</a>
+<button class="hover:text-primary transition-colors cursor-pointer" onclick="toggleAdminModal()">Admin Routing</button>
+</div>
+</div>
+</footer>
+
+<script>
+window.addEventListener('scroll', () => {
+  const winScroll = document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const scrolled = (winScroll / height) * 100;
+  document.getElementById('scroll-progress-bar').style.width = scrolled + '%';
+});
+
+const globeContainer = document.getElementById('globe-container');
+if (globeContainer && typeof THREE !== 'undefined') {
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 4.5;
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  globeContainer.appendChild(renderer.domElement);
+
+  const globeGroup = new THREE.Group();
+  scene.add(globeGroup);
+
+  const sphereGeo = new THREE.SphereGeometry(1.6, 32, 32);
+  const sphereMat = new THREE.MeshBasicMaterial({ color: 0x0C101A, wireframe: true, transparent: true, opacity: 0.35 });
+  const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+  globeGroup.add(sphere);
+
+  const ptCount = 300;
+  const ptGeo = new THREE.BufferGeometry();
+  const coords = new Float32Array(ptCount * 3);
+  for (let i = 0; i < ptCount * 3; i += 3) {
+    const phi = Math.acos(-1 + (2 * (i / 3)) / ptCount);
+    const theta = Math.sqrt(ptCount * Math.PI) * phi;
+    coords[i] = 1.62 * Math.cos(theta) * Math.sin(phi);
+    coords[i + 1] = 1.62 * Math.sin(theta) * Math.sin(phi);
+    coords[i + 2] = 1.62 * Math.cos(phi);
+  }
+  ptGeo.setAttribute('position', new THREE.BufferAttribute(coords, 3));
+  const ptMat = new THREE.PointsMaterial({ color: 0xF59E0B, size: 0.04 });
+  const points = new THREE.Points(ptGeo, ptMat);
+  globeGroup.add(points);
+
+  function animate() {
+    requestAnimationFrame(animate);
+    globeGroup.rotation.y += 0.002;
+    globeGroup.rotation.x += 0.0008;
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+}
+
+const hubData = {
+  geneva: {
+    title: "GENEVA JURISDICTIONAL HUB",
+    role: "International Commercial Arbitrator",
+    desc: "Presiding over multilateral maritime disputes, cross-border intellectual property infringement, and sovereign debt restructuring.",
+    comp: "₹1.2Cr - ₹2.4Cr",
+    lang: "C2 Mastery / Legal Latinate",
+    visa: "Swiss F-Permit / SIAC Panel",
+    err: "0.00% Statutory Ambiguity",
+    radar: "100,28 172,66 168,136 100,172 32,132 30,68"
+  },
+  london: {
+    title: "LONDON AEROSPACE CORRIDOR",
+    role: "Commercial Wide-Body Line Commander",
+    desc: "Standard ICAO phraseology across congested North Atlantic tracks with zero verbal ambiguity in crosswind emergencies.",
+    comp: "₹85L - ₹1.4Cr",
+    lang: "ICAO Level 6 Radiotelephony",
+    visa: "UK CAA First-Class ATPL",
+    err: "Zero Incursion Margin",
+    radar: "100,22 165,70 160,130 100,165 35,130 25,65"
+  },
+  newyork: {
+    title: "NEW YORK CREATIVE CONGLOMERATE",
+    role: "OTT Series Showrunner & Screenwriter",
+    desc: "Architecting multi-season pilot tension, episodic subtext, and room defense for Netflix and HBO syndication.",
+    comp: "₹75L - ₹1.8Cr+",
+    lang: "Dramatic Irony & Vernacular Command",
+    visa: "O-1 Extraordinary Ability",
+    err: "High Cadential Flexibility",
+    radar: "100,40 180,60 170,140 100,160 40,140 28,70"
+  },
+  singapore: {
+    title: "SINGAPORE ARBITRATION SEAT",
+    role: "Cross-Border Fintech General Counsel",
+    desc: "Drafting irrevocable sovereign debt covenants and negotiating regulatory passports with the Monetary Authority of Singapore.",
+    comp: "₹1.1Cr - ₹2.1Cr",
+    lang: "Common Law Contractual Precision",
+    visa: "Singapore Tech.Pass / Bar Admittance",
+    err: "Zero Contractual Ambiguity",
+    radar: "100,30 170,65 175,135 100,170 30,130 35,65"
+  },
+  dubai: {
+    title: "DUBAI AEROSPACE & COMMERCE DIX",
+    role: "Middle East Aviation Fleet Director",
+    desc: "Coordinating multi-national carrier fleet operations across the Gulf corridor with precision tactical briefing cadence.",
+    comp: "₹95L - ₹1.6Cr (Tax-Free)",
+    lang: "ICAO Level 6 / Strategic Arabic-English",
+    visa: "UAE Golden Visa (Specialized Talent)",
+    err: "Operational Precision",
+    radar: "100,25 160,75 165,135 100,165 38,125 30,70"
+  }
+};
+
+function selectHub(key) {
+  const d = hubData[key] || hubData.geneva;
+  document.getElementById('hub-title').innerText = d.title;
+  document.getElementById('hub-role').innerText = d.role;
+  document.getElementById('hub-desc').innerText = d.desc;
+  document.getElementById('hub-comp').innerText = d.comp;
+  document.getElementById('hub-lang').innerText = d.lang;
+  document.getElementById('hub-visa').innerText = d.visa;
+  document.getElementById('hub-err').innerText = d.err;
+  document.getElementById('radar-shape').setAttribute('points', d.radar);
+}
+
+const specCanvas = document.getElementById('spectrogram-canvas');
+const specCtx = specCanvas.getContext('2d');
+let micActive = false;
+let testToneActive = false;
+let animSpec;
+
+function resizeSpec() {
+  specCanvas.width = specCanvas.parentElement.clientWidth;
+  specCanvas.height = specCanvas.parentElement.clientHeight;
+}
+window.addEventListener('resize', resizeSpec);
+resizeSpec();
+
+function drawIdleSpec() {
+  specCtx.clearRect(0, 0, specCanvas.width, specCanvas.height);
+  specCtx.strokeStyle = 'rgba(245, 158, 11, 0.15)';
+  specCtx.lineWidth = 1;
+  const centerY = specCanvas.height / 2;
+  specCtx.beginPath();
+  for (let x = 0; x < specCanvas.width; x += 8) {
+    specCtx.lineTo(x, centerY + Math.sin(x * 0.05) * 4);
+  }
+  specCtx.stroke();
+}
+drawIdleSpec();
+
+function drawActiveSpec() {
+  specCtx.clearRect(0, 0, specCanvas.width, specCanvas.height);
+  const bars = Math.floor(specCanvas.width / 6);
+  for (let i = 0; i < bars; i++) {
+    const h = Math.random() * (specCanvas.height * 0.85);
+    const x = i * 6;
+    const y = specCanvas.height - h;
+    specCtx.fillStyle = (i % 2 === 0) ? '#F59E0B' : '#EAB308';
+    specCtx.fillRect(x, y, 4, h);
+  }
+  if (micActive || testToneActive) {
+    animSpec = requestAnimationFrame(drawActiveSpec);
+  }
+}
+
+function toggleMic() {
+  micActive = !micActive;
+  const btn = document.getElementById('mic-toggle-btn');
+  const label = document.getElementById('mic-label');
+  const hint = document.getElementById('spectrogram-hint');
+
+  if (micActive) {
+    btn.classList.add('bg-error', 'text-white');
+    btn.classList.remove('bg-primary', 'text-black');
+    label.innerText = "Stop Microphone";
+    hint.classList.add('hidden');
+    drawActiveSpec();
+  } else {
+    btn.classList.remove('bg-error', 'text-white');
+    btn.classList.add('bg-primary', 'text-black');
+    label.innerText = "Activate Microphone";
+    cancelAnimationFrame(animSpec);
+    drawIdleSpec();
+    hint.classList.remove('hidden');
+  }
+}
+
+function toggleTestTone() {
+  testToneActive = !testToneActive;
+  const hint = document.getElementById('spectrogram-hint');
+  if (testToneActive) {
+    hint.classList.add('hidden');
+    drawActiveSpec();
+  } else {
+    cancelAnimationFrame(animSpec);
+    drawIdleSpec();
+    hint.classList.remove('hidden');
+  }
+}
+
+function selectCrisisOption(opt) {
+  const fb = document.getElementById('crisis-feedback');
+  fb.classList.remove('hidden');
+}
+
+function toggleAdminModal() {
+  const modal = document.getElementById('admin-modal');
+  modal.classList.toggle('hidden');
+}
+</script>
+</body>
+</html>`;
+
+const cleanedV5 = cleanCode(v5Raw);
+fs.writeFileSync("v5.html", cleanedV5);
+fs.writeFileSync("public/v5.html", cleanedV5);
+console.log("v5.html and public/v5.html written successfully, length:", cleanedV5.length);

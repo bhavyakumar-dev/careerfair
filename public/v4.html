@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Verbum Premier — Alexandria Exec Global Architecture</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Public+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-lowest": "#ffffff",
+            "primary-fixed": "#d9e2ff",
+            "tertiary-fixed": "#f9e37a",
+            "on-tertiary-fixed-variant": "#524600",
+            "on-primary": "#ffffff",
+            "error": "#ba1a1a",
+            "on-tertiary-fixed": "#211b00",
+            "error-container": "#ffdad6",
+            "background": "#faf9fa",
+            "on-secondary-fixed-variant": "#42474b",
+            "surface-bright": "#faf9fa",
+            "on-surface": "#1b1c1d",
+            "surface-variant": "#e3e2e3",
+            "secondary-fixed": "#dfe3e8",
+            "on-primary-fixed": "#001946",
+            "secondary": "#5a5f63",
+            "on-secondary-fixed": "#171c20",
+            "on-primary-fixed-variant": "#00419d",
+            "inverse-surface": "#303031",
+            "primary-fixed-dim": "#b1c5ff",
+            "inverse-on-surface": "#f2f0f1",
+            "on-tertiary": "#ffffff",
+            "tertiary": "#6d5e00",
+            "on-error": "#ffffff",
+            "on-error-container": "#93000a",
+            "primary": "#094cb2",
+            "secondary-fixed-dim": "#c2c7cc",
+            "surface-tint": "#2259bf",
+            "on-primary-container": "#e7ebff",
+            "primary-container": "#3366cc",
+            "surface-container-low": "#f5f3f4",
+            "secondary-container": "#dfe3e8",
+            "surface-container": "#efedee",
+            "surface-dim": "#dbdadb",
+            "surface-container-high": "#e9e8e9",
+            "on-secondary-container": "#606569",
+            "on-background": "#1b1c1d",
+            "tertiary-fixed-dim": "#dcc661",
+            "surface": "#faf9fa",
+            "tertiary-container": "#bfab49",
+            "on-tertiary-container": "#4a3f00",
+            "on-surface-variant": "#434653",
+            "outline-variant": "#c3c6d5",
+            "outline": "#737784",
+            "inverse-primary": "#b1c5ff",
+            "surface-container-highest": "#e3e2e3",
+            "on-secondary": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "fontFamily": {
+            "headline": ["Noto Serif", "serif"],
+            "display": ["Noto Serif", "serif"],
+            "body": ["Public Sans", "sans-serif"],
+            "label": ["Public Sans", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .custom-scroll {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @keyframes wavePulse {
+      0%, 100% { height: 6px; }
+      50% { height: 28px; }
+    }
+    .waveform-bar {
+      animation: wavePulse 1.2s ease-in-out infinite;
+    }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body antialiased selection:bg-tertiary-fixed selection:text-on-tertiary-fixed pb-24">
+<div class="max-w-md mx-auto min-h-screen bg-surface-bright relative shadow-2xl overflow-x-hidden flex flex-col">
+<header class="bg-surface/90 backdrop-blur-md shadow-none docked full-width top-0 sticky z-40 border-b border-surface-variant">
+<div class="flex justify-between items-center w-full px-4 py-3 max-w-md mx-auto">
+<div class="flex items-center gap-3">
+<button aria-label="Toggle menu" class="p-2 -ml-2 rounded-lg text-on-surface hover:bg-surface-container-high transition-colors active:opacity-80" id="drawerToggle">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<div class="flex items-center gap-1.5">
+<span class="font-headline text-lg tracking-normal font-bold text-on-surface">Alexandria Exec</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center bg-surface-container-low rounded-lg p-1 border border-outline-variant/40 text-[11px] font-mono">
+<a href="index.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v1 Pavilion">v1</a>
+<a href="v2.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v2 Premier">v2</a>
+<a href="v3.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v3 Open Mic">v3</a>
+<span class="px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-bold" title="Current: v4 Alexandria Exec">v4</span>
+<a href="v5.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v5 Mobility">v5</a>
+</div>
+</div>
+</div>
+<div class="px-4 pb-2.5 pt-0.5 flex gap-1.5 overflow-x-auto custom-scroll text-xs font-label">
+<button class="px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold whitespace-nowrap shadow-sm">Solar Gold</button>
+<button class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-medium whitespace-nowrap">Cosmic Dark</button>
+<button class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-medium whitespace-nowrap">Emerald Bio</button>
+<button class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-medium whitespace-nowrap">Cyber Violet</button>
+</div>
+</header>
+<div class="fixed inset-0 bg-inverse-surface/40 backdrop-blur-xs z-50 hidden transition-opacity" id="drawerOverlay">
+<div class="docked full-height left-0 w-4/5 max-w-xs bg-surface-container-low shadow-2xl flex flex-col h-full p-6 justify-between transform -translate-x-full transition-transform duration-300" id="drawerContent">
+<div>
+<div class="flex items-center justify-between pb-6">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-full bg-surface-dim overflow-hidden flex items-center justify-center border-2 border-tertiary-fixed">
+<span class="material-symbols-outlined text-tertiary text-2xl">account_circle</span>
+</div>
+<div>
+<h4 class="font-headline text-base tracking-normal font-semibold text-on-surface">Julian Vance</h4>
+<p class="text-xs text-on-surface-variant">Chief Communications Officer</p>
+<p class="text-[10px] font-label text-tertiary font-semibold uppercase mt-0.5">Vocal Presence: 98th Percentile</p>
+</div>
+</div>
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container-highest" id="drawerClose">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="my-3 p-3 rounded-xl bg-surface-container-lowest border border-outline-variant/30">
+<p class="text-[10px] font-label uppercase text-tertiary font-bold mb-2">Switch CareerFair Experience</p>
+<div class="grid grid-cols-5 gap-1 text-center font-mono text-xs">
+<a href="index.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v1</a>
+<a href="v2.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v2</a>
+<a href="v3.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v3</a>
+<span class="p-1.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-bold">v4</span>
+<a href="v5.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v5</a>
+</div>
+</div>
+<nav class="space-y-1 pt-2">
+<a class="flex items-center gap-3 bg-tertiary-fixed/40 text-tertiary px-4 py-3 rounded-lg font-medium active:scale-[0.99] transition-transform duration-150" href="#speech-lab">
+<span class="material-symbols-outlined">graphic_eq</span>
+<span>Speech Lab</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container-highest active:scale-[0.99] transition-all" href="#career-architecture">
+<span class="material-symbols-outlined">record_voice_over</span>
+<span>Curated Architecture</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container-highest active:scale-[0.99] transition-all" href="#benchmarking">
+<span class="material-symbols-outlined">workspace_premium</span>
+<span>Orator Benchmarks</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container-highest active:scale-[0.99] transition-all" href="#drill">
+<span class="material-symbols-outlined">local_library</span>
+<span>Executive Polish Drill</span>
+</a>
+</nav>
+</div>
+<div class="pt-6 bg-surface-container-lowest/50 p-3 rounded-xl">
+<p class="text-xs font-label text-on-surface-variant font-semibold">Kanakia International School Mira Road</p>
+<p class="text-[10px] text-outline mt-1 font-mono">Verbum Premier Global Architecture v4.2</p>
+</div>
+</div>
+</div>
+<main class="flex-1 px-4 pt-3 pb-8 space-y-6">
+<section class="space-y-4">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-[11px] font-label font-bold tracking-wide">
+<span class="material-symbols-outlined text-xs">auto_awesome</span>
+<span>HIGH-STAKES VOCAL ARCHITECTURE</span>
+</div>
+<h1 class="font-headline text-3xl sm:text-4xl leading-[1.18] font-bold tracking-tight text-on-surface">
+How Articulate English Commands Global High-Value Careers
+</h1>
+<p class="text-sm font-body text-on-surface-variant leading-relaxed">
+From multi-million dollar cross-border M&A arbitrations to visionary Hollywood writers' rooms, vocal authority is the ultimate structural leverage.
+</p>
+<div class="relative w-full h-72 rounded-2xl overflow-hidden bg-surface-container-highest/60 flex items-center justify-center p-2">
+<div class="w-full h-72 rounded-3xl bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_6" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_6');
+  const width = container.clientWidth || window.innerWidth || 390;
+  const height = container.clientHeight || 320;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+  camera.position.z = 4.2;
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  container.appendChild(renderer.domElement);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+  scene.add(ambientLight);
+  const pointLight1 = new THREE.PointLight(0xfacc15, 2.5, 50);
+  pointLight1.position.set(3, 4, 3);
+  scene.add(pointLight1);
+  const pointLight2 = new THREE.PointLight(0x38bdf8, 2.0, 50);
+  pointLight2.position.set(-3, -3, 2);
+  scene.add(pointLight2);
+  const group = new THREE.Group();
+  scene.add(group);
+  const coreGeo = new THREE.IcosahedronGeometry(1.0, 2);
+  const coreMat = new THREE.MeshPhongMaterial({
+    color: 0x0f172a,
+    emissive: 0xca8a04,
+    specular: 0xfef08a,
+    shininess: 90,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.85
+  });
+  const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+  group.add(coreMesh);
+  const nucleusGeo = new THREE.SphereGeometry(0.55, 32, 32);
+  const nucleusMat = new THREE.MeshPhongMaterial({
+    color: 0xeab308,
+    emissive: 0xfacc15,
+    shininess: 100
+  });
+  const nucleusMesh = new THREE.Mesh(nucleusGeo, nucleusMat);
+  group.add(nucleusMesh);
+  const ringMat1 = new THREE.MeshBasicMaterial({ color: 0xfacc15, wireframe: true, transparent: true, opacity: 0.7 });
+  const ringGeo1 = new THREE.TorusGeometry(1.6, 0.02, 16, 100);
+  const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
+  ring1.rotation.x = Math.PI / 3;
+  group.add(ring1);
+  const ringMat2 = new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true, transparent: true, opacity: 0.5 });
+  const ringGeo2 = new THREE.TorusGeometry(1.9, 0.015, 16, 100);
+  const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
+  ring2.rotation.y = Math.PI / 4;
+  group.add(ring2);
+  const partCount = 80;
+  const partGeo = new THREE.BufferGeometry();
+  const positions = new Float32Array(partCount * 3);
+  for (let i = 0; i < partCount * 3; i += 3) {
+    positions[i] = (Math.random() - 0.5) * 5;
+    positions[i + 1] = (Math.random() - 0.5) * 5;
+    positions[i + 2] = (Math.random() - 0.5) * 3;
+  }
+  partGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const partMat = new THREE.PointsMaterial({ color: 0xfef08a, size: 0.05, transparent: true, opacity: 0.9 });
+  const particles = new THREE.Points(partGeo, partMat);
+  scene.add(particles);
+  let mouseX = 0;
+  let mouseY = 0;
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+      mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
+      mouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
+    }
+  }, { passive: true });
+  window.addEventListener('mousemove', (e) => {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+  function onResize() {
+    const w = container.clientWidth || window.innerWidth || 390;
+    const h = container.clientHeight || 320;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+  window.addEventListener('resize', onResize);
+  let clock = new THREE.Clock();
+  function animate() {
+    requestAnimationFrame(animate);
+    const elapsedTime = clock.getElapsedTime();
+    group.rotation.y = elapsedTime * 0.4 + mouseX * 0.5;
+    group.rotation.x = Math.sin(elapsedTime * 0.3) * 0.2 + mouseY * 0.3;
+    ring1.rotation.z = elapsedTime * 0.25;
+    ring2.rotation.x = elapsedTime * 0.35;
+    const scale = 1.0 + Math.sin(elapsedTime * 2.5) * 0.05;
+    nucleusMesh.scale.set(scale, scale, scale);
+    particles.rotation.y = elapsedTime * 0.08;
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+</script>
+</div>
+<div class="absolute bottom-3 left-3 right-3 flex justify-between items-center bg-surface-container-lowest/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-[11px] font-label text-on-surface">
+<span class="flex items-center gap-1 text-tertiary font-semibold">
+<span class="material-symbols-outlined text-sm">waves</span> 3D Harmonic Model
+</span>
+<span class="text-on-surface-variant">Touch & Drag to Orbit</span>
+</div>
+</div>
+<div class="flex gap-2.5 overflow-x-auto custom-scroll pt-1 pb-1">
+<div class="flex-shrink-0 w-36 bg-surface-container-lowest p-3 rounded-xl border border-surface-variant">
+<span class="text-[10px] font-label uppercase text-outline font-bold">Compensation</span>
+<div class="font-headline text-base font-bold text-on-surface mt-0.5">₹18L - ₹1.4Cr+</div>
+<div class="text-[10px] text-tertiary font-medium">Top Tier Global Roles</div>
+</div>
+<div class="flex-shrink-0 w-36 bg-surface-container-lowest p-3 rounded-xl border border-surface-variant">
+<span class="text-[10px] font-label uppercase text-outline font-bold">Curated Arenas</span>
+<div class="font-headline text-base font-bold text-on-surface mt-0.5">16+ High-Impact</div>
+<div class="text-[10px] text-primary font-medium">Aviation to Arbitrage</div>
+</div>
+<div class="flex-shrink-0 w-36 bg-surface-container-lowest p-3 rounded-xl border border-surface-variant">
+<span class="text-[10px] font-label uppercase text-outline font-bold">Neural Engine</span>
+<div class="font-headline text-base font-bold text-on-surface mt-0.5">5-Tier AI Latency</div>
+<div class="text-[10px] text-emerald-600 font-medium">32ms Feedback Loop</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 pt-1">
+<a class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-tertiary-fixed text-on-tertiary-fixed font-label font-bold text-xs uppercase tracking-wider text-center shadow-md active:scale-95 transition-transform" href="#speech-lab">
+<span class="material-symbols-outlined text-base">mic</span>
+<span>Launch Speech Lab</span>
+</a>
+<a class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-surface-container text-on-surface font-label font-semibold text-xs tracking-wide text-center hover:bg-surface-container-high active:scale-95 transition-transform" href="#career-architecture">
+<span>Explore Careers</span>
+<span class="material-symbols-outlined text-base">north_east</span>
+</a>
+</div>
+</section>
+<section class="bg-surface-container-low p-4 rounded-2xl space-y-4" id="speech-lab">
+<div class="flex items-center justify-between">
+<div>
+<span class="text-[10px] font-label uppercase tracking-widest text-tertiary font-bold">Acoustic Teleprompter & Diagnostics</span>
+<h2 class="font-headline text-xl font-bold text-on-surface mt-0.5">Executive Cadence Studio</h2>
+</div>
+<span class="p-2 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed">
+<span class="material-symbols-outlined text-lg">graphic_eq</span>
+</span>
+</div>
+<div>
+<label class="block text-xs font-label text-on-surface-variant mb-1.5 font-medium">Simulation Scenario</label>
+<div class="relative">
+<select class="w-full bg-surface-container-lowest text-on-surface text-xs rounded-xl py-2.5 pl-3 pr-8 appearance-none focus:ring-1 focus:ring-primary border border-surface-variant font-mono" id="scenarioSelector">
+<option value="mna">Boardroom M&A: Hostile Takeover Defense</option>
+<option value="pilot">Aviation Mayday: Crosswind Emergency at Heathrow</option>
+<option value="hollywood">Sci-Fi Pilot: The Cygnus Discovery Pitch</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 pointer-events-none text-on-surface-variant text-lg">expand_more</span>
+</div>
+</div>
+<div class="relative rounded-xl overflow-hidden bg-surface-container-lowest p-3 border border-surface-variant">
+<div class="flex items-center gap-3">
+<div class="w-16 h-16 rounded-lg bg-surface-dim flex items-center justify-center text-tertiary shrink-0 border border-tertiary-fixed">
+<span class="material-symbols-outlined text-3xl">mic</span>
+</div>
+<div class="flex-1 space-y-2">
+<div class="flex items-center justify-between text-xs font-mono">
+<span class="font-label font-bold text-on-surface">Dynamic Input</span>
+<span class="text-tertiary font-mono text-[11px] font-bold">48kHz / 24-bit</span>
+</div>
+<div class="flex items-end gap-1 h-8 px-1">
+<span class="waveform-bar w-1 bg-tertiary-fixed-dim rounded-full" style="animation-delay: 0.1s"></span>
+<span class="waveform-bar w-1 bg-tertiary rounded-full" style="animation-delay: 0.4s"></span>
+<span class="waveform-bar w-1 bg-tertiary-fixed rounded-full" style="animation-delay: 0.2s"></span>
+<span class="waveform-bar w-1 bg-primary rounded-full" style="animation-delay: 0.6s"></span>
+<span class="waveform-bar w-1 bg-tertiary rounded-full" style="animation-delay: 0.3s"></span>
+<span class="waveform-bar w-1 bg-tertiary-fixed rounded-full" style="animation-delay: 0.5s"></span>
+<span class="waveform-bar w-1 bg-primary-container rounded-full" style="animation-delay: 0.2s"></span>
+<span class="waveform-bar w-1 bg-tertiary rounded-full" style="animation-delay: 0.7s"></span>
+<span class="waveform-bar w-1 bg-tertiary-fixed rounded-full" style="animation-delay: 0.35s"></span>
+<span class="waveform-bar w-1 bg-outline rounded-full" style="animation-delay: 0.15s"></span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-3.5 rounded-xl space-y-2 border border-surface-variant">
+<div class="flex justify-between items-center text-[10px] font-label text-outline uppercase font-semibold">
+<span>Teleprompter Script</span>
+<span class="text-tertiary font-bold">Cadence: 130 WPM</span>
+</div>
+<p class="font-headline text-sm text-on-surface leading-relaxed italic" id="teleprompterText">
+"Gentlemen, the valuation is non-negotiable. Our intellectual architecture and liquidity reserves establish irrevocable priority. We hold the defensive covenants."
+</p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-tertiary-fixed text-on-tertiary-fixed font-label font-bold text-xs uppercase tracking-wider active:scale-95 transition-transform shadow-sm" id="recordBtn">
+<span class="material-symbols-outlined text-base" id="recordIcon">mic</span>
+<span id="recordStatus">Tap to Record</span>
+</button>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<span class="block text-[9px] font-label uppercase text-outline font-bold">Fluency</span>
+<span class="font-headline text-base font-bold text-on-surface">94<span class="text-xs text-outline">/100</span></span>
+</div>
+<div class="w-px h-6 bg-surface-dim"></div>
+<div class="text-right">
+<span class="block text-[9px] font-label uppercase text-outline font-bold">Cadence</span>
+<span class="font-headline text-base font-bold text-on-surface">138 <span class="text-[10px] font-normal text-on-surface-variant">WPM</span></span>
+</div>
+<div class="w-px h-6 bg-surface-dim"></div>
+<div class="text-right">
+<span class="block text-[9px] font-label uppercase text-outline font-bold">Fillers</span>
+<span class="font-headline text-base font-bold text-tertiary">1</span>
+</div>
+</div>
+</div>
+</section>
+<section class="space-y-4" id="career-architecture">
+<div>
+<span class="text-[10px] font-label uppercase tracking-widest text-tertiary font-bold">Valuation Ecosystem</span>
+<h2 class="font-headline text-2xl font-bold text-on-surface">Curated Career Architecture</h2>
+<p class="text-xs text-on-surface-variant mt-1 leading-normal">
+Precision diction, rhetorical poise, and global diplomatic English directly dictate international package benchmarks.
+</p>
+</div>
+<div class="flex bg-surface-container rounded-xl p-1 text-xs font-label">
+<button class="flex-1 py-1.5 rounded-lg bg-surface-container-lowest text-on-surface font-semibold shadow-xs" id="catCreativeBtn">Creative & OTT</button>
+<button class="flex-1 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface font-medium" id="catInstitutionalBtn">Institutional & C-Suite</button>
+</div>
+<div class="space-y-3" id="creativeRoles">
+<div class="bg-surface-container-lowest p-4 rounded-xl space-y-2.5 border border-surface-variant">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] font-label font-bold text-tertiary uppercase">Entertainment Architecture</span>
+<h3 class="font-headline text-base font-bold text-on-surface">Screenwriter & OTT Showrunner</h3>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-headline font-bold text-on-surface">₹12L – ₹65L</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+Crafting pilot bibles, character cadence, and pitching show concepts to Netflix, HBO, and Amazon Studios globally.
+</p>
+<div class="p-2.5 rounded-lg bg-surface-container-low text-xs">
+<span class="font-semibold text-tertiary block mb-0.5 text-[11px]">Why English is Leverage:</span>
+<span class="text-on-surface-variant text-[11px]">Subtextual dialogue tension, cultural localization, and persuasive narrative room command.</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-label text-outline pt-1">
+<span>Pathways: FTII Pune, USC Cinema, Tisch NYU</span>
+<span class="text-primary font-medium flex items-center">Roadmap <span class="material-symbols-outlined text-xs">chevron_right</span></span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl space-y-2.5 border border-surface-variant">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] font-label font-bold text-tertiary uppercase">Interactive Worldbuilding</span>
+<h3 class="font-headline text-base font-bold text-on-surface">Narrative Game Designer</h3>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-headline font-bold text-on-surface">₹15L – ₹80L</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+Architecting non-linear character dialogue trees, quest lore, and voice-director guides for AAA gaming franchises.
+</p>
+<div class="p-2.5 rounded-lg bg-surface-container-low text-xs">
+<span class="font-semibold text-tertiary block mb-0.5 text-[11px]">Why English is Leverage:</span>
+<span class="text-on-surface-variant text-[11px]">Writing evocative environmental lore and concise systemic instructions for global design teams.</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-label text-outline pt-1">
+<span>Pathways: DigiPen, Abertay, Carnegie Mellon ETC</span>
+<span class="text-primary font-medium flex items-center">Roadmap <span class="material-symbols-outlined text-xs">chevron_right</span></span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl space-y-2.5 border border-surface-variant">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] font-label font-bold text-tertiary uppercase">Acoustic Arts</span>
+<h3 class="font-headline text-base font-bold text-on-surface">Voice Actor & International Narrator</h3>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-headline font-bold text-on-surface">₹12L – ₹45L</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+Audiobook narration for Penguin Random House, prestige video game character voicing, and BBC documentary voiceovers.
+</p>
+<div class="p-2.5 rounded-lg bg-surface-container-low text-xs">
+<span class="font-semibold text-tertiary block mb-0.5 text-[11px]">Why English is Leverage:</span>
+<span class="text-on-surface-variant text-[11px]">Mastery over Received Pronunciation (RP), mid-Atlantic modulation, and emotional vocal cadence.</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-label text-outline pt-1">
+<span>Pathways: RADA London, Guildhall, Voice One SF</span>
+<span class="text-primary font-medium flex items-center">Roadmap <span class="material-symbols-outlined text-xs">chevron_right</span></span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2.5">
+<div class="bg-surface-container-lowest p-3 rounded-xl space-y-1 border border-surface-variant">
+<span class="text-[9px] font-label uppercase text-tertiary font-bold">Poetics & Audio</span>
+<h4 class="font-headline text-xs font-bold text-on-surface">Lyricist & Songwriter</h4>
+<p class="text-[11px] text-outline font-semibold">₹8L – ₹50L</p>
+<p class="text-[10px] text-on-surface-variant line-clamp-2">Rhyme schemes, metric stress, and crossover pop hooks.</p>
+<div class="text-[10px] text-tertiary font-medium pt-1">Berklee / Royal Academy</div>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-xl space-y-1 border border-surface-variant">
+<span class="text-[9px] font-label uppercase text-tertiary font-bold">Linguistic Adaptation</span>
+<h4 class="font-headline text-xs font-bold text-on-surface">Dubbing & Localizer</h4>
+<p class="text-[11px] text-outline font-semibold">₹8L – ₹28L</p>
+<p class="text-[10px] text-on-surface-variant line-clamp-2">Lip-sync syllable mapping & transnational cultural idioms.</p>
+<div class="text-[10px] text-tertiary font-medium pt-1">JNU SLLCS / SOAS London</div>
+</div>
+</div>
+</div>
+<div class="space-y-3 hidden" id="institutionalRoles">
+<div class="bg-surface-container-lowest p-4 rounded-xl space-y-2.5 border border-surface-variant">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] font-label font-bold text-tertiary uppercase">International Jurisprudence</span>
+<h3 class="font-headline text-base font-bold text-on-surface">Corporate Arbitrator & Cross-Border Counsel</h3>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-headline font-bold text-on-surface">₹18L – ₹1.2Cr</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+Representing sovereign funds and tech conglomerates at Singapore International Arbitration Centre (SIAC) & London (LCIA).
+</p>
+<div class="p-2.5 rounded-lg bg-surface-container-low text-xs">
+<span class="font-semibold text-tertiary block mb-0.5 text-[11px]">Why English is Leverage:</span>
+<span class="text-on-surface-variant text-[11px]">Flawless syntactical drafting eliminates contractual ambiguities worth hundreds of millions.</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-label text-outline pt-1">
+<span>Pathways: NLSIU Bengaluru, Oxford BCL, Harvard Law</span>
+<span class="text-primary font-medium flex items-center">Roadmap <span class="material-symbols-outlined text-xs">chevron_right</span></span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl space-y-2.5 border border-surface-variant">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] font-label font-bold text-tertiary uppercase">Commercial Aviation</span>
+<h3 class="font-headline text-base font-bold text-on-surface">Commercial Airline Commander (ICAO Level 6)</h3>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-headline font-bold text-on-surface">₹24L – ₹85L</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+Standardized aeronautical radiotelephony and CRM phraseology for trans-Atlantic and Pacific commercial wide-body flights.
+</p>
+<div class="p-2.5 rounded-lg bg-surface-container-low text-xs">
+<span class="font-semibold text-tertiary block mb-0.5 text-[11px]">Why English is Leverage:</span>
+<span class="text-on-surface-variant text-[11px]">Split-second precision in voice transmissions under high-stress weather crises prevents catastrophic misunderstanding.</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-label text-outline pt-1">
+<span>Pathways: IGRUA Rae Bareli, CAE Oxford, Embry-Riddle</span>
+<span class="text-primary font-medium flex items-center">Roadmap <span class="material-symbols-outlined text-xs">chevron_right</span></span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl space-y-2.5 border border-surface-variant">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] font-label font-bold text-tertiary uppercase">Generative Frontier</span>
+<h3 class="font-headline text-base font-bold text-on-surface">AI Prompt Architect & NLP Cognitive Stylist</h3>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container-low text-xs font-headline font-bold text-on-surface">₹20L – ₹95L</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+Refining large language model alignment, chain-of-thought system prompts, and semantic truthfulness for frontier AI labs.
+</p>
+<div class="p-2.5 rounded-lg bg-surface-container-low text-xs">
+<span class="font-semibold text-tertiary block mb-0.5 text-[11px]">Why English is Leverage:</span>
+<span class="text-on-surface-variant text-[11px]">Linguistic taxonomy, epistemological precision, and rhetorical constraints directly dictate model output accuracy.</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-label text-outline pt-1">
+<span>Pathways: IIT Bombay, Stanford Symbolic Systems, Edinburgh Informatics</span>
+<span class="text-primary font-medium flex items-center">Roadmap <span class="material-symbols-outlined text-xs">chevron_right</span></span>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-surface-container-low p-4 rounded-2xl space-y-3.5" id="benchmarking">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] font-label uppercase tracking-widest text-tertiary font-bold">Articulatory Standards</span>
+<h2 class="font-headline text-xl font-bold text-on-surface">Master Orator Benchmarks</h2>
+</div>
+<span class="material-symbols-outlined text-tertiary text-2xl">workspace_premium</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+Listen to micro-excerpts of world-class resonance, pause control, and phonetic gravitas.
+</p>
+<div class="grid grid-cols-2 gap-2.5">
+<div class="bg-surface-container-lowest p-3 rounded-xl space-y-1.5 flex flex-col justify-between border border-surface-variant">
+<div>
+<div class="flex items-center justify-between">
+<span class="text-[9px] font-label uppercase text-tertiary font-bold">Naturalist Diction</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</div>
+<h4 class="font-headline text-xs font-bold text-on-surface mt-1">Sir David Attenborough</h4>
+<p class="text-[10px] text-on-surface-variant">Cadence: Whispered authority & deliberate pause syntax.</p>
+</div>
+<button class="w-full mt-2 py-1.5 rounded-lg bg-surface-container-low text-[11px] font-label font-semibold text-on-surface flex items-center justify-center gap-1 active:bg-tertiary-fixed" onclick="playSample('Attenborough')">
+<span class="material-symbols-outlined text-xs">play_arrow</span> Listen RP Cadence
+</button>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-xl space-y-1.5 flex flex-col justify-between border border-surface-variant">
+<div>
+<div class="flex items-center justify-between">
+<span class="text-[9px] font-label uppercase text-tertiary font-bold">Parliamentary Stride</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</div>
+<h4 class="font-headline text-xs font-bold text-on-surface mt-1">Dr. Shashi Tharoor</h4>
+<p class="text-[10px] text-on-surface-variant">Cadence: Oxford Union rhetorical polysyllabic momentum.</p>
+</div>
+<button class="w-full mt-2 py-1.5 rounded-lg bg-surface-container-low text-[11px] font-label font-semibold text-on-surface flex items-center justify-center gap-1 active:bg-tertiary-fixed" onclick="playSample('Tharoor')">
+<span class="material-symbols-outlined text-xs">play_arrow</span> Listen Rhetoric
+</button>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-xl space-y-1.5 flex flex-col justify-between border border-surface-variant">
+<div>
+<div class="flex items-center justify-between">
+<span class="text-[9px] font-label uppercase text-tertiary font-bold">Theatrical Stature</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</div>
+<h4 class="font-headline text-xs font-bold text-on-surface mt-1">Dame Maggie Smith</h4>
+<p class="text-[10px] text-on-surface-variant">Cadence: Razor-sharp plosives and dry aristocratic irony.</p>
+</div>
+<button class="w-full mt-2 py-1.5 rounded-lg bg-surface-container-low text-[11px] font-label font-semibold text-on-surface flex items-center justify-center gap-1 active:bg-tertiary-fixed" onclick="playSample('Smith')">
+<span class="material-symbols-outlined text-xs">play_arrow</span> Listen Precision
+</button>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-xl space-y-1.5 flex flex-col justify-between border border-surface-variant">
+<div>
+<div class="flex items-center justify-between">
+<span class="text-[9px] font-label uppercase text-tertiary font-bold">Historical Resolve</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</div>
+<h4 class="font-headline text-xs font-bold text-on-surface mt-1">Winston Churchill</h4>
+<p class="text-[10px] text-on-surface-variant">Cadence: Heavy trochaic beat and resolute gravitas.</p>
+</div>
+<button class="w-full mt-2 py-1.5 rounded-lg bg-surface-container-low text-[11px] font-label font-semibold text-on-surface flex items-center justify-center gap-1 active:bg-tertiary-fixed" onclick="playSample('Churchill')">
+<span class="material-symbols-outlined text-xs">play_arrow</span> Listen Gravitas
+</button>
+</div>
+</div>
+<div class="hidden bg-surface-container-lowest text-xs font-label p-2.5 rounded-xl border border-tertiary-fixed flex items-center gap-2" id="audioToast">
+<span class="material-symbols-outlined text-tertiary text-sm">volume_up</span>
+<span class="text-on-surface" id="toastMsg">Synthesizing benchmark phonetics...</span>
+</div>
+</section>
+<section class="bg-surface-container-low p-4 rounded-2xl space-y-3" id="drill">
+<div class="flex items-center justify-between">
+<div>
+<span class="text-[10px] font-label uppercase tracking-widest text-tertiary font-bold">Cognitive Refactoring</span>
+<h2 class="font-headline text-xl font-bold text-on-surface">The Executive Polish Drill</h2>
+</div>
+<span class="material-symbols-outlined text-primary text-xl">auto_fix_high</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+Watch a passive, insecure message transform into razor-sharp institutional diplomacy with a single gesture.
+</p>
+<div class="bg-surface-container-lowest p-3.5 rounded-xl space-y-2 border border-surface-variant">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-label font-bold text-error uppercase" id="emailStateLabel">Before: Passive & Insecure</span>
+<span class="text-[10px] font-mono text-outline">Internal Memo</span>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low text-xs leading-relaxed font-body transition-all" id="emailContentBox">
+"Hey team, just wanted to check in and see if maybe anyone has looked at the contract? Sorry to bother, but we really need it done soon or we might get in trouble with the client."
+</div>
+<div class="pt-1 flex items-center justify-between">
+<button class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed font-label font-bold text-xs uppercase tracking-wider active:scale-95 transition-transform" id="refactorBtn">
+<span class="material-symbols-outlined text-sm">magic_button</span>
+<span>Refactor Diplomatic</span>
+</button>
+<span class="text-[11px] text-tertiary font-semibold" id="toneMetric">Confidence: 38% → 96%</span>
+</div>
+</div>
+</section>
+<footer class="pt-6 pb-4 space-y-4 text-center">
+<div class="flex justify-center items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary-container"></span>
+<span class="text-xs font-label uppercase tracking-widest text-outline font-semibold">Verbum Premier Global Faculty</span>
+<span class="w-2 h-2 rounded-full bg-tertiary-container"></span>
+</div>
+<p class="text-xs text-on-surface-variant font-label max-w-xs mx-auto leading-relaxed">
+Curated under the Academic Rigor of
+<button class="font-semibold text-on-surface underline decoration-dotted underline-offset-4 cursor-pointer focus:outline-none select-none" id="secretAdminTap">
+© Kanakia International School Mira Road
+</button>
+</p>
+<div class="hidden bg-surface-container-lowest p-3 rounded-xl border border-tertiary text-left text-xs space-y-2" id="adminPortal">
+<div class="flex justify-between items-center">
+<span class="font-headline font-bold text-on-surface text-[11px]">Hidden Admin & 5-Tier AI Router</span>
+<span class="px-2 py-0.5 rounded bg-tertiary-fixed text-[10px] font-bold">Authorized</span>
+</div>
+<div class="space-y-1 text-[11px] text-on-surface-variant font-mono">
+<div>• Tier-1: Gemini 1.5 Flash (Acoustic Phonetics)</div>
+<div>• Tier-2: Claude 3.5 Sonnet (Diplomatic Syntax)</div>
+<div>• Tier-3: Whisper v3 Large (Cadence & WPM)</div>
+<div>• Tier-4: Fine-tuned Llama-3-70B (Valuation Benchmarks)</div>
+<div>• Tier-5: Local Edge Neural Cache (0-Latency Feedback)</div>
+</div>
+<div class="pt-2 border-t border-surface-variant">
+<div class="text-[10px] font-mono text-tertiary font-bold mb-1">Experience Navigation</div>
+<div class="grid grid-cols-5 gap-1 text-center font-mono text-[10px]">
+<a href="index.html" class="p-1 bg-surface-container rounded text-on-surface">v1</a>
+<a href="v2.html" class="p-1 bg-surface-container rounded text-on-surface">v2</a>
+<a href="v3.html" class="p-1 bg-surface-container rounded text-on-surface">v3</a>
+<span class="p-1 bg-tertiary-fixed font-bold text-on-tertiary-fixed rounded">v4</span>
+<a href="v5.html" class="p-1 bg-surface-container rounded text-on-surface">v5</a>
+</div>
+</div>
+</div>
+<p class="text-[10px] text-outline font-label">
+Strictly Confidential Portfolio Architecture. Annual Career Exhibition Showcase.
+</p>
+</footer>
+</main>
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-3 py-2 max-w-md mx-auto bg-surface-container-lowest/90 backdrop-blur-lg border-t border-surface-variant">
+<a class="flex flex-col items-center justify-center text-on-tertiary-fixed bg-tertiary-fixed rounded-xl px-3 py-1 font-semibold active:scale-95 transition-transform duration-150" href="#speech-lab">
+<span class="material-symbols-outlined text-lg" data-weight="fill" style="font-variation-settings: 'FILL' 1;">mic</span>
+<span class="font-label text-[10px] uppercase tracking-widest mt-0.5 font-bold">Studio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-colors active:scale-95 transition-transform duration-150" href="#career-architecture">
+<span class="material-symbols-outlined text-lg">psychology</span>
+<span class="font-label text-[10px] uppercase tracking-widest mt-0.5">Roles</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-colors active:scale-95 transition-transform duration-150" href="#benchmarking">
+<span class="material-symbols-outlined text-lg">insights</span>
+<span class="font-label text-[10px] uppercase tracking-widest mt-0.5">Insights</span>
+</a>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:text-primary transition-colors active:scale-95 transition-transform duration-150" id="profileNavBtn">
+<span class="material-symbols-outlined text-lg">account_circle</span>
+<span class="font-label text-[10px] uppercase tracking-widest mt-0.5">Profile</span>
+</button>
+</nav>
+</div>
+<script>
+const drawerToggle = document.getElementById('drawerToggle');
+const drawerClose = document.getElementById('drawerClose');
+const drawerOverlay = document.getElementById('drawerOverlay');
+const drawerContent = document.getElementById('drawerContent');
+const profileNavBtn = document.getElementById('profileNavBtn');
+function openDrawer() {
+  drawerOverlay.classList.remove('hidden');
+  setTimeout(() => {
+    drawerContent.classList.remove('-translate-x-full');
+  }, 10);
+}
+function closeDrawer() {
+  drawerContent.classList.add('-translate-x-full');
+  setTimeout(() => {
+    drawerOverlay.classList.add('hidden');
+  }, 250);
+}
+drawerToggle.addEventListener('click', openDrawer);
+drawerClose.addEventListener('click', closeDrawer);
+profileNavBtn.addEventListener('click', openDrawer);
+drawerOverlay.addEventListener('click', (e) => {
+  if (e.target === drawerOverlay) closeDrawer();
+});
+const scenarioSelector = document.getElementById('scenarioSelector');
+const teleprompterText = document.getElementById('teleprompterText');
+const scripts = {
+  mna: "\"Gentlemen, the valuation is non-negotiable. Our intellectual architecture and liquidity reserves establish irrevocable priority. We hold the defensive covenants.\"",
+  pilot: "\"Heathrow Tower, Speedbird 149. Unstabilized approach on outer marker, windshear alert 45 knots. Initiating immediate go-around to hold at Ockham.\"",
+  hollywood: "\"In the silence between the pulsars, the ship didn't just broadcast a distress call—it was reciting Shakespeare in binary. We weren't invited; we were summoned.\""
+};
+scenarioSelector.addEventListener('change', (e) => {
+  teleprompterText.textContent = scripts[e.target.value] || scripts.mna;
+});
+const recordBtn = document.getElementById('recordBtn');
+const recordIcon = document.getElementById('recordIcon');
+const recordStatus = document.getElementById('recordStatus');
+let isRecording = false;
+recordBtn.addEventListener('click', () => {
+  isRecording = !isRecording;
+  if (isRecording) {
+    recordBtn.classList.remove('bg-tertiary-fixed', 'text-on-tertiary-fixed');
+    recordBtn.classList.add('bg-error', 'text-on-error');
+    recordIcon.textContent = 'stop_circle';
+    recordStatus.textContent = 'Listening...';
+  } else {
+    recordBtn.classList.add('bg-tertiary-fixed', 'text-on-tertiary-fixed');
+    recordBtn.classList.remove('bg-error', 'text-on-error');
+    recordIcon.textContent = 'mic';
+    recordStatus.textContent = 'Recorded: 94/100';
+  }
+});
+const catCreativeBtn = document.getElementById('catCreativeBtn');
+const catInstitutionalBtn = document.getElementById('catInstitutionalBtn');
+const creativeRoles = document.getElementById('creativeRoles');
+const institutionalRoles = document.getElementById('institutionalRoles');
+catCreativeBtn.addEventListener('click', () => {
+  catCreativeBtn.classList.add('bg-surface-container-lowest', 'text-on-surface', 'shadow-xs');
+  catCreativeBtn.classList.remove('text-on-surface-variant');
+  catInstitutionalBtn.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'shadow-xs');
+  catInstitutionalBtn.classList.add('text-on-surface-variant');
+  creativeRoles.classList.remove('hidden');
+  institutionalRoles.classList.add('hidden');
+});
+catInstitutionalBtn.addEventListener('click', () => {
+  catInstitutionalBtn.classList.add('bg-surface-container-lowest', 'text-on-surface', 'shadow-xs');
+  catInstitutionalBtn.classList.remove('text-on-surface-variant');
+  catCreativeBtn.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'shadow-xs');
+  catCreativeBtn.classList.add('text-on-surface-variant');
+  institutionalRoles.classList.remove('hidden');
+  creativeRoles.classList.add('hidden');
+});
+function playSample(orator) {
+  const toast = document.getElementById('audioToast');
+  const msg = document.getElementById('toastMsg');
+  toast.classList.remove('hidden');
+  msg.textContent = "Streaming " + orator + " phonetics benchmark... (Cadence synced)";
+  setTimeout(() => {
+    toast.classList.add('hidden');
+  }, 3000);
+}
+const refactorBtn = document.getElementById('refactorBtn');
+const emailContentBox = document.getElementById('emailContentBox');
+const emailStateLabel = document.getElementById('emailStateLabel');
+const toneMetric = document.getElementById('toneMetric');
+let isRefactored = false;
+refactorBtn.addEventListener('click', () => {
+  isRefactored = !isRefactored;
+  if (isRefactored) {
+    emailStateLabel.textContent = "After: Diplomatic & Authoritative";
+    emailStateLabel.classList.remove('text-error');
+    emailStateLabel.classList.add('text-tertiary');
+    emailContentBox.textContent = "\"Team, please prioritize the contractual review scheduled for closure today. Client alignment hinges on our timely execution of the finalized provisions.\"";
+    emailContentBox.classList.add('bg-tertiary-fixed/20');
+    toneMetric.textContent = "Confidence: 96% (Executive)";
+    refactorBtn.querySelector('span:last-child').textContent = "Revert Raw";
+  } else {
+    emailStateLabel.textContent = "Before: Passive & Insecure";
+    emailStateLabel.classList.add('text-error');
+    emailStateLabel.classList.remove('text-tertiary');
+    emailContentBox.textContent = "\"Hey team, just wanted to check in and see if maybe anyone has looked at the contract? Sorry to bother, but we really need it done soon or we might get in trouble with the client.\"";
+    emailContentBox.classList.remove('bg-tertiary-fixed/20');
+    toneMetric.textContent = "Confidence: 38% (Submissive)";
+    refactorBtn.querySelector('span:last-child').textContent = "Refactor Diplomatic";
+  }
+});
+let tapCount = 0;
+let tapTimer;
+const secretTap = document.getElementById('secretAdminTap');
+const adminPortal = document.getElementById('adminPortal');
+secretTap.addEventListener('click', () => {
+  tapCount++;
+  clearTimeout(tapTimer);
+  tapTimer = setTimeout(() => { tapCount = 0; }, 1200);
+  if (tapCount >= 5) {
+    adminPortal.classList.toggle('hidden');
+    tapCount = 0;
+  }
+});
+</script>
+</body>
+</html>

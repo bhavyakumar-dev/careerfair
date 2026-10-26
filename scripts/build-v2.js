@@ -1,0 +1,1716 @@
+import fs from "fs";
+import path from "path";
+
+function cleanCode(str) {
+  let out = str.replace(/<!--[\s\S]*?-->/g, "");
+  out = out.replace(/\/\*[\s\S]*?\*\//g, "");
+  let lines = out.split("\n");
+  let cleanedLines = lines.map(line => {
+    let inString = false;
+    let quoteChar = "";
+    for (let i = 0; i < line.length; i++) {
+      let char = line[i];
+      let nextChar = line[i + 1] || "";
+      if ((char === '"' || char === "'" || char === '`') && (i === 0 || line[i - 1] !== '\\')) {
+        if (!inString) {
+          inString = true;
+          quoteChar = char;
+        } else if (char === quoteChar) {
+          inString = false;
+        }
+      }
+      if (!inString && char === '/' && nextChar === '/') {
+        return line.substring(0, i).trimEnd();
+      }
+    }
+    return line;
+  });
+  return cleanedLines.filter(l => l.trim().length > 0).join("\n");
+}
+
+const v2Content = `<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VERBUM PREMIER | The Global Career Architecture Platform</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#F59E0B",
+            "primary-container": "#D97706",
+            "primary-fixed": "#FEF3C7",
+            "on-primary": "#000000",
+            "secondary": "#EAB308",
+            "secondary-container": "#B45309",
+            "tertiary": "#FCD34D",
+            "tertiary-container": "#78350F",
+            "error": "#EF4444",
+            "surface-dim": "#080B10",
+            "surface": "#0E131F",
+            "surface-bright": "#1C2436",
+            "surface-container-lowest": "#06080D",
+            "surface-container-low": "#0A0F1A",
+            "surface-container": "#111827",
+            "surface-container-high": "#182236",
+            "surface-container-highest": "#222E47",
+            "on-surface": "#F8FAFC",
+            "on-surface-variant": "#94A3B8",
+            "outline": "#64748B",
+            "outline-variant": "#334155",
+            "background": "#070A0F"
+          },
+          fontFamily: {
+            "display": ["Syne", "sans-serif"],
+            "headline": ["Plus Jakarta Sans", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"],
+            "serif": ["Cinzel", "serif"]
+          }
+        }
+      }
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #06080D;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E293B;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #F59E0B;
+    }
+    .amber-glow {
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.25);
+    }
+    .amber-border {
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+</style>
+</head>
+<body class="bg-background text-on-surface antialiased selection:bg-primary selection:text-black min-h-screen relative overflow-x-hidden font-body">
+<div class="fixed top-0 left-0 h-1 bg-gradient-to-r from-primary via-secondary to-tertiary z-[70] w-0 transition-all duration-75" id="scroll-progress-bar"></div>
+
+<header class="bg-surface/85 backdrop-blur-md docked full-width top-0 fixed z-50 border-b border-outline-variant/30">
+<div class="w-full px-4 md:px-8 max-w-7xl mx-auto flex items-center justify-between h-16">
+<div class="flex items-center gap-3 cursor-pointer select-none" id="brand-logo-seal" title="Institutional Seal">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high amber-border flex items-center justify-center text-primary relative overflow-hidden group">
+<span class="material-symbols-outlined text-[22px]">shield</span>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+<div>
+<span class="text-lg font-display font-extrabold tracking-tight text-white flex items-center gap-2">
+VERBUM PREMIER
+<span class="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded bg-primary/15 text-primary border border-primary/30 font-mono font-bold hidden sm:inline-block">v2 Architecture</span>
+</span>
+</div>
+</div>
+
+<nav class="hidden lg:flex items-center space-x-6 text-sm font-headline font-medium">
+<a class="text-primary border-b-2 border-primary pb-1 font-semibold" href="#sectors">Sectors</a>
+<a class="text-on-surface-variant hover:text-white pb-1 transition-colors" href="#speech-lab">Speech Lab</a>
+<a class="text-on-surface-variant hover:text-white pb-1 transition-colors" href="#roleplay">Roleplay</a>
+<a class="text-on-surface-variant hover:text-white pb-1 transition-colors" href="#benchmarking">Benchmarking</a>
+<a class="text-on-surface-variant hover:text-white pb-1 transition-colors" href="#roadmap">Roadmap</a>
+<a class="text-on-surface-variant hover:text-white pb-1 transition-colors" href="#telemetry">Telemetry</a>
+</nav>
+
+<div class="flex items-center gap-2 sm:gap-3">
+<div class="flex items-center bg-surface-container-low rounded-lg p-1 border border-outline-variant/40 text-xs">
+<a href="index.html" class="px-2 py-1 rounded text-on-surface-variant hover:text-white transition-all font-mono" title="v1 Classic Pavilion">v1</a>
+<span class="px-2 py-1 rounded bg-primary text-black font-mono font-bold" title="Current: v2 Verbum Premier">v2</span>
+<a href="v3.html" class="px-2 py-1 rounded text-on-surface-variant hover:text-white transition-all font-mono" title="v3 Open Mic Lab">v3</a>
+<a href="v4.html" class="px-2 py-1 rounded text-on-surface-variant hover:text-white transition-all font-mono" title="v4 Alexandria Exec">v4</a>
+<a href="v5.html" class="px-2 py-1 rounded text-on-surface-variant hover:text-white transition-all font-mono" title="v5 Sovereign Mobility">v5</a>
+</div>
+
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-white transition-all" id="admin-modal-trigger" title="Admin Console">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+
+<a class="hidden sm:inline-flex items-center justify-center bg-primary hover:bg-primary-container text-black font-headline font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-lg transition-all shadow-[0_0_16px_rgba(245,158,11,0.3)] active:scale-95" href="#speech-lab">
+Launch Lab
+</a>
+</div>
+</div>
+</header>
+
+<main class="relative pt-16">
+<section class="relative min-h-[900px] flex items-center justify-center overflow-hidden border-b border-outline-variant/20 px-4 md:px-8 py-20">
+<div class="absolute inset-0 w-full h-full opacity-70 pointer-events-none" style="display:block;">
+<canvas id="shader-canvas-ANIMATION_2" style="display:block;width:100%;height:100%"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_2');
+  function syncSize() {
+    const w = canvas.clientWidth || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+  const vs = "attribute vec2 a_position; varying vec2 v_texCoord; void main() { v_texCoord = a_position * 0.5 + 0.5; gl_Position = vec4(a_position, 0.0, 1.0); }";
+  const fs = "precision highp float; uniform float u_time; uniform vec2 u_resolution; uniform vec2 u_mouse; float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); } float noise(vec2 p) { vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f); return mix(mix(hash(i + vec2(0.0,0.0)), hash(i + vec2(1.0,0.0)), u.x), mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y); } float fbm(vec2 p) { float v = 0.0; float a = 0.5; vec2 shift = vec2(100.0); mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5)); for (int i = 0; i < 4; ++i) { v += a * noise(p); p = rot * p * 2.0 + shift; a *= 0.5; } return v; } void main() { vec2 uv = gl_FragCoord.xy / u_resolution.xy; vec2 p = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / min(u_resolution.x, u_resolution.y); vec2 mouse = u_mouse / u_resolution; p += (mouse - 0.5) * 0.3; float t = u_time * 0.15; vec2 q = vec2(0.0); q.x = fbm(p + 0.1 * t); q.y = fbm(p + vec2(1.0)); vec2 r = vec2(0.0); r.x = fbm(p + 1.0 * q + vec2(1.7, 9.2) + 0.15 * t); r.y = fbm(p + 1.0 * q + vec2(8.3, 2.8) + 0.126 * t); float f = fbm(p + r); vec3 col = mix(vec3(0.03, 0.04, 0.07), vec3(0.08, 0.06, 0.02), clamp(f * f * 2.5, 0.0, 1.0)); col = mix(col, vec3(0.78, 0.45, 0.05), clamp(length(q), 0.0, 1.0) * 0.45); col = mix(col, vec3(0.96, 0.72, 0.10), clamp(length(r.x), 0.0, 1.0) * 0.35); col = mix(col, vec3(0.40, 0.20, 0.05), clamp(f * 0.8, 0.0, 1.0) * 0.25); float n = hash(uv * 400.0 + fract(u_time * 0.02)); if (n > 0.993) { col += vec3(1.0, 0.9, 0.6) * fract(sin(u_time * 2.0 + uv.x * 50.0) * 0.5 + 0.5) * 0.4; } float vig = 1.0 - smoothstep(0.4, 1.4, length(uv - 0.5) * 1.3); col *= vig; gl_FragColor = vec4(col, 0.95); }";
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      const nx = (event.clientX - rect.left) / rect.width;
+      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+      mouse.x = nx * canvas.width;
+      mouse.y = ny * canvas.height;
+    }
+  });
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+
+<div class="absolute inset-0 bg-gradient-to-b from-surface-dim/40 via-surface/60 to-surface-container-lowest pointer-events-none"></div>
+<div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/10 rounded-full blur-[140px] pointer-events-none"></div>
+
+<div class="relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center">
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container/90 border border-primary/30 backdrop-blur-md mb-6">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="text-xs font-mono text-primary tracking-widest uppercase font-bold">Kanakia International School Mira Road</span>
+</div>
+
+<h1 class="text-4xl sm:text-6xl lg:text-7xl font-display font-extrabold tracking-tight text-white max-w-4xl leading-[1.1]">
+The Sovereign Voice: <br class="hidden md:inline"/>How English Mastery Commands High-Value Careers
+</h1>
+
+<p class="mt-6 text-base sm:text-lg font-body text-on-surface-variant max-w-3xl leading-relaxed">
+Beyond conversational fluency: Explore how linguistic cadence, syntactical authority, and rhetorical command drive multimillion-rupee careers across international film, aviation, gaming, and global jurisprudence.
+</p>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 my-10 w-full max-w-3xl">
+<div class="p-4 rounded-2xl bg-surface-container/80 border border-outline-variant/30 backdrop-blur-md text-left flex items-start gap-3.5 hover:border-primary/40 transition-colors">
+<span class="material-symbols-outlined text-primary text-[28px]">payments</span>
+<div>
+<div class="text-xl font-headline font-bold text-white">₹18L - ₹1.4Cr+</div>
+<div class="text-xs text-on-surface-variant font-mono">Global Compensation Range</div>
+</div>
+</div>
+<div class="p-4 rounded-2xl bg-surface-container/80 border border-outline-variant/30 backdrop-blur-md text-left flex items-start gap-3.5 hover:border-primary/40 transition-colors">
+<span class="material-symbols-outlined text-secondary text-[28px]">workspace_premium</span>
+<div>
+<div class="text-xl font-headline font-bold text-white">16+ High-Impact</div>
+<div class="text-xs text-on-surface-variant font-mono">Sovereign Disciplines</div>
+</div>
+</div>
+<div class="p-4 rounded-2xl bg-surface-container/80 border border-outline-variant/30 backdrop-blur-md text-left flex items-start gap-3.5 hover:border-primary/40 transition-colors">
+<span class="material-symbols-outlined text-tertiary text-[28px]">neurology</span>
+<div>
+<div class="text-xl font-headline font-bold text-white">5-Tier Adaptive</div>
+<div class="text-xs text-on-surface-variant font-mono">AI Latency Architecture</div>
+</div>
+</div>
+</div>
+
+<div class="flex flex-wrap items-center justify-center gap-4">
+<a class="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-black font-headline font-bold text-sm px-6 py-3.5 rounded-xl shadow-[0_0_24px_rgba(245,158,11,0.45)] transition-all active:scale-95" href="#sectors">
+<span class="material-symbols-outlined text-[20px]">explore</span>
+Explore Career Matrices
+</a>
+<a class="inline-flex items-center gap-2 bg-surface-container-high/80 hover:bg-surface-container-high border border-outline-variant text-white font-headline font-semibold text-sm px-6 py-3.5 rounded-xl backdrop-blur-md transition-all active:scale-95" href="#speech-lab">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+Speech Benchmarking
+</a>
+<a class="inline-flex items-center gap-2 bg-surface-container-low hover:bg-surface-container border border-outline-variant/40 text-on-surface-variant hover:text-white font-mono text-sm px-5 py-3.5 rounded-xl transition-all" href="#qr-portal">
+<span class="material-symbols-outlined text-[20px]">qr_code_2</span>
+Mobile Stall QR
+</a>
+</div>
+</div>
+</section>
+
+<section class="py-24 px-4 md:px-8 max-w-7xl mx-auto border-b border-outline-variant/20" id="sectors">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+<div>
+<div class="inline-flex items-center gap-2 text-xs font-mono text-primary tracking-widest uppercase mb-2">
+<span class="material-symbols-outlined text-[16px]">domain</span>
+Career Architecture Matrix
+</div>
+<h2 class="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight">
+High-Stakes Disciplines Built on Articulation
+</h2>
+<p class="text-sm font-body text-on-surface-variant max-w-2xl mt-2">
+Fluency is no longer remedial. In high-value international economies, vocal authority and syntactic precision dictate compensation tier and room command.
+</p>
+</div>
+
+<div class="flex flex-wrap items-center bg-surface-container-lowest p-1 rounded-xl border border-outline-variant/30 gap-1" id="career-filter-tabs">
+<button class="filter-btn active px-3.5 py-1.5 rounded-lg text-xs font-headline font-semibold bg-primary text-black transition-all" onclick="filterCareers('all')">All Sectors</button>
+<button class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-headline font-medium text-on-surface-variant hover:text-white transition-all" onclick="filterCareers('entertainment')">Entertainment & Media</button>
+<button class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-headline font-medium text-on-surface-variant hover:text-white transition-all" onclick="filterCareers('narrative')">Writing & Narrative</button>
+<button class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-headline font-medium text-on-surface-variant hover:text-white transition-all" onclick="filterCareers('tech')">Tech & Aviation</button>
+<button class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-headline font-medium text-on-surface-variant hover:text-white transition-all" onclick="filterCareers('corporate')">Corporate & Law</button>
+</div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="career-grid">
+<div class="career-card group p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col justify-between" data-sector="entertainment">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-mono uppercase bg-primary/10 border border-primary/30 text-primary">Entertainment & Media</span>
+<span class="text-lg font-headline font-bold text-secondary">₹12L - ₹65L+</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white group-hover:text-primary transition-colors">Screenwriter / OTT Scriptwriter</h3>
+<p class="text-xs text-on-surface-variant mt-2 mb-4">Dialogue cadence, subtext mastery & international pitch rooms for global streaming platforms like Netflix & HBO.</p>
+<div class="space-y-2 text-xs font-mono">
+<div class="flex items-center justify-between text-on-surface-variant border-t border-outline-variant/20 pt-2">
+<span>Top Academies:</span>
+<span class="text-white font-medium">FTII / SRFTI / NYU Tisch</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Exam Pathways:</span>
+<span class="text-white font-medium">JET / Creative Portfolio / SAT</span>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-outline-variant/20">
+<div class="p-2.5 rounded-xl bg-surface-container text-xs text-primary flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">key</span>
+<span><strong>The Leverage:</strong> Subtext architecture, dramatic tension, and pitching to US/UK showrunners.</span>
+</div>
+</div>
+</div>
+
+<div class="career-card group p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col justify-between" data-sector="narrative">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-mono uppercase bg-secondary/10 border border-secondary/30 text-secondary">Writing & Narrative</span>
+<span class="text-lg font-headline font-bold text-secondary">₹15L - ₹80L+</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white group-hover:text-primary transition-colors">Narrative Designer & Game Writer</h3>
+<p class="text-xs text-on-surface-variant mt-2 mb-4">World-building lore, branching dialogue trees & interactive rhetoric for AAA studios and transmedia universes.</p>
+<div class="space-y-2 text-xs font-mono">
+<div class="flex items-center justify-between text-on-surface-variant border-t border-outline-variant/20 pt-2">
+<span>Top Academies:</span>
+<span class="text-white font-medium">DigiPen / NID / BITS Pilani</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Exam Pathways:</span>
+<span class="text-white font-medium">NID DAT / Interactive Portfolios</span>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-outline-variant/20">
+<div class="p-2.5 rounded-xl bg-surface-container text-xs text-primary flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">key</span>
+<span><strong>The Leverage:</strong> Complex conditional logic phrased in sharp, emotional English dialogue.</span>
+</div>
+</div>
+</div>
+
+<div class="career-card group p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col justify-between" data-sector="narrative">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-mono uppercase bg-secondary/10 border border-secondary/30 text-secondary">Writing & Narrative</span>
+<span class="text-lg font-headline font-bold text-secondary">₹10L - ₹1Cr+</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white group-hover:text-primary transition-colors">Novelist & Fiction Author</h3>
+<p class="text-xs text-on-surface-variant mt-2 mb-4">Syntax rhythm, narrative tension & international literary syndication across London and New York publishing houses.</p>
+<div class="space-y-2 text-xs font-mono">
+<div class="flex items-center justify-between text-on-surface-variant border-t border-outline-variant/20 pt-2">
+<span>Top Academies:</span>
+<span class="text-white font-medium">Iowa Writers / Ashoka / Columbia</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Exam Pathways:</span>
+<span class="text-white font-medium">Ashoka AAT / Literary Manuscripts</span>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-outline-variant/20">
+<div class="p-2.5 rounded-xl bg-surface-container text-xs text-primary flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">key</span>
+<span><strong>The Leverage:</strong> Global cultural currency and licensing IP rights internationally.</span>
+</div>
+</div>
+</div>
+
+<div class="career-card group p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col justify-between" data-sector="entertainment">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-mono uppercase bg-primary/10 border border-primary/30 text-primary">Entertainment & Media</span>
+<span class="text-lg font-headline font-bold text-secondary">₹8L - ₹50L+</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white group-hover:text-primary transition-colors">Lyricist & Songwriter</h3>
+<p class="text-xs text-on-surface-variant mt-2 mb-4">Poetic prosody, phonetic rhythm & cross-cultural resonance for international music labels and synchronizations.</p>
+<div class="space-y-2 text-xs font-mono">
+<div class="flex items-center justify-between text-on-surface-variant border-t border-outline-variant/20 pt-2">
+<span>Top Academies:</span>
+<span class="text-white font-medium">Berklee / KM Music Conservatory</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Exam Pathways:</span>
+<span class="text-white font-medium">Audition Portfolios / AP Music</span>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-outline-variant/20">
+<div class="p-2.5 rounded-xl bg-surface-container text-xs text-primary flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">key</span>
+<span><strong>The Leverage:</strong> Linguistic meter, assonance, and cross-border emotional resonance.</span>
+</div>
+</div>
+</div>
+
+<div class="career-card group p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col justify-between" data-sector="entertainment">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-mono uppercase bg-primary/10 border border-primary/30 text-primary">Entertainment & Media</span>
+<span class="text-lg font-headline font-bold text-secondary">₹12L - ₹45L+</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white group-hover:text-primary transition-colors">Voice Actor & Audiobook Narrator</h3>
+<p class="text-xs text-on-surface-variant mt-2 mb-4">Vocal coloration, Received Pronunciation (RP) & dialect agility for Audible, BBC audiobooks, and video game characters.</p>
+<div class="space-y-2 text-xs font-mono">
+<div class="flex items-center justify-between text-on-surface-variant border-t border-outline-variant/20 pt-2">
+<span>Top Academies:</span>
+<span class="text-white font-medium">NSD / Barry John / LAMDA</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Exam Pathways:</span>
+<span class="text-white font-medium">Acoustic Auditions / Voice Reels</span>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-outline-variant/20">
+<div class="p-2.5 rounded-xl bg-surface-container text-xs text-primary flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">key</span>
+<span><strong>The Leverage:</strong> Precision articulation, phoneme control, and vocal endurance.</span>
+</div>
+</div>
+</div>
+
+<div class="career-card group p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col justify-between" data-sector="entertainment">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-mono uppercase bg-primary/10 border border-primary/30 text-primary">Entertainment & Media</span>
+<span class="text-lg font-headline font-bold text-secondary">₹9L - ₹35L+</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white group-hover:text-primary transition-colors">Radio Jockey & Podcast Host</h3>
+<p class="text-xs text-on-surface-variant mt-2 mb-4">Impromptu articulation, acoustic pacing & charismatic presence commanding syndicated multi-million-listen streams.</p>
+<div class="space-y-2 text-xs font-mono">
+<div class="flex items-center justify-between text-on-surface-variant border-t border-outline-variant/20 pt-2">
+<span>Top Academies:</span>
+<span class="text-white font-medium">Jamia MCRC / IIMC / London Met</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Exam Pathways:</span>
+<span class="text-white font-medium">JMI Entrance / Studio Pilots</span>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-outline-variant/20">
+<div class="p-2.5 rounded-xl bg-surface-container text-xs text-primary flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">key</span>
+<span><strong>The Leverage:</strong> Real-time conversational agility and rapid lexical retrieval.</span>
+</div>
+</div>
+</div>
+
+<div class="career-card group p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col justify-between" data-sector="narrative">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-mono uppercase bg-secondary/10 border border-secondary/30 text-secondary">Writing & Narrative</span>
+<span class="text-lg font-headline font-bold text-secondary">₹8L - ₹28L+</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white group-hover:text-primary transition-colors">Dubbing & Subtitle Localizer</h3>
+<p class="text-xs text-on-surface-variant mt-2 mb-4">Cultural idioms, colloquial nuance & lip-flap synchronization bridging Asian & Western global entertainment pipelines.</p>
+<div class="space-y-2 text-xs font-mono">
+<div class="flex items-center justify-between text-on-surface-variant border-t border-outline-variant/20 pt-2">
+<span>Top Academies:</span>
+<span class="text-white font-medium">EFLU / JNU / SOAS London</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Exam Pathways:</span>
+<span class="text-white font-medium">CUET-PG / Translation Portfolios</span>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-outline-variant/20">
+<div class="p-2.5 rounded-xl bg-surface-container text-xs text-primary flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">key</span>
+<span><strong>The Leverage:</strong> Preserving comedic timing, subtext, and syllabic cadence across languages.</span>
+</div>
+</div>
+</div>
+
+<div class="career-card group p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col justify-between" data-sector="corporate">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-mono uppercase bg-tertiary/15 border border-tertiary/30 text-tertiary">Corporate & Law</span>
+<span class="text-lg font-headline font-bold text-secondary">₹18L - ₹1.2Cr+</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white group-hover:text-primary transition-colors">Corporate Lawyer & Arbitrator</h3>
+<p class="text-xs text-on-surface-variant mt-2 mb-4">Statutory interpretation, precision contract drafting & high-pressure verbal cross-examinations in Geneva and London tribunals.</p>
+<div class="space-y-2 text-xs font-mono">
+<div class="flex items-center justify-between text-on-surface-variant border-t border-outline-variant/20 pt-2">
+<span>Top Academies:</span>
+<span class="text-white font-medium">NLSIU / Oxford / Harvard Law</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Exam Pathways:</span>
+<span class="text-white font-medium">CLAT / LSAT / LNAT</span>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-outline-variant/20">
+<div class="p-2.5 rounded-xl bg-surface-container text-xs text-primary flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">key</span>
+<span><strong>The Leverage:</strong> Single misplaced prepositions swing multi-million-dollar arbitration liabilities.</span>
+</div>
+</div>
+</div>
+
+<div class="career-card group p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col justify-between" data-sector="tech">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-mono uppercase bg-primary/10 border border-primary/30 text-primary">Tech & Aviation</span>
+<span class="text-lg font-headline font-bold text-secondary">₹24L - ₹85L+</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white group-hover:text-primary transition-colors">Commercial Airline Pilot / Captain</h3>
+<p class="text-xs text-on-surface-variant mt-2 mb-4">Standard ICAO radiotelephony, non-ambiguous situational commands & crisis assertiveness in saturated transatlantic air corridors.</p>
+<div class="space-y-2 text-xs font-mono">
+<div class="flex items-center justify-between text-on-surface-variant border-t border-outline-variant/20 pt-2">
+<span>Top Academies:</span>
+<span class="text-white font-medium">IGRUA / CAE / Oxford Aviation</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Exam Pathways:</span>
+<span class="text-white font-medium">DGCA CPL / ICAO English Level 6</span>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-outline-variant/20">
+<div class="p-2.5 rounded-xl bg-surface-container text-xs text-primary flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">key</span>
+<span><strong>The Leverage:</strong> Absolute acoustic clarity eliminates runway incursions and mid-air risk.</span>
+</div>
+</div>
+</div>
+
+<div class="career-card group p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col justify-between" data-sector="tech">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="px-2.5 py-1 rounded-full text-xs font-mono uppercase bg-primary/10 border border-primary/30 text-primary">Tech & Aviation</span>
+<span class="text-lg font-headline font-bold text-secondary">₹20L - ₹95L+</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white group-hover:text-primary transition-colors">AI Prompt Engineer & NLP Lead</h3>
+<p class="text-xs text-on-surface-variant mt-2 mb-4">Semantic ambiguity resolution, few-shot synthetic reasoning & high-parameter alignment steering generative frontier models.</p>
+<div class="space-y-2 text-xs font-mono">
+<div class="flex items-center justify-between text-on-surface-variant border-t border-outline-variant/20 pt-2">
+<span>Top Academies:</span>
+<span class="text-white font-medium">IIT Bombay / Stanford / CMU</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Exam Pathways:</span>
+<span class="text-white font-medium">JEE Advanced / GRE / GitHub Research</span>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-outline-variant/20">
+<div class="p-2.5 rounded-xl bg-surface-container text-xs text-primary flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">key</span>
+<span><strong>The Leverage:</strong> Precise linguistic constraints steer billion-dollar autonomous compute fleets.</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="py-24 px-4 md:px-8 max-w-7xl mx-auto border-b border-outline-variant/20" id="speech-lab">
+<div class="text-center max-w-3xl mx-auto mb-14">
+<div class="inline-flex items-center gap-2 text-xs font-mono text-secondary tracking-widest uppercase mb-2">
+<span class="material-symbols-outlined text-[16px]">equalizer</span>
+Real-Time Phonetic Analysis
+</div>
+<h2 class="text-3xl sm:text-4xl font-display font-bold text-white">The Verbum AI Speech Lab</h2>
+<p class="text-sm font-body text-on-surface-variant mt-2">
+Simulate high-stakes acoustic conditions. Train rhythm, cadential variation, and lexical authority with real-time waveform telemetry.
+</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<div class="lg:col-span-7 bg-surface-container-low rounded-2xl border border-outline-variant/30 p-6 sm:p-8 flex flex-col justify-between h-full">
+<div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-outline-variant/20">
+<div>
+<span class="text-xs font-mono uppercase tracking-wider text-on-surface-variant">Selected Script Protocol</span>
+<h4 class="text-lg font-headline text-white font-bold" id="script-title-display">Hollywood Pitch: Sci-Fi Pilot</h4>
+</div>
+<select class="bg-surface-container-high border border-outline-variant text-white text-xs rounded-xl px-3 py-2.5 focus:ring-1 focus:ring-primary focus:outline-none font-mono" id="teleprompter-script-selector" onchange="updateTeleprompterScript(this.value)">
+<option value="hollywood">Hollywood Pitch (Sci-Fi Pilot)</option>
+<option value="aviation">Aviation Emergency Clearance</option>
+<option value="court">Supreme Court Oral Argument</option>
+<option value="boardroom">Transnational M&A Defense</option>
+</select>
+</div>
+
+<div class="my-6 p-5 rounded-xl bg-surface-container-lowest border border-outline-variant/20 min-h-[140px] flex items-center">
+<p class="text-base sm:text-lg text-white font-medium leading-relaxed transition-all duration-300" id="teleprompter-text">
+"Ladies and gentlemen of the network room: The series begins in 2088 inside orbital salvage bay nine. What appears to be an abandoned cryo-vessel is essentially carrying the sole uncorrupted neural seed of humanity. We are not selling a space opera; we are selling the final legal trial of biological consciousness."
+</p>
+</div>
+
+<div class="relative w-full h-24 bg-surface-container-lowest rounded-xl border border-outline-variant/20 overflow-hidden flex items-center justify-center">
+<canvas class="w-full h-full" id="waveform-canvas"></canvas>
+<div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-on-surface-variant/70 pointer-events-none" id="recording-status-overlay">
+Ready for acoustic input. Press 'Record Voice Sample'.
+</div>
+</div>
+</div>
+
+<div class="mt-6 pt-6 border-t border-outline-variant/20 flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<button class="inline-flex items-center gap-2 bg-error hover:bg-red-600 text-white font-headline font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all active:scale-95 shadow-[0_0_12px_rgba(239,68,68,0.3)]" id="record-btn" onclick="toggleRecording()">
+<span class="material-symbols-outlined text-[18px]" id="record-icon">mic</span>
+<span id="record-text">Record Voice Sample</span>
+</button>
+<button class="inline-flex items-center gap-2 bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-white font-headline font-semibold text-xs px-4 py-2.5 rounded-xl transition-all active:scale-95" onclick="runAcousticAnalysis()">
+<span class="material-symbols-outlined text-[18px]">neurology</span>
+Analyze Cadence
+</button>
+</div>
+<button class="text-xs font-mono text-on-surface-variant hover:text-white transition-colors flex items-center gap-1" onclick="resetSpeechLab()">
+<span class="material-symbols-outlined text-[16px]">restart_alt</span> Reset Teleprompter
+</button>
+</div>
+</div>
+
+<div class="lg:col-span-5 bg-surface-container-low rounded-2xl border border-outline-variant/30 p-6 sm:p-8">
+<div class="flex items-center justify-between mb-6">
+<h4 class="text-lg font-headline text-white font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">analytics</span>
+Acoustic Telemetry
+</h4>
+<span class="text-xs font-mono text-secondary px-2 py-0.5 rounded bg-secondary/10 border border-secondary/20">LIVE ENGINE</span>
+</div>
+
+<div class="mb-5">
+<div class="flex justify-between items-center mb-1.5 text-xs font-mono">
+<span class="text-on-surface-variant">Fluency Index</span>
+<span class="font-bold text-primary font-mono" id="val-fluency">94 / 100</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-700" id="bar-fluency" style="width: 94%"></div>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-1 inline-block">Unbroken prosody, native sentence pitch architecture</span>
+</div>
+
+<div class="mb-5 p-3 rounded-xl bg-surface-container-lowest border border-outline-variant/20 flex items-center justify-between">
+<div>
+<div class="text-xs font-headline font-semibold text-white">Filler Words Flagged</div>
+<div class="text-xs text-error font-mono mt-0.5" id="filler-detected-label">1 detected: <span class="underline">"essentially"</span></div>
+</div>
+<div class="w-10 h-10 rounded-lg bg-error/15 border border-error/30 flex items-center justify-center text-error font-mono font-bold text-lg" id="val-fillers">
+1
+</div>
+</div>
+
+<div class="mb-5">
+<div class="flex justify-between items-center mb-1.5 text-xs font-mono">
+<span class="text-on-surface-variant">Speech Rate (WPM)</span>
+<span class="font-bold text-secondary font-mono" id="val-wpm">138 WPM</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full transition-all duration-700" id="bar-wpm" style="width: 76%"></div>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-1 inline-block">Target executive benchmark: 130 – 145 WPM</span>
+</div>
+
+<div class="mb-5">
+<div class="flex justify-between items-center mb-1.5 text-xs font-mono">
+<span class="text-on-surface-variant">Lexical Density (Advanced Vocabulary)</span>
+<span class="font-bold text-tertiary font-mono" id="val-lexical">88%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full rounded-full transition-all duration-700" id="bar-lexical" style="width: 88%"></div>
+</div>
+<span class="text-[11px] text-on-surface-variant/70 mt-1 inline-block">Sophisticated tier-3 nomenclature dominance</span>
+</div>
+
+<div class="pt-4 border-t border-outline-variant/20 flex items-center justify-between">
+<span class="text-xs text-on-surface-variant">Phonetic Articulation</span>
+<span class="px-2.5 py-1 rounded-full bg-secondary/10 border border-secondary/30 text-secondary text-xs font-mono font-semibold flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+98.2% Received Clear
+</span>
+</div>
+</div>
+</div>
+</section>
+
+<section class="py-24 px-4 md:px-8 max-w-7xl mx-auto border-b border-outline-variant/20" id="roleplay">
+<div class="text-center max-w-3xl mx-auto mb-14">
+<div class="inline-flex items-center gap-2 text-xs font-mono text-primary tracking-widest uppercase mb-2">
+<span class="material-symbols-outlined text-[16px]">forum</span>
+High-Pressure Dialogue Sandbox
+</div>
+<h2 class="text-3xl sm:text-4xl font-display font-bold text-white">Conversational Roleplay Matrix</h2>
+<p class="text-sm font-body text-on-surface-variant mt-2">
+Test real-time diplomatic de-escalation, rapid venture capital persuasion, and aviation emergency assertiveness against institutional AI personas.
+</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-4 space-y-3">
+<h4 class="text-xs font-mono text-on-surface-variant uppercase tracking-wider mb-2">Select Simulation Scenario</h4>
+
+<div class="p-4 rounded-xl bg-surface-container-high border-2 border-primary cursor-pointer transition-all" id="persona-founder" onclick="selectPersona('founder')">
+<div class="flex items-center justify-between">
+<span class="font-headline font-bold text-white">Tech Founder Seed Pitch</span>
+<span class="material-symbols-outlined text-primary text-[20px]">rocket_launch</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Skeptical Silicon Valley partner interrogating your unit economics & moat.</p>
+</div>
+
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30 hover:border-outline cursor-pointer transition-all" id="persona-boardroom" onclick="selectPersona('boardroom')">
+<div class="flex items-center justify-between">
+<span class="font-headline font-bold text-white">Hostile Boardroom Stakeholder</span>
+<span class="material-symbols-outlined text-tertiary text-[20px]">gavel</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Interrogating a sovereign compliance breach during transnational merger.</p>
+</div>
+
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30 hover:border-outline cursor-pointer transition-all" id="persona-aviation" onclick="selectPersona('aviation')">
+<div class="flex items-center justify-between">
+<span class="font-headline font-bold text-white">Anxious International Passenger</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">flight_takeoff</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Mid-air turbulence crisis de-escalation using authoritative reassurance.</p>
+</div>
+</div>
+
+<div class="lg:col-span-8 bg-surface-container-low rounded-2xl border border-outline-variant/30 p-6 flex flex-col justify-between h-[480px]">
+<div class="flex items-center justify-between pb-4 border-b border-outline-variant/20">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<div>
+<div class="text-sm font-headline font-bold text-white" id="active-persona-name">Marc Andreessen Protocol (Venture Partner)</div>
+<div class="text-xs font-mono text-on-surface-variant" id="active-persona-status">Strict tone: Expects tight narrative structure without fluff.</div>
+</div>
+</div>
+<span class="text-xs font-mono text-primary bg-primary/10 px-2.5 py-1 rounded border border-primary/20">Active Node</span>
+</div>
+
+<div class="flex-1 overflow-y-auto space-y-4 py-4 pr-2" id="roleplay-messages">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+</div>
+<div class="bg-surface-container p-3.5 rounded-xl border border-outline-variant/30 max-w-xl text-xs sm:text-sm text-on-surface leading-relaxed">
+"We've reviewed your slide on synthetic language telemetry. Every founder uses the word 'revolutionary'. Exactly what linguistic moat protects your model against frontier open-weights when deployed in cross-border arbitration?"
+</div>
+</div>
+</div>
+
+<div>
+<div class="flex flex-wrap gap-2 mb-3" id="roleplay-suggestions">
+<button class="text-xs font-mono bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40 text-on-surface-variant hover:text-white px-2.5 py-1 rounded-lg transition-colors" onclick="fillRoleplayPrompt('Our proprietary value is not raw compute; it is the 400,000 verified jurisdictional arbitration transcripts we parsed under strict legal privilege.')">
+"Our value is in the 400k verified jurisdictional transcripts..."
+</button>
+<button class="text-xs font-mono bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40 text-on-surface-variant hover:text-white px-2.5 py-1 rounded-lg transition-colors" onclick="fillRoleplayPrompt('Open weights hallucinate under statutory ambiguity; our architecture guarantees zero semantic drift.')">
+"Open weights drift under statutory ambiguity..."
+</button>
+</div>
+
+<div class="flex items-center gap-2">
+<input class="flex-1 bg-surface-container-lowest border border-outline-variant/40 text-white placeholder:text-on-surface-variant/40 text-xs sm:text-sm rounded-xl px-4 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" id="roleplay-input" placeholder="Type your strategic verbal argument or proposition..." type="text"/>
+<button class="bg-primary hover:bg-primary-container text-black font-headline font-bold text-xs uppercase px-4 py-2.5 rounded-xl transition-all active:scale-95 flex items-center gap-1.5 shrink-0" onclick="sendRoleplayMessage()">
+<span>Deliver</span>
+<span class="material-symbols-outlined text-[18px]">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="py-24 px-4 md:px-8 max-w-7xl mx-auto border-b border-outline-variant/20" id="benchmarking">
+<div class="text-center max-w-3xl mx-auto mb-14">
+<div class="inline-flex items-center gap-2 text-xs font-mono text-tertiary tracking-widest uppercase mb-2">
+<span class="material-symbols-outlined text-[16px]">record_voice_over</span>
+Acoustic Gold Standards
+</div>
+<h2 class="text-3xl sm:text-4xl font-display font-bold text-white">Master Orator & Received Pronunciation Benchmark</h2>
+<p class="text-sm font-body text-on-surface-variant mt-2">
+Study the cadence, vowel placement, and rhythmic suspension of the world's most captivating public speakers. Contrast your voiceprint against timeless standards.
+</p>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+<div class="p-5 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/40 transition-all flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-xs font-mono uppercase tracking-wider text-secondary font-bold">Naturalist & Broadcaster</span>
+<span class="text-xs font-mono text-on-surface-variant">112 WPM</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white">Sir David Attenborough</h3>
+<p class="text-xs text-on-surface-variant mt-2">Reverent pauses, breath modulation & dramatic sibilance creating universal intimacy.</p>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
+<span class="text-xs text-primary font-mono">Suspended Wonder</span>
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-primary hover:text-black transition-all text-white" onclick="playSampleAcoustic('attenborough')">
+<span class="material-symbols-outlined text-[20px]">volume_up</span>
+</button>
+</div>
+</div>
+
+<div class="p-5 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/40 transition-all flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-xs font-mono uppercase tracking-wider text-primary font-bold">Statesman & Nobel Laureate</span>
+<span class="text-xs font-mono text-on-surface-variant">124 WPM</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white">Winston Churchill</h3>
+<p class="text-xs text-on-surface-variant mt-2">Alliterative heavy beats, Anglo-Saxon monosyllables & martial rhetorical climaxes.</p>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
+<span class="text-xs text-primary font-mono">Sovereign Defiance</span>
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-primary hover:text-black transition-all text-white" onclick="playSampleAcoustic('churchill')">
+<span class="material-symbols-outlined text-[20px]">volume_up</span>
+</button>
+</div>
+</div>
+
+<div class="p-5 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/40 transition-all flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-xs font-mono uppercase tracking-wider text-tertiary font-bold">Classical Stage Dame</span>
+<span class="text-xs font-mono text-on-surface-variant">130 WPM</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white">Dame Maggie Smith</h3>
+<p class="text-xs text-on-surface-variant mt-2">Dry ironic inflection, razor-sharp dental stops & supreme Received Pronunciation (RP).</p>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
+<span class="text-xs text-primary font-mono">Aristocratic Wit</span>
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-primary hover:text-black transition-all text-white" onclick="playSampleAcoustic('maggie')">
+<span class="material-symbols-outlined text-[20px]">volume_up</span>
+</button>
+</div>
+</div>
+
+<div class="p-5 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/40 transition-all flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-xs font-mono uppercase tracking-wider text-primary font-bold">Polemicist & Essayist</span>
+<span class="text-xs font-mono text-on-surface-variant">148 WPM</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white">Christopher Hitchens</h3>
+<p class="text-xs text-on-surface-variant mt-2">Uninterrupted periodic syntax, spontaneous Latinate clauses & combative dialectic speed.</p>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
+<span class="text-xs text-primary font-mono">Dialectical Precision</span>
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-primary hover:text-black transition-all text-white" onclick="playSampleAcoustic('hitchens')">
+<span class="material-symbols-outlined text-[20px]">volume_up</span>
+</button>
+</div>
+</div>
+
+<div class="p-5 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/40 transition-all flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-xs font-mono uppercase tracking-wider text-secondary font-bold">Diplomat & Parliamentarian</span>
+<span class="text-xs font-mono text-on-surface-variant">142 WPM</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white">Dr. Shashi Tharoor</h3>
+<p class="text-xs text-on-surface-variant mt-2">Exuberant sesquipedalian lexicon, mellifluous Indian-RP hybrid cadence & diplomatic panache.</p>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
+<span class="text-xs text-primary font-mono">Lexical Flourish</span>
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-primary hover:text-black transition-all text-white" onclick="playSampleAcoustic('tharoor')">
+<span class="material-symbols-outlined text-[20px]">volume_up</span>
+</button>
+</div>
+</div>
+
+<div class="p-5 rounded-2xl bg-surface-container-low border border-outline-variant/30 hover:border-primary/40 transition-all flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-xs font-mono uppercase tracking-wider text-tertiary font-bold">Comedic Satirist & Orator</span>
+<span class="text-xs font-mono text-on-surface-variant">126 WPM</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-white">Rowan Atkinson</h3>
+<p class="text-xs text-on-surface-variant mt-2">Hyper-articulated plosives (P, B, T, K), theatrical timing & clinical comic delivery.</p>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
+<span class="text-xs text-primary font-mono">Plosive Mastery</span>
+<button class="p-2 rounded-lg bg-surface-container-high hover:bg-primary hover:text-black transition-all text-white" onclick="playSampleAcoustic('atkinson')">
+<span class="material-symbols-outlined text-[20px]">volume_up</span>
+</button>
+</div>
+</div>
+</div>
+
+<div class="p-8 rounded-2xl bg-surface-container-lowest border border-outline-variant/30">
+<div class="max-w-2xl mb-6">
+<h4 class="text-lg font-headline font-bold text-white">Contrast Your Audio Stream Against the Masters</h4>
+<p class="text-xs text-on-surface-variant mt-1">Upload a short recording (under 4MB) or paste your verbatim transcript to calculate your lexical rhythm similarity vector.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="border-2 border-dashed border-outline-variant/40 hover:border-primary/60 p-6 rounded-xl flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-surface-container-low/40">
+<span class="material-symbols-outlined text-primary text-[32px] mb-2">cloud_upload</span>
+<span class="text-xs font-headline font-semibold text-white">Upload Voice Sample (.mp3, .wav under 4MB)</span>
+<span class="text-[11px] font-mono text-on-surface-variant/70 mt-1">Processed transiently in RAM. Strict privacy protocol.</span>
+</div>
+<div class="flex flex-col gap-2">
+<textarea class="w-full h-24 bg-surface-container-low border border-outline-variant/30 rounded-xl p-3 text-xs text-white placeholder:text-on-surface-variant/50 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none resize-none" placeholder="Or paste 30-60 seconds of your spoken transcript here to compare cadential entropy..."></textarea>
+<button class="self-end bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-white font-headline font-semibold text-xs px-4 py-2 rounded-lg transition-all active:scale-95" onclick="simulateMasterComparison()">
+Compute Acoustic Distance
+</button>
+</div>
+</div>
+<div class="hidden mt-6 p-4 rounded-xl bg-surface-container border border-primary/30 flex items-center justify-between text-xs" id="comparison-result">
+<span class="text-white">Acoustic resonance calculated: <strong>81.4% match to Received Pronunciation standard</strong>. Minimal glottal stops detected.</span>
+<span class="text-secondary font-mono font-bold">Passed Level 6 ICAO/BBC Metric</span>
+</div>
+</div>
+</section>
+
+<section class="py-24 px-4 md:px-8 max-w-7xl mx-auto border-b border-outline-variant/20" id="roadmap">
+<div class="text-center max-w-3xl mx-auto mb-14">
+<div class="inline-flex items-center gap-2 text-xs font-mono text-primary tracking-widest uppercase mb-2">
+<span class="material-symbols-outlined text-[16px]">alt_route</span>
+Strategic Trajectory Planner
+</div>
+<h2 class="text-3xl sm:text-4xl font-display font-bold text-white">Class-to-Career Strategic Roadmap</h2>
+<p class="text-sm font-body text-on-surface-variant mt-2">
+Map foundational linguistic milestones directly to international universities and institutional peak compensation.
+</p>
+</div>
+
+<div class="max-w-3xl mx-auto p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 mb-10">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-mono uppercase tracking-wider text-on-surface-variant mb-1.5">Current Academic Cohort</label>
+<select class="w-full bg-surface-container-high border border-outline-variant text-white text-xs rounded-xl px-3 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none font-mono" id="cohort-selector" onchange="generateRoadmap()">
+<option value="class8">Class 8</option>
+<option value="class9">Class 9</option>
+<option selected="" value="class10">Class 10</option>
+<option value="class11">Class 11</option>
+<option value="class12">Class 12</option>
+<option value="undergrad">Undergraduate Scholar</option>
+</select>
+</div>
+<div>
+<label class="block text-xs font-mono uppercase tracking-wider text-on-surface-variant mb-1.5">Target Sovereign Trajectory</label>
+<select class="w-full bg-surface-container-high border border-outline-variant text-white text-xs rounded-xl px-3 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none font-mono" id="trajectory-selector" onchange="generateRoadmap()">
+<option value="screenwriter">Screenwriter & Showrunner (OTT)</option>
+<option selected="" value="lawyer">Corporate Lawyer & Global Arbitrator</option>
+<option value="pilot">Commercial Airline Captain</option>
+<option value="narrative">AAA Narrative Game Designer</option>
+<option value="diplomat">International Envoy & Public Orator</option>
+</select>
+</div>
+</div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative" id="roadmap-milestones">
+<div class="p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 relative">
+<div class="w-8 h-8 rounded-full bg-primary text-black flex items-center justify-center font-bold text-xs mb-4">1</div>
+<span class="text-xs font-mono text-primary uppercase tracking-wider font-semibold">Phase 1: Vocabulary & Syntax</span>
+<h4 class="text-base font-headline font-bold text-white mt-1" id="phase1-title">Legal Latinate Lexicon</h4>
+<p class="text-xs text-on-surface-variant mt-2" id="phase1-desc">
+Master 1,200 jurisdictional Latin roots, statutory disambiguation, and active analytical parsing.
+</p>
+</div>
+
+<div class="p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 relative">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-white flex items-center justify-center font-bold text-xs mb-4 border border-outline-variant">2</div>
+<span class="text-xs font-mono text-secondary uppercase tracking-wider font-semibold">Phase 2: Standardized Testing</span>
+<h4 class="text-base font-headline font-bold text-white mt-1" id="phase2-title">CLAT / LNAT Mastery</h4>
+<p class="text-xs text-on-surface-variant mt-2" id="phase2-desc">
+Target 99.8th percentile in reading comprehension and critical logic under strict timing constraints.
+</p>
+</div>
+
+<div class="p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 relative">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-white flex items-center justify-center font-bold text-xs mb-4 border border-outline-variant">3</div>
+<span class="text-xs font-mono text-tertiary uppercase tracking-wider font-semibold">Phase 3: University Specialization</span>
+<h4 class="text-base font-headline font-bold text-white mt-1" id="phase3-title">NLSIU / Oxford BCL</h4>
+<p class="text-xs text-on-surface-variant mt-2" id="phase3-desc">
+Premier moot court representation, international maritime law briefs, and journal publication.
+</p>
+</div>
+
+<div class="p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 relative">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-secondary flex items-center justify-center font-bold text-xs mb-4 border border-secondary/40">4</div>
+<span class="text-xs font-mono text-secondary uppercase tracking-wider font-semibold">Phase 4: Sovereign Career</span>
+<h4 class="text-base font-headline font-bold text-white mt-1" id="phase4-title">International Partner</h4>
+<p class="text-xs text-on-surface-variant mt-2" id="phase4-desc">
+Command ₹1.2Cr+ partner retainer presiding over transnational commercial disputes in London & Singapore.
+</p>
+</div>
+</div>
+</section>
+
+<section class="py-24 px-4 md:px-8 max-w-7xl mx-auto border-b border-outline-variant/20">
+<div class="text-center max-w-3xl mx-auto mb-14">
+<div class="inline-flex items-center gap-2 text-xs font-mono text-secondary tracking-widest uppercase mb-2">
+<span class="material-symbols-outlined text-[16px]">psychology</span>
+Executive Polish Challenges
+</div>
+<h2 class="text-3xl sm:text-4xl font-display font-bold text-white">Precision Drills: Micro-Refactoring</h2>
+<p class="text-sm font-body text-on-surface-variant mt-2">
+Instantaneous executive transformation: Elevate colloquial drafts into razor-sharp institutional memorandums.
+</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-7 bg-surface-container-low rounded-2xl border border-outline-variant/30 p-6 sm:p-8 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="text-sm font-headline font-bold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">mark_email_read</span>
+Drill: Executive Email Refactor
+</span>
+<span class="text-xs font-mono text-on-surface-variant">Click to identify weak prose</span>
+</div>
+
+<div class="p-5 rounded-xl bg-surface-container-lowest border border-outline-variant/30 text-xs sm:text-sm space-y-3 font-mono">
+<div class="text-on-surface-variant text-[11px]">Subject: Hey, about the funding contract we spoke about earlier...</div>
+<div class="text-on-surface leading-relaxed" id="email-body-text">
+"Hey Marc, <br/><br/>
+Just wanted to <span class="bg-error/20 text-error px-1 rounded cursor-pointer" title="Colloquial padding">touch base real quick</span> regarding the seed term sheet. We were kind of thinking maybe the valuation cap was <span class="bg-error/20 text-error px-1 rounded cursor-pointer" title="Hesitant qualifier">a bit too low for us</span> given that we are working super hard on this model. Can we chat tomorrow if you have some free time? <br/><br/>
+Thanks a ton,<br/>
+Alex"
+</div>
+</div>
+
+<div class="hidden mt-4 p-5 rounded-xl bg-surface-container border border-secondary/40 text-xs sm:text-sm space-y-2" id="email-refactored-box">
+<div class="text-secondary text-[11px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+Institutional C-Suite Version
+</div>
+<div class="text-white leading-relaxed">
+"Dear Marc,<br/><br/>
+Following our term sheet review, our advisory board has assessed the initial pre-money valuation against our synthetic model's validated 4x retention. We request aligning the capital cap at ₹35Cr to mirror our Q3 enterprise pipeline. <br/><br/>
+I welcome a brief 10-minute briefing tomorrow at 14:00 UTC.<br/><br/>
+Respectfully,<br/>
+Alexander Vance"
+</div>
+</div>
+</div>
+
+<div class="mt-6 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
+<span class="text-xs text-on-surface-variant">Eliminates 3 passive hedges & 2 conversational diminutives.</span>
+<button class="bg-primary hover:bg-primary-container text-black font-headline font-bold text-xs uppercase px-4 py-2.5 rounded-xl transition-all active:scale-95 flex items-center gap-2" id="refactor-btn" onclick="refactorEmail()">
+<span class="material-symbols-outlined text-[18px]">auto_fix_high</span>
+AI Refactor
+</button>
+</div>
+</div>
+
+<div class="lg:col-span-5 bg-surface-container-low rounded-2xl border border-outline-variant/30 p-6 sm:p-8 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="text-sm font-headline font-bold text-tertiary flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">auto_stories</span>
+Institutional Lexicon
+</span>
+<span class="text-xs font-mono text-on-surface-variant">Daily C-Suite Entry</span>
+</div>
+<div class="p-5 rounded-xl bg-surface-container-lowest border border-outline-variant/30">
+<div class="flex items-baseline justify-between">
+<h3 class="text-2xl font-headline font-bold text-white" id="wod-word">Perspicacious</h3>
+<span class="text-xs font-mono text-primary" id="wod-ipa">/ˌpɜː.spɪˈkeɪ.ʃəs/</span>
+</div>
+<div class="text-xs text-on-surface-variant mt-1 font-mono" id="wod-pos">Adjective • Latin <em>perspicax</em> (sharp-sighted)</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/20">
+<div class="text-xs font-semibold text-white">Definition:</div>
+<p class="text-xs text-on-surface-variant mt-0.5 leading-relaxed" id="wod-def">
+Having a ready insight into and understanding of complex sovereign or financial affairs.
+</p>
+</div>
+<div class="mt-4 pt-3 border-t border-outline-variant/20">
+<div class="text-xs font-semibold text-secondary">Boardroom Application:</div>
+<p class="text-xs text-on-surface-variant/90 italic mt-0.5 leading-relaxed" id="wod-example">
+"The general counsel made a perspicacious intervention, identifying the ambiguous indemnity loophole before contract execution."
+</p>
+</div>
+</div>
+</div>
+
+<div class="mt-6 pt-4 border-t border-outline-variant/20 flex items-center justify-between">
+<span class="text-xs text-on-surface-variant font-mono">Tier-3 Executive Lexicon</span>
+<button class="text-xs font-mono text-primary hover:underline font-bold flex items-center gap-1 transition-colors" onclick="cycleWordOfDay()">
+Next Entry <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+
+<section class="py-24 px-4 md:px-8 max-w-7xl mx-auto border-b border-outline-variant/20" id="telemetry">
+<div class="text-center max-w-3xl mx-auto mb-14">
+<div class="inline-flex items-center gap-2 text-xs font-mono text-primary tracking-widest uppercase mb-2">
+<span class="material-symbols-outlined text-[16px]">leaderboard</span>
+Articulation Telemetry
+</div>
+<h2 class="text-3xl sm:text-4xl font-display font-bold text-white">Consortium Speech Leaderboard</h2>
+<p class="text-sm font-body text-on-surface-variant mt-2">
+Anonymized articulation benchmarking measuring cadence stability, lexical density, and zero-filler eloquence across secondary cohorts.
+</p>
+</div>
+
+<div class="overflow-x-auto rounded-2xl border border-outline-variant/30 bg-surface-container-low mb-8">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/20 text-xs font-mono uppercase tracking-wider text-on-surface-variant bg-surface-container">
+<th class="py-4 px-6">Rank</th>
+<th class="py-4 px-6">Delegate Alias</th>
+<th class="py-4 px-6">Cohort</th>
+<th class="py-4 px-6">Specialized Discipline</th>
+<th class="py-4 px-6 text-right">Articulation Score</th>
+<th class="py-4 px-6 text-center">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10 text-xs sm:text-sm font-medium">
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-4 px-6 font-mono font-bold text-secondary">01</td>
+<td class="py-4 px-6 text-white flex items-center gap-2">
+<span class="w-7 h-7 rounded-full bg-secondary/10 border border-secondary/30 text-secondary flex items-center justify-center text-xs font-mono font-bold">AV</span>
+Delegate Orion-9
+</td>
+<td class="py-4 px-6 text-on-surface-variant font-mono">Class 12</td>
+<td class="py-4 px-6 text-white">International Arbitration</td>
+<td class="py-4 px-6 text-right font-mono font-bold text-secondary">98.4 / 100</td>
+<td class="py-4 px-6 text-center">
+<span class="px-2 py-0.5 rounded text-[11px] bg-secondary/10 border border-secondary/30 text-secondary font-semibold font-mono">Exemplary</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-4 px-6 font-mono font-bold text-on-surface-variant">02</td>
+<td class="py-4 px-6 text-white flex items-center gap-2">
+<span class="w-7 h-7 rounded-full bg-primary/10 border border-primary/30 text-primary flex items-center justify-center text-xs font-mono font-bold">KS</span>
+Delegate Zephyr-4
+</td>
+<td class="py-4 px-6 text-on-surface-variant font-mono">Class 11</td>
+<td class="py-4 px-6 text-white">Screenplay & OTT Pitch</td>
+<td class="py-4 px-6 text-right font-mono font-bold text-primary">97.1 / 100</td>
+<td class="py-4 px-6 text-center">
+<span class="px-2 py-0.5 rounded text-[11px] bg-primary/10 border border-primary/30 text-primary font-semibold font-mono">Exemplary</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-4 px-6 font-mono font-bold text-on-surface-variant">03</td>
+<td class="py-4 px-6 text-white flex items-center gap-2">
+<span class="w-7 h-7 rounded-full bg-tertiary/10 border border-tertiary/30 text-tertiary flex items-center justify-center text-xs font-mono font-bold">MR</span>
+Delegate Callisto-7
+</td>
+<td class="py-4 px-6 text-on-surface-variant font-mono">Class 10</td>
+<td class="py-4 px-6 text-white">Aviation Radiotelephony</td>
+<td class="py-4 px-6 text-right font-mono font-bold text-white">95.8 / 100</td>
+<td class="py-4 px-6 text-center">
+<span class="px-2 py-0.5 rounded text-[11px] bg-surface-container-high text-on-surface-variant border border-outline-variant/30 font-semibold font-mono">Verified</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/40 transition-colors">
+<td class="py-4 px-6 font-mono font-bold text-on-surface-variant">04</td>
+<td class="py-4 px-6 text-white flex items-center gap-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center text-xs font-mono font-bold">TL</span>
+Delegate Aurora-1
+</td>
+<td class="py-4 px-6 text-on-surface-variant font-mono">Class 12</td>
+<td class="py-4 px-6 text-white">Transnational Diplomacy</td>
+<td class="py-4 px-6 text-right font-mono font-bold text-white">94.9 / 100</td>
+<td class="py-4 px-6 text-center">
+<span class="px-2 py-0.5 rounded text-[11px] bg-surface-container-high text-on-surface-variant border border-outline-variant/30 font-semibold font-mono">Verified</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="p-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary text-[26px]">verified_user</span>
+<div>
+<div class="text-xs sm:text-sm font-headline font-semibold text-white">Transient Audio Governance & Data Protection</div>
+<div class="text-xs text-on-surface-variant">
+All voice data processed transiently in compliance with strict privacy protocols. No audio is stored permanently.
+</div>
+</div>
+</div>
+<span class="text-xs font-mono text-secondary px-3 py-1 rounded bg-secondary/10 border border-secondary/30 shrink-0">
+ISO / Zero-Log Enforced
+</span>
+</div>
+</section>
+
+<section class="py-24 px-4 md:px-8 max-w-7xl mx-auto border-b border-outline-variant/20" id="qr-portal">
+<div class="max-w-4xl mx-auto p-8 sm:p-12 rounded-3xl bg-surface-container-low border border-outline-variant/30 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10">
+<div class="absolute -right-20 -top-20 w-80 h-80 bg-primary/10 rounded-full blur-[80px] pointer-events-none"></div>
+
+<div class="max-w-lg">
+<div class="inline-flex items-center gap-2 text-xs font-mono text-secondary tracking-widest uppercase mb-2">
+<span class="material-symbols-outlined text-[16px]">devices</span>
+Direct Mobile Stall Gateway
+</div>
+<h3 class="text-2xl sm:text-3xl font-display font-bold text-white">Experience Verbum Premier on Personal Devices</h3>
+<p class="text-xs sm:text-sm font-body text-on-surface-variant mt-3 leading-relaxed">
+Scan to initiate instantaneous microphone calibration, acoustic telemetry benchmark tests, and personalized career roadmaps directly on your smartphone.
+</p>
+<div class="mt-8 flex flex-wrap items-center gap-4">
+<button class="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-black font-headline font-bold text-xs uppercase px-5 py-3 rounded-xl transition-all active:scale-95 shadow-[0_0_16px_rgba(245,158,11,0.3)]" onclick="downloadVectorQr()">
+<span class="material-symbols-outlined text-[20px]">download</span>
+Download Placard PNG
+</button>
+<div class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-[18px]">verified</span>
+<span class="font-mono">Ultra-low latency web app</span>
+</div>
+</div>
+</div>
+
+<div class="relative shrink-0 p-5 rounded-2xl bg-surface-container-lowest border-2 border-primary/40 shadow-[0_0_30px_rgba(245,158,11,0.25)] flex flex-col items-center">
+<div class="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-primary"></div>
+<div class="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-primary"></div>
+<div class="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-primary"></div>
+<div class="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-primary"></div>
+
+<div class="w-48 h-48 bg-white p-3 rounded-xl flex items-center justify-center relative overflow-hidden" id="qr-container">
+<img src="assets/open-mic-qr-repo-preview.png" alt="QR Code" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(window.location.href);"/>
+</div>
+<span class="text-xs font-mono text-primary mt-3 tracking-widest uppercase font-bold">VERBUM.CONSORTIUM</span>
+</div>
+</div>
+</section>
+</main>
+
+<div class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 hidden" id="admin-modal">
+<div class="w-full max-w-4xl bg-surface border border-outline-variant rounded-2xl shadow-2xl p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto">
+<button class="absolute top-6 right-6 p-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-white transition-all" onclick="toggleAdminModal()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+
+<div class="flex items-center gap-3 pb-6 border-b border-outline-variant/20">
+<div class="w-10 h-10 rounded-xl bg-primary/20 border border-primary/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">terminal</span>
+</div>
+<div>
+<h3 class="text-xl font-headline font-bold text-white">Institutional Router & Infrastructure Console</h3>
+<p class="text-xs font-mono text-on-surface-variant">5-Version Multi-Experience Switcher & 5-Tier AI Orchestrator</p>
+</div>
+</div>
+
+<div class="my-6 p-4 rounded-xl bg-surface-container border border-primary/40">
+<h4 class="text-xs font-mono text-primary font-bold uppercase tracking-wider mb-2">5-Version Multi-Experience Switcher</h4>
+<p class="text-xs text-on-surface-variant mb-4">Instantly preview or navigate across all 5 distinct career fair experiences:</p>
+<div class="grid grid-cols-2 sm:grid-cols-5 gap-2 font-mono text-xs">
+<a href="index.html" class="p-2.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-center text-white border border-outline-variant/30 flex flex-col items-center gap-1">
+<span class="font-bold text-primary">v1</span>
+<span>Pavilion</span>
+</a>
+<a href="v2.html" class="p-2.5 rounded-lg bg-primary text-black font-bold text-center border border-primary flex flex-col items-center gap-1">
+<span>v2</span>
+<span>Premier</span>
+</a>
+<a href="v3.html" class="p-2.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-center text-white border border-outline-variant/30 flex flex-col items-center gap-1">
+<span class="font-bold text-secondary">v3</span>
+<span>Open Mic</span>
+</a>
+<a href="v4.html" class="p-2.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-center text-white border border-outline-variant/30 flex flex-col items-center gap-1">
+<span class="font-bold text-tertiary">v4</span>
+<span>Alexandria</span>
+</a>
+<a href="v5.html" class="p-2.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-center text-white border border-outline-variant/30 flex flex-col items-center gap-1">
+<span class="font-bold text-primary">v5</span>
+<span>Mobility</span>
+</a>
+</div>
+</div>
+
+<div class="my-6">
+<div class="flex items-center justify-between mb-3">
+<h4 class="text-xs font-mono text-white font-bold uppercase tracking-wider">5-Tier Failover Telemetry</h4>
+<span class="text-xs font-mono text-secondary font-bold">Zero-Downtime Pipeline</span>
+</div>
+<div class="space-y-3 font-mono text-xs">
+<div class="p-3.5 rounded-xl bg-surface-container border border-secondary/40 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
+<div>
+<span class="text-white font-bold">Tier 1: Cloudflare Workers AI</span>
+<span class="text-[11px] text-on-surface-variant block font-sans">Primary edge serverless compute pool</span>
+</div>
+</div>
+<span class="text-[11px] px-2.5 py-1 rounded bg-secondary/15 text-secondary font-bold">ACTIVE (14ms)</span>
+</div>
+
+<div class="p-3.5 rounded-xl bg-surface-container-high border border-outline-variant/30 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<div>
+<span class="text-white font-bold">Tier 2: Gemini Multi-Key Gateway</span>
+<span class="text-[11px] text-on-surface-variant block font-sans">Configurable local API key fallback</span>
+</div>
+</div>
+<span class="text-[11px] px-2.5 py-1 rounded bg-primary/10 text-primary font-bold">HOT STANDBY</span>
+</div>
+
+<div class="p-3.5 rounded-xl bg-surface-container-high border border-outline-variant/30 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="w-2.5 h-2.5 rounded-full bg-outline"></span>
+<div>
+<span class="text-white font-bold">Tier 3: Distributed Community LLM</span>
+<span class="text-[11px] text-on-surface-variant block font-sans">Community distributed backup cluster</span>
+</div>
+</div>
+<span class="text-[11px] px-2.5 py-1 rounded bg-surface-container text-on-surface-variant font-bold">READY</span>
+</div>
+
+<div class="p-3.5 rounded-xl bg-surface-container-high border border-outline-variant/30 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+<div>
+<span class="text-white font-bold">Tier 4: Local Ryzen Node</span>
+<span class="text-[11px] text-on-surface-variant block font-sans">Ollama Llama-3.2 3B tunnel for offline stall environments</span>
+</div>
+</div>
+<span class="text-[11px] px-2.5 py-1 rounded bg-tertiary/10 text-tertiary font-bold">TUNNELED</span>
+</div>
+
+<div class="p-3.5 rounded-xl bg-surface-container-high border border-outline-variant/30 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<div>
+<span class="text-white font-bold">Tier 5: Client On-Device Rule Engine</span>
+<span class="text-[11px] text-on-surface-variant block font-sans">Browser-local zero-network fallback synthesis</span>
+</div>
+</div>
+<span class="text-[11px] px-2.5 py-1 rounded bg-surface-container text-secondary font-bold">READY</span>
+</div>
+</div>
+</div>
+
+<div class="p-4 rounded-xl bg-surface-container border border-outline-variant/30 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<span class="text-xs font-headline font-bold text-white">Gemini API Key (Local Persistence)</span>
+<span class="text-[11px] text-on-surface-variant block">Stored securely in browser localStorage only</span>
+</div>
+<div class="flex items-center gap-2">
+<input type="password" id="gemini-key-input" class="bg-surface-container-lowest border border-outline-variant text-white text-xs rounded-lg px-3 py-2 font-mono focus:border-primary focus:outline-none w-48 sm:w-64" placeholder="AIzaSy..."/>
+<button onclick="saveGeminiKey()" class="px-3 py-2 bg-primary text-black font-headline font-bold text-xs rounded-lg hover:bg-primary-container transition-all">Save</button>
+</div>
+</div>
+</div>
+</div>
+
+<footer class="bg-surface-container-lowest border-t border-outline-variant/20 py-12 mt-20">
+<div class="w-full px-4 md:px-8 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="flex flex-col items-center md:items-start gap-1">
+<span class="text-xs font-mono text-on-surface-variant">
+© 2026 Verbum Sovereign Career Consortium. High-Stakes Institutional Communication.
+</span>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs font-mono font-bold text-primary px-2.5 py-0.5 rounded bg-primary/10 border border-primary/25">
+© Kanakia International School Mira Road
+</span>
+<span class="text-[11px] text-on-surface-variant/70">Annual Career Exhibition Showcase</span>
+</div>
+</div>
+
+<div class="flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="index.html">v1 Pavilion</a>
+<a class="hover:text-primary transition-colors" href="v2.html">v2 Premier</a>
+<a class="hover:text-primary transition-colors" href="v3.html">v3 Open Mic</a>
+<a class="hover:text-primary transition-colors" href="v4.html">v4 Alexandria</a>
+<a class="hover:text-primary transition-colors" href="v5.html">v5 Mobility</a>
+<button class="hover:text-primary transition-colors cursor-pointer" onclick="toggleAdminModal()">Admin Routing</button>
+</div>
+</div>
+</footer>
+
+<script>
+window.addEventListener('scroll', () => {
+  const winScroll = document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const scrolled = (winScroll / height) * 100;
+  document.getElementById('scroll-progress-bar').style.width = scrolled + '%';
+});
+
+function filterCareers(category) {
+  const cards = document.querySelectorAll('.career-card');
+  const buttons = document.querySelectorAll('#career-filter-tabs .filter-btn');
+  buttons.forEach(btn => {
+    btn.classList.remove('bg-primary', 'text-black', 'font-semibold');
+    btn.classList.add('text-on-surface-variant', 'font-medium');
+  });
+  if (event && event.target) {
+    event.target.classList.add('bg-primary', 'text-black', 'font-semibold');
+    event.target.classList.remove('text-on-surface-variant', 'font-medium');
+  }
+  cards.forEach(card => {
+    if (category === 'all' || card.getAttribute('data-sector') === category) {
+      card.style.display = 'flex';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+const scripts = {
+  hollywood: {
+    title: "Hollywood Pitch: Sci-Fi Pilot",
+    text: "\\"Ladies and gentlemen of the network room: The series begins in 2088 inside orbital salvage bay nine. What appears to be an abandoned cryo-vessel is essentially carrying the sole uncorrupted neural seed of humanity. We are not selling a space opera; we are selling the final legal trial of biological consciousness.\\""
+  },
+  aviation: {
+    title: "Aviation Emergency Clearance",
+    text: "\\"Pan-Pan, Pan-Pan, Pan-Pan. London Control, Speedbird 118 heavy. Descending flight level 100, established on direct vector for runway 27 Right. Multiple hydraulic telemetry deviations; request non-standard separation and full rollout priority on arrival.\\""
+  },
+  court: {
+    title: "Supreme Court Oral Argument",
+    text: "\\"May it please the Court: The sovereign treaty of 1994 does not admit of bilateral ambiguity. If this bench construes clause twelve to permit unilateral tariff suspensions, it overturns thirty years of maritime trade consensus without statutory warrant.\\""
+  },
+  boardroom: {
+    title: "Transnational M&A Defense",
+    text: "\\"Members of the board: A hostile takeover at a fifteen percent premium fails to reflect our sovereign defense patents. Our recommendation is immediate poison pill activation coupled with a Singapore arbitration injunction.\\""
+  }
+};
+
+function updateTeleprompterScript(key) {
+  const item = scripts[key];
+  if (item) {
+    document.getElementById('script-title-display').innerText = item.title;
+    document.getElementById('teleprompter-text').innerText = item.text;
+  }
+}
+
+const canvas = document.getElementById('waveform-canvas');
+const ctx = canvas.getContext('2d');
+let isRecording = false;
+let animFrame;
+
+function resizeCanvas() {
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = canvas.parentElement.clientHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function drawIdleWaveform() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(245, 158, 11, 0.25)';
+  ctx.lineWidth = 2;
+  const centerY = canvas.height / 2;
+  ctx.moveTo(0, centerY);
+  for (let x = 0; x < canvas.width; x += 10) {
+    ctx.lineTo(x, centerY + Math.sin(x * 0.03) * 3);
+  }
+  ctx.stroke();
+}
+drawIdleWaveform();
+
+function drawActiveWaveform() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const bars = Math.floor(canvas.width / 8);
+  for (let i = 0; i < bars; i++) {
+    const height = Math.random() * (canvas.height * 0.75);
+    const x = i * 8;
+    const y = (canvas.height - height) / 2;
+    ctx.fillStyle = '#F59E0B';
+    ctx.fillRect(x, y, 4, height);
+  }
+  if (isRecording) {
+    animFrame = requestAnimationFrame(drawActiveWaveform);
+  }
+}
+
+function toggleRecording() {
+  isRecording = !isRecording;
+  const btn = document.getElementById('record-btn');
+  const text = document.getElementById('record-text');
+  const icon = document.getElementById('record-icon');
+  const overlay = document.getElementById('recording-status-overlay');
+  if (isRecording) {
+    btn.classList.remove('bg-error');
+    btn.classList.add('bg-secondary-container');
+    text.innerText = "Listening...";
+    icon.innerText = "graphic_eq";
+    overlay.classList.add('hidden');
+    drawActiveWaveform();
+  } else {
+    btn.classList.add('bg-error');
+    btn.classList.remove('bg-secondary-container');
+    text.innerText = "Record Voice Sample";
+    icon.innerText = "mic";
+    cancelAnimationFrame(animFrame);
+    drawIdleWaveform();
+    overlay.classList.remove('hidden');
+    overlay.innerText = "Audio captured. Calculating phonetic vectors...";
+    setTimeout(runAcousticAnalysis, 600);
+  }
+}
+
+function runAcousticAnalysis() {
+  const fluency = Math.floor(Math.random() * 6) + 93;
+  const wpm = Math.floor(Math.random() * 10) + 134;
+  document.getElementById('val-fluency').innerText = fluency + " / 100";
+  document.getElementById('bar-fluency').style.width = fluency + "%";
+  document.getElementById('val-wpm').innerText = wpm + " WPM";
+  document.getElementById('recording-status-overlay').innerText = "Telemetry synchronized. Acoustic report generated.";
+}
+
+function resetSpeechLab() {
+  if (isRecording) toggleRecording();
+  document.getElementById('teleprompter-script-selector').value = 'hollywood';
+  updateTeleprompterScript('hollywood');
+  drawIdleWaveform();
+  document.getElementById('recording-status-overlay').innerText = "Ready for acoustic input. Press 'Record Voice Sample'.";
+}
+
+const personas = {
+  founder: {
+    name: "Marc Andreessen Protocol (Venture Partner)",
+    status: "Strict tone: Expects tight narrative structure without fluff.",
+    initial: "\\"We've reviewed your slide on synthetic language telemetry. Every founder uses the word 'revolutionary'. Exactly what linguistic moat protects your model against frontier open-weights when deployed in cross-border arbitration?\\""
+  },
+  boardroom: {
+    name: "Hostile Stakeholder (Global M&A Council)",
+    status: "Interrogative: Zero tolerance for vague compliance hedges.",
+    initial: "\\"Counselor, you are telling this board that European anti-trust clearance is 'likely'. On what statutory authority can we risk eight hundred million euros on a probability?\\""
+  },
+  aviation: {
+    name: "First Officer Vance (Cockpit Emergency)",
+    status: "Aviation Assertiveness: Requires unambiguous standard phraseology.",
+    initial: "\\"Captain, we have contradictory pitch trim alerts and crosswind shear at two hundred feet. Are you executing the go-around protocol or continuing approach?\\""
+  }
+};
+
+function selectPersona(key) {
+  document.querySelectorAll('[id^="persona-"]').forEach(el => {
+    el.classList.remove('border-primary', 'border-2', 'bg-surface-container-high');
+    el.classList.add('border-outline-variant/30', 'bg-surface-container-low');
+  });
+  const selected = document.getElementById('persona-' + key);
+  selected.classList.add('border-primary', 'border-2', 'bg-surface-container-high');
+  selected.classList.remove('bg-surface-container-low');
+  const data = personas[key];
+  document.getElementById('active-persona-name').innerText = data.name;
+  document.getElementById('active-persona-status').innerText = data.status;
+  const msgContainer = document.getElementById('roleplay-messages');
+  msgContainer.innerHTML = '<div class="flex items-start gap-3"><div class="w-8 h-8 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center text-primary shrink-0"><span class="material-symbols-outlined text-[18px]">smart_toy</span></div><div class="bg-surface-container p-3.5 rounded-xl border border-outline-variant/30 max-w-xl text-xs sm:text-sm text-on-surface leading-relaxed">' + data.initial + '</div></div>';
+}
+
+function fillRoleplayPrompt(text) {
+  document.getElementById('roleplay-input').value = text;
+}
+
+function sendRoleplayMessage() {
+  const input = document.getElementById('roleplay-input');
+  const val = input.value.trim();
+  if (!val) return;
+  const msgContainer = document.getElementById('roleplay-messages');
+  msgContainer.innerHTML += '<div class="flex items-start gap-3 justify-end"><div class="bg-primary text-black font-medium p-3.5 rounded-xl max-w-xl text-xs sm:text-sm leading-relaxed shadow-sm">' + val + '</div><div class="w-8 h-8 rounded-lg bg-primary-container text-white flex items-center justify-center font-bold text-xs shrink-0">YOU</div></div>';
+  input.value = '';
+  msgContainer.scrollTop = msgContainer.scrollHeight;
+  setTimeout(() => {
+    msgContainer.innerHTML += '<div class="flex items-start gap-3"><div class="w-8 h-8 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center text-primary shrink-0"><span class="material-symbols-outlined text-[18px]">smart_toy</span></div><div class="bg-surface-container p-3.5 rounded-xl border border-outline-variant/30 max-w-xl text-xs sm:text-sm text-on-surface leading-relaxed">\\"Noted. That answers the structural concern with proper gravitas. Your cadence index scored in the 96th percentile for assertiveness.\\"</div></div>';
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+  }, 700);
+}
+
+function playSampleAcoustic(speaker) {
+  const msg = "Acoustic gold standard reference for " + speaker.toUpperCase() + " loaded. Playing model articulation formant stream.";
+  alert(msg);
+}
+
+function simulateMasterComparison() {
+  const res = document.getElementById('comparison-result');
+  res.classList.remove('hidden');
+}
+
+const roadmaps = {
+  lawyer: {
+    p1: ["Legal Latinate Lexicon", "Master 1,200 jurisdictional Latin roots, statutory disambiguation, and active analytical parsing."],
+    p2: ["CLAT / LNAT Mastery", "Target 99.8th percentile in reading comprehension and critical logic under strict timing constraints."],
+    p3: ["NLSIU / Oxford BCL", "Premier moot court representation, international maritime law briefs, and journal publication."],
+    p4: ["International Partner", "Command ₹1.2Cr+ partner retainer presiding over transnational commercial disputes in London & Singapore."]
+  },
+  screenwriter: {
+    p1: ["Dramatic Prosody & Syntax", "Deconstruct 50 classical theatrical scripts for dialogue rhythm, subtextual irony, and character voice."],
+    p2: ["Portfolio & Showrunner Reels", "Complete 2 spec teleplays for international festival circulation; submit to FTII/NYU pitch pipelines."],
+    p3: ["NYU Tisch / FTII Direction", "Master multi-character arc orchestration and European co-production pitching labs."],
+    p4: ["Lead Showrunner (OTT)", "Command ₹65L+ per season package helming international original series for streaming conglomerates."]
+  },
+  pilot: {
+    p1: ["ICAO Standard Phraseology", "Flawless elimination of colloquial hesitations; mastering phonetic alphabet and rapid readback cadence."],
+    p2: ["DGCA & Commercial License", "Command flight simulator instrument conditions with calm verbal authority during simulated turbine failure."],
+    p3: ["Type Rating & Fleet Command", "Induction on Boeing 787 / Airbus A350 widebody international oceanic routes."],
+    p4: ["International Captain", "Command ₹85L+ compensation as senior transatlantic line training captain."]
+  },
+  narrative: {
+    p1: ["Interactive Rhetoric & World-building", "Design branching character dialogue graphs with distinct socio-linguistic registers."],
+    p2: ["DigiPen / NID Portfolio", "Develop playable text-parser prototypes showcasing conditional narrative delivery."],
+    p3: ["Senior Game Studio Writer", "Lead narrative lore and voice actor direction for multi-platform AAA video games."],
+    p4: ["Creative Franchise Director", "Command ₹80L+ shaping transmedia intellectual properties spanning games, film, and literature."]
+  },
+  diplomat: {
+    p1: ["Bilateral Rhetoric & Treaty English", "Parsing UN security council resolutions and ambiguity containment strategies."],
+    p2: ["UPSC IFS / Oxford Diplomatic Studies", "Flawless oral interview defense and geopolitical argumentation under intense panel scrutiny."],
+    p3: ["Permanent Mission Counselor", "Drafting bilateral agreements and delivering sovereign interventions at Geneva assemblies."],
+    p4: ["Ambassador & Special Envoy", "Represent sovereign interests in multilateral security pacts and trade treaty negotiations."]
+  }
+};
+
+function generateRoadmap() {
+  const trajectory = document.getElementById('trajectory-selector').value;
+  const data = roadmaps[trajectory] || roadmaps.lawyer;
+  document.getElementById('phase1-title').innerText = data.p1[0];
+  document.getElementById('phase1-desc').innerText = data.p1[1];
+  document.getElementById('phase2-title').innerText = data.p2[0];
+  document.getElementById('phase2-desc').innerText = data.p2[1];
+  document.getElementById('phase3-title').innerText = data.p3[0];
+  document.getElementById('phase3-desc').innerText = data.p3[1];
+  document.getElementById('phase4-title').innerText = data.p4[0];
+  document.getElementById('phase4-desc').innerText = data.p4[1];
+}
+
+function refactorEmail() {
+  const refactoredBox = document.getElementById('email-refactored-box');
+  refactoredBox.classList.remove('hidden');
+  document.getElementById('refactor-btn').classList.add('bg-secondary-container');
+  document.getElementById('refactor-btn').innerText = "Refactored";
+}
+
+const words = [
+  {
+    word: "Perspicacious",
+    ipa: "/ˌpɜː.spɪˈkeɪ.ʃəs/",
+    pos: "Adjective • Latin perspicax (sharp-sighted)",
+    def: "Having a ready insight into and understanding of complex sovereign or financial affairs.",
+    ex: "\\"The general counsel made a perspicacious intervention, identifying the ambiguous indemnity loophole before contract execution.\\""
+  },
+  {
+    word: "Equivocate",
+    ipa: "/ɪˈkwɪv.ə.keɪt/",
+    pos: "Verb • Latin aequivocus (equal voice)",
+    def: "To use ambiguous language to conceal truth or avoid committing oneself in high-stakes negotiations.",
+    ex: "\\"A seasoned diplomat never equivocates under oath; they deploy precise statutory reservations instead.\\""
+  },
+  {
+    word: "Grandiloquent",
+    ipa: "/ɡrænˈdɪl.ə.kwənt/",
+    pos: "Adjective • Latin grandis (great) + loqui (speak)",
+    def: "Pompous or extravagant in language, style, or manner; style lacking executive substance.",
+    ex: "\\"The board dismissed the pitch deck as grandiloquent rhetoric unsupported by audited balance sheets.\\""
+  }
+];
+let wordIdx = 0;
+function cycleWordOfDay() {
+  wordIdx = (wordIdx + 1) % words.length;
+  const w = words[wordIdx];
+  document.getElementById('wod-word').innerText = w.word;
+  document.getElementById('wod-ipa').innerText = w.ipa;
+  document.getElementById('wod-pos').innerHTML = w.pos;
+  document.getElementById('wod-def').innerText = w.def;
+  document.getElementById('wod-example').innerText = w.ex;
+}
+
+function downloadVectorQr() {
+  alert("Downloading Kanakia International School Career Fair Stall Placard & High-Resolution Vector QR...");
+}
+
+let sealClicks = 0;
+document.getElementById('brand-logo-seal').addEventListener('click', () => {
+  sealClicks++;
+  if (sealClicks >= 5) {
+    toggleAdminModal();
+    sealClicks = 0;
+  }
+});
+document.getElementById('admin-modal-trigger').addEventListener('click', toggleAdminModal);
+
+window.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+    toggleAdminModal();
+  }
+});
+
+function toggleAdminModal() {
+  const modal = document.getElementById('admin-modal');
+  modal.classList.toggle('hidden');
+}
+
+function saveGeminiKey() {
+  const val = document.getElementById('gemini-key-input').value.trim();
+  if (val) {
+    localStorage.setItem('gemini_api_key', val);
+    alert('Gemini API key saved to local browser storage.');
+  }
+}
+const savedK = localStorage.getItem('gemini_api_key');
+if (savedK) {
+  document.getElementById('gemini-key-input').value = savedK;
+}
+</script>
+</body>
+</html>`;
+
+const cleanedV2 = cleanCode(v2Content);
+fs.writeFileSync("v2.html", cleanedV2);
+fs.writeFileSync("public/v2.html", cleanedV2);
+console.log("v2.html and public/v2.html written successfully, length:", cleanedV2.length);
