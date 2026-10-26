@@ -216,6 +216,8 @@ let adminAuthenticated = false;
 let adminDemoMode = false;
 let adminSettings = null;
 let adminSecretsStatus = { geminiCount: 0, freeConfigured: false, laptopConfigured: false };
+let autoDownloadVideosActive = localStorage.getItem('openmic_auto_download_videos') === 'true';
+let autoDownloadInterval = null;
 let toastTimer = null;
 
 function loadLocalSettings() {
@@ -933,6 +935,7 @@ async function loadAdminState() {
 async function showAdminWorkspace() {
   $('#admin-login-screen').hidden=true;$('#admin-workspace').hidden=false;
   await loadAdminState();renderAdminTab('features');
+  if(autoDownloadVideosActive)startAutoDownloadPoller();
 }
 function adminTab() { return $('.admin-tab.active')?.dataset.adminTab||'features'; }
 function renderAdminTab(tab) {
@@ -955,7 +958,7 @@ function renderAdminTab(tab) {
     content.innerHTML=`<h3 class="admin-section-title">Leaderboard moderation</h3><p class="admin-section-description">Remove entries on request or if consent was not valid. Only nickname, class and opt-in scores are kept—never raw voice or transcript.</p><div class="admin-actions"><button class="button button-outline" id="refresh-admin-board" type="button">Refresh ↻</button><button class="button button-outline admin-danger" id="clear-admin-board" type="button">Clear all entries</button></div><div id="admin-board-content">${adminDemoMode?renderAdminBoard(entries):'<p class="admin-section-description">Loading shared entries…</p>'}</div>`;
     if(!adminDemoMode)fetch('/api/admin/leaderboard').then(res=>res.ok?res.json():Promise.reject()).then(data=>{const target=$('#admin-board-content');if(target)target.innerHTML=renderAdminBoard(data.entries||[]);}).catch(()=>{const target=$('#admin-board-content');if(target)target.innerHTML='<p class="admin-section-description">Shared leaderboard is unavailable. Configure D1 to moderate entries.</p>';});
   } else if(tab==='feedback') {
-    content.innerHTML=`<h3 class="admin-section-title">Feedback, support and newsroom files</h3><p class="admin-section-description">Feedback can include an optional reply address. Newsroom recordings are private R2 objects and require informed user consent before upload. Download or delete saved recordings from here.</p><div class="admin-actions"><button class="button button-outline" id="refresh-feedback" type="button">Refresh records ↻</button><button class="button button-accent" id="download-feedback" type="button">Export feedback to Excel ↓</button></div><div class="admin-feedback-list" id="admin-feedback-list"><p class="admin-section-description">Loading feedback…</p></div><h4 class="admin-section-title">Saved newsroom recordings</h4><div class="admin-media-list" id="admin-media-list"><p class="admin-section-description">Loading private media records…</p></div>`;
+    content.innerHTML=`<h3 class="admin-section-title">Feedback, support and newsroom files</h3><p class="admin-section-description">Feedback can include an optional reply address. Newsroom recordings are private R2 objects and require informed user consent before upload. Download or delete saved recordings from here.</p><div class="admin-actions"><button class="button button-outline" id="refresh-feedback" type="button">Refresh records ↻</button><button class="button button-accent" id="download-feedback" type="button">Export feedback to Excel ↓</button></div><div class="admin-feedback-list" id="admin-feedback-list"><p class="admin-section-description">Loading feedback…</p></div><h4 class="admin-section-title">Saved newsroom recordings</h4><div class="admin-actions" style="margin-top:8px;margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><button class="button button-accent" id="auto-download-toggle" type="button" style="background:${autoDownloadVideosActive?'#10b981':'#2563eb'};">⚡ Auto-Download Videos to Laptop: ${autoDownloadVideosActive?'ON':'OFF'}</button><button class="button button-outline" id="download-all-media" type="button">Download All Videos ⤓</button><span id="auto-download-status" class="muted-small">${autoDownloadVideosActive?'🟢 Watching for student videos…':'Auto-download paused.'}</span></div><div class="admin-media-list" id="admin-media-list"><p class="admin-section-description">Loading private media records…</p></div>`;
     if(adminDemoMode){const rows=loadLocalFeedback();const target=$('#admin-feedback-list');target.innerHTML=renderFeedbackTable(rows);$('#admin-media-list').innerHTML='<p class="admin-section-description">Server-side media storage is not available in local demo mode.</p>';}
     else {Promise.all([fetch('/api/admin/feedback').then(res=>res.ok?res.json():Promise.reject()),fetch('/api/admin/media').then(res=>res.ok?res.json():Promise.reject())]).then(([f,m])=>{const ft=$('#admin-feedback-list'),mt=$('#admin-media-list');if(ft)ft.innerHTML=renderFeedbackTable(f.entries||[]);if(mt)mt.innerHTML=renderMediaTable(m.entries||[])}).catch(()=>{const ft=$('#admin-feedback-list'),mt=$('#admin-media-list');if(ft)ft.innerHTML='<p class="admin-section-description">Server feedback is unavailable. Deploy D1 and the feedback endpoint.</p>';if(mt)mt.innerHTML='<p class="admin-section-description">Private media list unavailable. Configure D1 and the R2 binding MEDIA.</p>';});}
   }
@@ -971,6 +974,128 @@ function renderAdminBoard(entries) {
 function renderFeedbackTable(entries){if(!entries.length)return '<p class="admin-section-description">No feedback submitted yet.</p>';const labels={feedback:'General feedback',bug:'Report a problem',support:'Support request',feature:'Feature idea',accessibility:'Accessibility request'};return `<div class="admin-table-wrap"><table class="admin-log-table"><thead><tr><th>Date</th><th>Type</th><th>Rating</th><th>Message</th><th>Reply address</th></tr></thead><tbody>${entries.map(item=>`<tr><td>${escapeHtml(new Date(item.createdAt||item.created_at||Date.now()).toLocaleString())}</td><td>${escapeHtml(labels[item.category]||item.category||'General feedback')}</td><td>${Number(item.rating||0)}</td><td>${escapeHtml(item.message||'')}</td><td>${escapeHtml(item.contact||'')}</td></tr>`).join('')}</tbody></table></div>`}
 function renderMediaTable(entries){if(!entries.length)return '<p class="admin-section-description">No newsroom videos are saved yet.</p>';return `<div class="admin-table-wrap"><table class="admin-log-table"><thead><tr><th>Date</th><th>Headline</th><th>File</th><th>Size</th><th>Transcription</th><th>Actions</th></tr></thead><tbody>${entries.map(item=>`<tr><td>${escapeHtml(new Date(item.createdAt||item.created_at||Date.now()).toLocaleString())}</td><td>${escapeHtml(item.headline||'Newsroom practice')}</td><td>${escapeHtml(item.filename||'video')}</td><td>${(Number(item.sizeBytes||item.size_bytes||0)/1024/1024).toFixed(1)} MB</td><td>${escapeHtml(item.transcriptionProvider||item.transcription_provider||'Not recorded')}</td><td><a class="button button-outline" href="/api/media?id=${encodeURIComponent(item.id)}" target="_blank" rel="noopener noreferrer">View / download</a> <button class="button button-outline admin-danger" type="button" data-delete-media="${escapeHtml(item.id)}">Delete</button></td></tr>`).join('')}</tbody></table></div>`}
 function loadLocalFeedback(){try{return JSON.parse(localStorage.getItem(STORAGE.feedback)||'[]')}catch{return []}}
+function getDownloadedVideoIds() {
+  try { return new Set(JSON.parse(localStorage.getItem('openmic_downloaded_videos') || '[]')); }
+  catch { return new Set(); }
+}
+function markVideoDownloaded(id) {
+  const set = getDownloadedVideoIds();
+  set.add(String(id));
+  try { localStorage.setItem('openmic_downloaded_videos', JSON.stringify([...set])); } catch {}
+}
+async function saveVideoToLaptop(blob, filename) {
+  try {
+    const res = await fetch('http://127.0.0.1:8765/api/save-video', {
+      method: 'POST',
+      headers: { 'X-Filename': filename },
+      body: blob
+    });
+    if (res.ok) return true;
+  } catch {}
+  return false;
+}
+function triggerBrowserDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 20000);
+}
+async function fetchAndDownloadVideo(entry) {
+  try {
+    const res = await fetch(`/api/media?id=${encodeURIComponent(entry.id)}`);
+    if (!res.ok) return false;
+    const blob = await res.blob();
+    const rawName = entry.filename || `newsroom_${entry.id}.webm`;
+    const cleanName = rawName.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+    const savedLocally = await saveVideoToLaptop(blob, cleanName);
+    triggerBrowserDownload(blob, cleanName);
+    markVideoDownloaded(entry.id);
+    const status = $('#auto-download-status');
+    if (status) {
+      status.textContent = savedLocally
+        ? `⚡ Saved to recordings/ & downloaded: ${cleanName}`
+        : `📥 Downloaded to laptop: ${cleanName}`;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+async function syncNewVideos() {
+  if (!adminAuthenticated || adminDemoMode) return;
+  try {
+    const res = await fetch('/api/admin/media');
+    if (!res.ok) return;
+    const data = await res.json();
+    const entries = data.entries || [];
+    const downloaded = getDownloadedVideoIds();
+    const newEntries = entries.filter(e => !downloaded.has(String(e.id)));
+    if (!newEntries.length) return;
+    for (const entry of newEntries) {
+      await fetchAndDownloadVideo(entry);
+      await new Promise(r => setTimeout(r, 600));
+    }
+    if (adminTab() === 'feedback') {
+      const mt = $('#admin-media-list');
+      if (mt) mt.innerHTML = renderMediaTable(entries);
+    }
+  } catch {}
+}
+function startAutoDownloadPoller() {
+  if (autoDownloadInterval) return;
+  autoDownloadInterval = setInterval(syncNewVideos, 5000);
+  syncNewVideos();
+}
+function stopAutoDownloadPoller() {
+  if (autoDownloadInterval) {
+    clearInterval(autoDownloadInterval);
+    autoDownloadInterval = null;
+  }
+}
+function toggleAutoDownload() {
+  autoDownloadVideosActive = !autoDownloadVideosActive;
+  try { localStorage.setItem('openmic_auto_download_videos', String(autoDownloadVideosActive)); } catch {}
+  if (autoDownloadVideosActive) {
+    startAutoDownloadPoller();
+  } else {
+    stopAutoDownloadPoller();
+  }
+  const btn = $('#auto-download-toggle');
+  if (btn) {
+    btn.style.background = autoDownloadVideosActive ? '#10b981' : '#2563eb';
+    btn.textContent = `⚡ Auto-Download Videos to Laptop: ${autoDownloadVideosActive ? 'ON' : 'OFF'}`;
+  }
+  const status = $('#auto-download-status');
+  if (status) {
+    status.textContent = autoDownloadVideosActive ? '🟢 Watching for student videos…' : 'Auto-download paused.';
+  }
+}
+async function downloadAllMedia() {
+  const btn = $('#download-all-media');
+  if (btn) { btn.disabled = true; btn.textContent = 'Downloading…'; }
+  try {
+    const res = await fetch('/api/admin/media');
+    if (!res.ok) throw new Error('Could not fetch media list.');
+    const data = await res.json();
+    const entries = data.entries || [];
+    if (!entries.length) { showToast('No saved videos found.'); return; }
+    let count = 0;
+    for (const entry of entries) {
+      const ok = await fetchAndDownloadVideo(entry);
+      if (ok) count++;
+      await new Promise(r => setTimeout(r, 600));
+    }
+    showToast(`Downloaded ${count} video(s) to your laptop.`);
+  } catch (err) {
+    showToast(`Download failed: ${err.message}`);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Download All Videos ⤓'; }
+  }
+}
 async function exportFeedbackWorkbook(){
   let entries=[];
   if(adminDemoMode){entries=loadLocalFeedback()}else{try{const response=await fetch('/api/admin/feedback');const data=await response.json();if(!response.ok)throw new Error(data.error||'Could not load feedback');entries=data.entries||[]}catch(error){showToast(`Could not export feedback: ${error.message}`);return}}
@@ -1138,6 +1263,8 @@ function bindEvents() {
     if(event.target.closest('#refresh-admin-board')){renderAdminTab('leaderboard');return;}
     if(event.target.closest('#refresh-feedback')){renderAdminTab('feedback');return;}
     if(event.target.closest('#download-feedback')){await exportFeedbackWorkbook();return;}
+    if(event.target.closest('#auto-download-toggle')){toggleAutoDownload();return;}
+    if(event.target.closest('#download-all-media')){await downloadAllMedia();return;}
     const mediaDelete=event.target.closest('[data-delete-media]');if(mediaDelete){if(!confirm('Permanently delete this saved newsroom recording?'))return;const response=await fetch(`/api/admin/media?id=${encodeURIComponent(mediaDelete.dataset.deleteMedia)}`,{method:'DELETE'});if(response.ok)renderAdminTab('feedback');else showToast('The recording could not be deleted. Check media storage settings.');return;}
     if(event.target.closest('#clear-admin-board')){if(!confirm('Remove every opt-in leaderboard entry?'))return;if(adminDemoMode){localStorage.removeItem(STORAGE.demoLeaderboard);renderAdminTab('leaderboard');}else{const res=await fetch('/api/admin/leaderboard',{method:'DELETE'});if(res.ok)renderAdminTab('leaderboard');else showToast('Could not clear the shared board.');}return;}
     const deleteEntry=event.target.closest('[data-delete-entry]');if(deleteEntry){if(!confirm('Remove this leaderboard entry?'))return;if(adminDemoMode){const entries=getBoardData().filter(entry=>String(entry.id||entry.createdAt||entry.nickname)!==deleteEntry.dataset.deleteEntry);localStorage.setItem(STORAGE.demoLeaderboard,JSON.stringify(entries));renderAdminTab('leaderboard');}else{const response=await fetch(`/api/admin/leaderboard?id=${encodeURIComponent(deleteEntry.dataset.deleteEntry)}`,{method:'DELETE'});if(response.ok)renderAdminTab('leaderboard');else showToast('Could not remove this entry.');}return;}

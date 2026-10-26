@@ -1,5 +1,7 @@
 import {json,parseJson,safeString,originAllowed,verifyAdmin} from '../_shared.js';
 
+const VIDEO_CACHE = new Map();
+
 async function digest(value) {
   const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));
   return [...new Uint8Array(bytes)].map(byte=>byte.toString(16).padStart(2,'0')).join('');
@@ -24,6 +26,8 @@ export async function onRequest({request,env}) {
     const headline=safeString(form.get('headline'),100).trim()||'Student newsroom';const subheadline=safeString(form.get('subheadline'),140).trim();const filename=safeString(file.name,180).replace(/[\r\n\0]/g,'').trim()||'newsroom-recording.webm';
     try {
       const bytes=await file.arrayBuffer();
+      VIDEO_CACHE.set(id,{bytes,mimeType:file.type||'video/webm',filename,headline});
+      if(VIDEO_CACHE.size>20){const oldest=VIDEO_CACHE.keys().next().value;VIDEO_CACHE.delete(oldest);}
       if(env.MEDIA){
         await env.MEDIA.put(objectKey,bytes,{httpMetadata:{contentType:file.type},customMetadata:{id,createdAt:now,consent:'true'}});
       }
@@ -45,13 +49,20 @@ export async function onRequest({request,env}) {
   }
   if(method==='GET') {
     if(!(await verifyAdmin(request,env)))return json({error:'Admin session required to retrieve private recordings.'},401);
-    if(!env.DB||!env.MEDIA)return json({error:'D1 and private R2 storage must be configured.'},503);
+    if(!env.DB)return json({error:'D1 database must be configured.'},503);
     const id=url.searchParams.get('id');
     try {
       if(!id)return json({entries:await listMedia(env)});
       const row=await env.DB.prepare('SELECT object_key,filename,mime_type FROM media_submissions WHERE id=?').bind(id).first();if(!row)return json({error:'Saved video not found.'},404);
-      const object=await env.MEDIA.get(row.object_key);if(!object)return json({error:'Video file is missing from private storage.'},404);
-      return new Response(object.body,{headers:{'content-type':row.mime_type||'application/octet-stream','content-length':String(object.size),'content-disposition':`attachment; filename="${String(row.filename||'newsroom-video.webm').replace(/["\r\n]/g,'_')}"`,'cache-control':'private, no-store','x-content-type-options':'nosniff'}});
+      if(VIDEO_CACHE.has(id)){
+        const cached=VIDEO_CACHE.get(id);
+        return new Response(cached.bytes,{headers:{'content-type':cached.mimeType,'content-length':String(cached.bytes.byteLength),'content-disposition':`attachment; filename="${cached.filename}"`,'cache-control':'public, max-age=86400','x-content-type-options':'nosniff'}});
+      }
+      if(env.MEDIA){
+        const object=await env.MEDIA.get(row.object_key);
+        if(object)return new Response(object.body,{headers:{'content-type':row.mime_type||'application/octet-stream','content-length':String(object.size),'content-disposition':`attachment; filename="${String(row.filename||'newsroom-video.webm').replace(/["\r\n]/g,'_')}"`,'cache-control':'private, no-store','x-content-type-options':'nosniff'}});
+      }
+      return json({error:'Video binary was not saved in R2, but local browser recording was generated.'},404);
     } catch(error){return json({error:error.message||'Private video retrieval failed.'},503);}
   }
   if(method==='DELETE') {
