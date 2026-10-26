@@ -1,6 +1,6 @@
 export const FEATURE_KEYS = ['hero','whyEnglish','careers','quiz','plan','careerChat','speechLab','mockInterview','roleplay','anchor','compare','speakers','leaderboard','wordOfDay','emailGame','pronunciation','debate','feedback','games','closing'];
 export const DEFAULTS = {
-  theme:'mix',language:'en',showSchoolName:true,schoolName:'Kanakia International School Mira Road',automaticFallback:true,preferredProvider:'cloudflare',speechProvider:'auto',qualityMode:'balanced',providerOrder:['cloudflare','gemini','free','laptop'],providerEnabled:{cloudflare:true,gemini:true,free:true,laptop:false},features:Object.fromEntries(FEATURE_KEYS.map(key=>[key,true]))
+  theme:'mix',language:'en',showSchoolName:true,schoolName:'Kanakia International School Mira Road',automaticFallback:true,preferredProvider:'cloudflare',speechProvider:'auto',qualityMode:'balanced',providerOrder:['cloudflare','gemini','free','laptop'],providerEnabled:{cloudflare:true,gemini:true,free:true,laptop:false,elevenlabs:false},features:Object.fromEntries(FEATURE_KEYS.map(key=>[key,true]))
 };
 export function json(data,status=200,headers={}) { return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store',...headers}}); }
 export async function parseJson(request) { try { return await request.json(); } catch { return null; } }
@@ -96,7 +96,7 @@ export async function saveAdminSettings(env,body) {
   next.speechProvider=['auto','elevenlabs','cloudflare','gemini'].includes(next.speechProvider)?next.speechProvider:'auto';
   next.qualityMode=['best','balanced','saver'].includes(next.qualityMode)?next.qualityMode:'balanced';
   next.features=Object.fromEntries(FEATURE_KEYS.map(key=>[key,body.features?.[key]===undefined?current.features[key]:!!body.features[key]]));
-  next.providerEnabled=Object.fromEntries(['cloudflare','gemini','free','laptop'].map(key=>[key,body.providerEnabled?.[key]===undefined?current.providerEnabled[key]:!!body.providerEnabled[key]]));
+  next.providerEnabled=Object.fromEntries(['cloudflare','gemini','free','laptop','elevenlabs'].map(key=>[key,body.providerEnabled?.[key]===undefined?current.providerEnabled[key]:!!body.providerEnabled[key]]));
   const order=Array.isArray(body.providerOrder)?body.providerOrder.filter((key,index,array)=>['cloudflare','gemini','free','laptop'].includes(key)&&array.indexOf(key)===index):current.providerOrder;
   next.providerOrder=[...order,...['cloudflare','gemini','free','laptop'].filter(key=>!order.includes(key))];
   await saveSettings(env,next);
@@ -104,5 +104,7 @@ export async function saveAdminSettings(env,body) {
 }
 export async function providerStatus(env) {
   const secrets=await getProviderSecrets(env);
-  return {cloudflareConfigured:!!env.AI,geminiCount:secrets.geminiKeys.length,elevenlabsConfigured:!!secrets.elevenlabsKey,freeConfigured:!!(secrets.freeUrl&&secrets.freeKey&&secrets.freeModel),laptopConfigured:!!secrets.laptopUrl,laptopHasToken:!!secrets.laptopToken};
+  let elevenlabsEnabled=false;
+  try { const s=await getSettings(env); elevenlabsEnabled=s.providerEnabled?.elevenlabs===true; } catch {}
+  return {cloudflareConfigured:!!env.AI,geminiCount:secrets.geminiKeys.length,elevenlabsConfigured:!!secrets.elevenlabsKey,elevenlabsEnabled,freeConfigured:!!(secrets.freeUrl&&secrets.freeKey&&secrets.freeModel),laptopConfigured:!!secrets.laptopUrl,laptopHasToken:!!secrets.laptopToken};
 }

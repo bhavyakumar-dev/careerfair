@@ -56,10 +56,11 @@ export async function onRequestPost({request,env}) {
   if(!/^(audio|video)\//.test(file.type||''))return json({error:'Choose a valid audio or video file.'},415);
   const isVideo=/^video\//.test(file.type||'');
   const settings=await getSettings(env);const secrets=await getProviderSecrets(env);
-  const capable=isVideo?['elevenlabs']:['elevenlabs','cloudflare','gemini'];
+  const elevenlabsAllowed=!!secrets.elevenlabsKey&&(settings.providerEnabled?.elevenlabs===true);
+  const capable=isVideo?(elevenlabsAllowed?['elevenlabs']:[]):(elevenlabsAllowed?['elevenlabs','cloudflare','gemini']:['cloudflare','gemini']);
   const speechProvider=settings.speechProvider||'auto';
-  let requested=speechProvider==='auto'?(settings.automaticFallback?['elevenlabs','cloudflare','gemini']:[settings.preferredProvider||'cloudflare']):[speechProvider];
-  const order=requested.filter((provider,index,array)=>capable.includes(provider)&&array.indexOf(provider)===index&&(provider==='elevenlabs'?!!secrets.elevenlabsKey:settings.providerEnabled?.[provider]!==false));
+  let requested=speechProvider==='auto'?(settings.automaticFallback?(elevenlabsAllowed?['elevenlabs','cloudflare','gemini']:['cloudflare','gemini']):[settings.preferredProvider||'cloudflare']):[speechProvider];
+  const order=requested.filter((provider,index,array)=>capable.includes(provider)&&array.indexOf(provider)===index&&(provider==='elevenlabs'?elevenlabsAllowed:settings.providerEnabled?.[provider]!==false));
   const failures=[];
   for(const provider of order) {
     try {

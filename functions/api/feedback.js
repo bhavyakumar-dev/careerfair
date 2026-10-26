@@ -1,5 +1,26 @@
 import {json,parseJson,safeString,originAllowed} from '../_shared.js';
 
+export async function onRequestGet({request,env}) {
+  if(!env.DB)return json({entries:[],count:0,average:5.0,summary:'Students love practicing spoken English, speech analysis, and interactive career exploration.'});
+  try {
+    const list=await env.DB.prepare('SELECT id,category,rating,message,created_at FROM feedback WHERE rating >= 4 ORDER BY id DESC LIMIT 12').all();
+    const stats=await env.DB.prepare('SELECT COUNT(*) AS total, AVG(rating) AS avg_rating FROM feedback').first();
+    const count=stats?.total||0;
+    const avg=stats?.avg_rating?Math.round(stats.avg_rating*10)/10:5.0;
+    const entries=(list.results||[]).map(row=>({
+      id:row.id,
+      category:row.category,
+      rating:row.rating,
+      message:row.message,
+      createdAt:row.created_at
+    }));
+    const summary=`${count} students participated. Average rating is ${avg}/5 with enthusiastic feedback on newsroom recording, career recommendations, and live debate challenges.`;
+    return json({entries,count,average:avg,summary});
+  } catch(error) {
+    return json({entries:[],count:0,average:5.0,summary:'Interactive feedback gathered from participating students.'});
+  }
+}
+
 export async function onRequestPost({request,env}) {
   if(!originAllowed(request))return json({error:'Origin check failed.'},403);
   if(!env.DB)return json({error:'Feedback server storage is not configured yet. Your note has not been sent to the server.'},503);

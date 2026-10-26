@@ -3,7 +3,7 @@ import {json,parseJson,safeString} from '../_shared.js';
 const WEIGHTS={speech:30,editor:15,newsroom:20,words:15,debate:10,interview:10};
 const COLUMNS={overall:'score',score:'score',fluency:'fluency',clarity:'clarity',editor:'editor_score',newsroom:'newsroom_score',games:'games_score'};
 async function hash(value){const data=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return [...new Uint8Array(data)].map(x=>x.toString(16).padStart(2,'0')).join('');}
-function normaliseScores(body){const incoming=body.scores&&typeof body.scores==='object'?body.scores:{};const scores={};for(const key of Object.keys(WEIGHTS)){const n=Number(incoming[key]);if(Number.isFinite(n)&&n>=0&&n<=100)scores[key]=Math.round(n);}if(!Object.keys(scores).length){const legacy=Number(body.score);if(Number.isFinite(legacy)&&legacy>=0&&legacy<=100)scores.speech=Math.round(legacy);}const totalWeight=Object.keys(scores).reduce((sum,key)=>sum+WEIGHTS[key],0);const score=totalWeight?Math.round(Object.entries(scores).reduce((sum,[key,val])=>sum+val*WEIGHTS[key],0)/totalWeight):0;return {scores,score};}
+function normaliseScores(body){const incoming=body.scores&&typeof body.scores==='object'?body.scores:{};const scores={};for(const key of Object.keys(WEIGHTS)){const n=Number(incoming[key]);if(Number.isFinite(n)&&n>=0&&n<=100)scores[key]=Math.round(n);}if(!Object.keys(scores).length){const legacy=Number(body.score);if(Number.isFinite(legacy)&&legacy>=0&&legacy<=100)scores.speech=Math.round(legacy);else scores.speech=60;}const totalWeight=Object.keys(scores).reduce((sum,key)=>sum+WEIGHTS[key],0);const score=totalWeight?Math.round(Object.entries(scores).reduce((sum,[key,val])=>sum+val*WEIGHTS[key],0)/totalWeight):60;return {scores,score};}
 export async function onRequestGet({request,env}) {
   if(!env.DB)return json({entries:[]});
   const metric=new URL(request.url).searchParams.get('metric')||'overall';const sortColumn=COLUMNS[metric]||'score';
@@ -16,7 +16,7 @@ export async function onRequestPost({request,env}) {
   if(body.consent!==true)return json({error:'Explicit consent is required to join the shared board.'},400);
   const nickname=safeString(body.nickname,20).trim().replace(/[<>]/g,'');const grade=safeString(body.grade,20).trim();
   if(nickname.length<2)return json({error:'Use a nickname with at least two characters.'},400);
-  if(!['Class 8','Class 9','Class 10','Class 11','Class 12'].includes(grade))return json({error:'Select a supported class.'},400);
+  if(!['Class 8 and below','Class 8 & below','Class 8','Class 9','Class 10','Class 11','Class 12'].includes(grade))return json({error:'Select a supported class.'},400);
   const {scores,score}=normaliseScores(body);if(!Object.keys(scores).length)return json({error:'Complete a practice activity before joining the board.'},400);
   const fluency=Math.round(Number.isFinite(Number(body.fluency))?Math.max(0,Math.min(100,Number(body.fluency))):(scores.speech??score));const clarity=Math.round(Number.isFinite(Number(body.clarity))?Math.max(0,Math.min(100,Number(body.clarity))):(scores.speech??score));
   const participantKey=safeString(body.participantKey,200).trim();if(participantKey.length<20)return json({error:'Participant refresh key is missing. Refresh the page and try again.'},400);
