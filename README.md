@@ -1,6 +1,6 @@
 # Every Career Speaks English — Kanakia Career Fair & Speech Lab
 
-An interactive exhibition and AI voice laboratory designed for the Annual Career Exhibition (Class X-D, Kanakia International School, Mira Road).
+An interactive exhibition and AI voice laboratory designed for the Career Fair 2026 (Class X-D, Kanakia International School, Mira Road).
 
 ## Core Capabilities
 

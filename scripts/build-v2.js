@@ -1368,7 +1368,7 @@ Download Placard PNG
 <span class="text-xs font-mono font-bold text-primary px-2.5 py-0.5 rounded bg-primary/10 border border-primary/25">
 © Kanakia International School Mira Road
 </span>
-<span class="text-[11px] text-on-surface-variant/70">Annual Career Exhibition Showcase</span>
+<span class="text-[11px] text-on-surface-variant/70">Career Fair 2026 Showcase</span>
 </div>
 </div>
 

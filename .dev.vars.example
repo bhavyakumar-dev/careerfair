@@ -1,0 +1,14 @@
+ADMIN_USER=admin
+ADMIN_PASSWORD=replace-with-a-long-random-password
+ADMIN_SESSION_SECRET=replace-with-at-least-32-random-characters
+CONFIG_ENCRYPTION_KEY=replace-with-base64-encoded-32-byte-random-value
+GEMINI_API_KEYS=
+GEMINI_MODEL=gemini-3.5-flash-lite
+CF_MODEL=@cf/meta/llama-3.1-8b-instruct
+FREE_LLM_URL=
+FREE_LLM_KEY=
+FREE_LLM_MODEL=
+LAPTOP_URL=
+LAPTOP_TOKEN=
+LAPTOP_MODEL=llama3.2:3b
+WHISPER_MODEL=@cf/openai/whisper-large-v3-turbo

@@ -1878,7 +1878,7 @@ input:checked + .toggle-slider:before {
             <span class="nav-school-name" id="schoolNameHeader">Kanakia International School</span>
             <span class="nav-live-dot" title="Live Exhibition Stall"></span>
           </div>
-          <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Mira Road · Class X-D Annual Career Exhibition</span>
+          <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Mira Road · Class X-D Career Fair</span>
         </div>
       </a>
       <ul class="nav-links">
@@ -2399,7 +2399,7 @@ input:checked + .toggle-slider:before {
     <div class="container footer-content">
       <div class="footer-left">
         <div class="footer-school" id="footerSchoolName">Kanakia International School, Mira Road</div>
-        <div class="footer-exhibition">Class X-D Annual Career Exhibition · "Every Career Speaks English"</div>
+        <div class="footer-exhibition">Class X-D Career Fair · "Every Career Speaks English"</div>
       </div>
       <div class="footer-actions" style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm" onclick="window.scrollTo({top:0, behavior:'smooth'})">Back to Top ↑</button>
@@ -4060,7 +4060,7 @@ function downloadQRCode() {
 
     eCtx.fillStyle = '#0070F3';
     eCtx.font = 'bold 16px Outfit, sans-serif';
-    eCtx.fillText('Annual Career Exhibition · Class X-D', expSize / 2, 75);
+    eCtx.fillText('Career Fair 2026 · Class X-D', expSize / 2, 75);
 
     eCtx.fillStyle = '#64748B';
     eCtx.font = 'italic 14px "Plus Jakarta Sans", sans-serif';
@@ -4129,7 +4129,7 @@ function copyPortalLink() {
 function applyPortalConfig() {
   document.documentElement.setAttribute('data-theme', portalConfig.theme || 'dark');
   document.getElementById('schoolNameHeader').textContent = portalConfig.schoolName;
-  document.getElementById('schoolBadgeText').textContent = `${portalConfig.schoolName} · Class X-D Annual Career Exhibition`;
+  document.getElementById('schoolBadgeText').textContent = `${portalConfig.schoolName} · Class X-D Career Fair`;
   document.getElementById('footerSchoolName').textContent = portalConfig.schoolName;
 
   for (const sec in portalConfig.toggles) {

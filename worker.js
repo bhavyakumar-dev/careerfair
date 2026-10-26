@@ -1,3 +1,8 @@
+import { onRequestPost as handleOpenMicAi } from "./functions/api/ai.js";
+import { onRequestPost as handleOpenMicSpeech } from "./functions/api/speech.js";
+import { onRequestGet as handleOpenMicLeaderboardGet, onRequestPost as handleOpenMicLeaderboardPost } from "./functions/api/leaderboard.js";
+import { onRequest as handleOpenMicAdmin } from "./functions/api/admin/[[path]].js";
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -496,6 +501,39 @@ export default {
     }
 
     if (pathname.startsWith("/api/")) {
+      if (pathname === "/api/ai" && request.method === "POST") {
+        try {
+          return await handleOpenMicAi({ request, env, ctx });
+        } catch (e) {
+          return jsonResponse({ error: e.message }, 500);
+        }
+      }
+
+      if (pathname === "/api/speech" && request.method === "POST") {
+        try {
+          return await handleOpenMicSpeech({ request, env, ctx });
+        } catch (e) {
+          return jsonResponse({ error: e.message }, 500);
+        }
+      }
+
+      if (pathname.startsWith("/api/admin/") && pathname !== "/api/admin/config") {
+        try {
+          return await handleOpenMicAdmin({ request, env, ctx });
+        } catch (e) {
+          return jsonResponse({ error: e.message }, 500);
+        }
+      }
+
+      if (pathname === "/api/leaderboard" && (url.searchParams.has("metric") || request.method === "DELETE")) {
+        try {
+          return await handleOpenMicLeaderboardGet({ request, env, ctx });
+        } catch (e) {
+          return jsonResponse({ entries: [] });
+        }
+      }
+
+
       const geminiKeyHeader = request.headers.get("X-Gemini-Key");
       const freeLlmUrlHeader = request.headers.get("X-Free-LLM-URL");
       const ollamaUrlHeader = request.headers.get("X-Ollama-URL");
@@ -686,7 +724,7 @@ export default {
       if (pathname === "/v2") {
         return env.ASSETS.fetch(new Request(new URL("/v2.html", request.url), request));
       }
-      if (pathname === "/v3") {
+      if (pathname === "/v3" || pathname === "/open-mic" || pathname === "/openmic") {
         return env.ASSETS.fetch(new Request(new URL("/v3.html", request.url), request));
       }
       if (pathname === "/v4") {

@@ -1,0 +1,72 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Games & Interactive Experiences</title><link rel=stylesheet href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond&family=IM+Fell+English:ital@0;1&family=Pinyon+Script&family=UnifrakturCook:wght@700&family=Work+Sans:wght@400;500&display=swap"><link rel=stylesheet href=style.css></head><body><section class=sec><h2>Act IV: The Games</h2><p>Explore English through interactive challenges. Click any game below to begin.</p></section>
+
+<main class=sec><div class=games-grid>
+
+
+<article class="game-card tilt" data-r><h3>🌿 Etymology Tracer</h3><p>Click a word to trace its journey through time. See where it came from and how its meaning shifted.</p><div class="game-controls"><button class="game-btn" onclick="showEtymology('journalist')">journalist</button> <button class="game-btn" onclick="showEtymology('language')">language</button> <button class="game-btn" onclick="showEtymology('education')">education</button></div></article>
+
+
+<article class="game-card tilt" data-r><h3>⚡ Word Chain Battle</h3><p>Build word chains where the last letter starts the next word. Rack up points!</p><div class="game-controls"><button class="game-btn" onclick="document.getElementById('chain-modal').classList.add('active')">Play Now</button></div></article>
+
+
+<article class="game-card tilt" data-r><h3>📖 Quote Attribution</h3><p>Match famous literary quotes to their era. Test your knowledge of English literature through history.</p><div class="game-controls"><button class="game-btn" onclick="document.getElementById('quote-modal').classList.add('active');initQuoteQuiz()">Start Quiz</button></div></article>
+
+
+<article class="game-card tilt" data-r><h3>🎭 Career Match</h3><p>Answer quick questions about yourself. Discover which English careers match your interests.</p><div class="game-controls"><button class="game-btn" onclick="document.getElementById('quiz-modal').classList.add('active');initCareerQuiz()">Take Quiz</button></div></article>
+
+
+<article class="game-card tilt" data-r><h3>🗺️ College Route Planner</h3><p>Filter colleges by your preferences: co-ed or women's, urban or campus, theory or practical.</p><div class="game-controls"><button class="game-btn" onclick="document.getElementById('filter-modal').classList.add('active');initCollegeFilter()">Filter Now</button></div></article>
+
+
+<article class="game-card tilt" data-r><h3>🎬 Choose Your Path</h3><p>Interactive fiction. Navigate a career fair and shape your English destiny with meaningful choices.</p><div class="game-controls"><button class="game-btn" onclick="document.getElementById('story-modal').classList.add('active');initStoryAdventure()">Begin Adventure</button></div></article>
+
+
+<article class="game-card tilt" data-r><h3>💬 Debate Spinner</h3><p>Get a random debate prompt about English and language. Spin to unlock thought-provoking questions.</p><div class="game-controls"><button class="game-btn" onclick="document.getElementById('debate-modal').classList.add('active');initDebateSpinner()">Spin & Debate</button></div></article>
+
+
+<article class="game-card tilt" data-r><h3>⌨️ Typing Speed</h3><p>Race through passages from different English eras. How fast can you type Early Modern English?</p><div class="game-controls"><button class="game-btn" onclick="document.getElementById('type-modal').classList.add('active');initTypingChallenge()">Start Challenge</button></div></article>
+
+
+<article class="game-card tilt" data-r><h3>🎤 Accent Guesser</h3><p>Hear an audio sample and guess the region. British, American, Indian, or Australian English?</p><div class="game-controls"><button class="game-btn" onclick="document.getElementById('accent-modal').classList.add('active');initAccentGame()">Play Now</button></div></article>
+
+
+<article class="game-card tilt" data-r><h3>📝 Daily Word</h3><p>Learn one fascinating word each day. Share what you learned with friends.</p><div class="game-controls"><button class="game-btn" onclick="document.getElementById('word-modal').classList.add('active');initDailyWord()">Today's Word</button></div></article>
+
+
+<article class="game-card tilt" data-r><h3>🐝 Spelling Bee</h3><p>30 seconds to spell challenging words. Wrong answers show etymology hints.</p><div class="game-controls"><button class="game-btn" onclick="document.getElementById('spell-modal').classList.add('active');initSpellingBee()">Start Bee</button></div></article>
+
+</div></main>
+
+
+
+
+<div id="chain-modal" class="game-modal"><div class="modal-content"><h2>⚡ Word Chain Battle</h2><div id="chain-display"></div><input id="chain-input" type="text" placeholder="Type your word..." autocomplete="off"><button id="chain-submit">Submit Word</button><div id="chain-hint"></div><p id="chain-msg"></p><button class="close-modal" onclick="this.closest('.game-modal').classList.remove('active')">Close</button></div></div>
+
+
+<div id="quote-modal" class="game-modal"><div class="modal-content"><h2>📖 Quote Attribution Quiz</h2><div id="quote-container"></div><button class="close-modal" onclick="this.closest('.game-modal').classList.remove('active')">Close</button></div></div>
+
+
+<div id="quiz-modal" class="game-modal"><div class="modal-content"><h2>🎭 Career Match Quiz</h2><div id="quiz-container"></div><button class="close-modal" onclick="this.closest('.game-modal').classList.remove('active')">Close</button></div></div>
+
+
+<div id="filter-modal" class="game-modal"><div class="modal-content"><h2>🗺️ College Route Planner</h2><div id="college-filters"></div><div id="college-results"></div><button class="close-modal" onclick="this.closest('.game-modal').classList.remove('active')">Close</button></div></div>
+
+
+<div id="story-modal" class="game-modal"><div class="modal-content"><h2>🎬 Choose Your Path</h2><div id="story-container"></div><button class="close-modal" onclick="this.closest('.game-modal').classList.remove('active')">Close</button></div></div>
+
+
+<div id="debate-modal" class="game-modal"><div class="modal-content"><h2>💬 Debate Spinner</h2><div id="debate-spinner" class="spinner"></div><button id="spin-btn" class="game-btn">Spin the Wheel</button><p id="debate-prompt"></p><div id="debate-careers"></div><div id="debate-colleges"></div><button class="close-modal" onclick="this.closest('.game-modal').classList.remove('active')">Close</button></div></div>
+
+
+<div id="type-modal" class="game-modal"><div class="modal-content"><h2>⌨️ Typing Speed Challenge</h2><div id="type-passage"></div><p id="type-timer" class="timer">Era 1/4</p><input id="type-input" type="text" placeholder="Start typing..." autocomplete="off"><div id="type-result"></div><button class="close-modal" onclick="this.closest('.game-modal').classList.remove('active')">Close</button></div></div>
+
+
+<div id="accent-modal" class="game-modal"><div class="modal-content"><h2>🎤 Accent Guesser</h2><div id="accent-display"></div><button class="close-modal" onclick="this.closest('.game-modal').classList.remove('active')">Close</button></div></div>
+
+
+<div id="word-modal" class="game-modal"><div class="modal-content"><h2>📝 Daily Word</h2><div id="word-display"></div><button class="close-modal" onclick="this.closest('.game-modal').classList.remove('active')">Close</button></div></div>
+
+
+<div id="spell-modal" class="game-modal"><div class="modal-content"><h2>🐝 Spelling Bee - 30 Seconds</h2><p id="spell-word"></p><input id="spell-input" type="text" placeholder="Type the spelling..." autocomplete="off"><p id="spell-progress">Score: 0 / 1</p><p id="spell-timer">30</p><div id="spell-msg"></div><button class="close-modal" onclick="this.closest('.game-modal').classList.remove('active')">Close</button></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script><script src=app.js></script></body></html>
