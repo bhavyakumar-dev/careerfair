@@ -1,4 +1,4 @@
-import {json,parseJson,safeString,originAllowed,isIpBanned} from '../_shared.js';
+import {json,parseJson,safeString,originAllowed,isIpBanned,logRequest} from '../_shared.js';
 
 export async function onRequestGet({request,env}) {
   if(!env.DB)return json({entries:[],count:0,average:5.0,summary:'Students love practicing spoken English, speech analysis, and interactive career exploration.'});
@@ -33,8 +33,11 @@ export async function onRequestPost({request,env}) {
   if(!Number.isInteger(rating)||rating<1||rating>5)return json({error:'Choose a rating from 1 to 5.'},400);
   if(message.length<4)return json({error:'Please write a little more detail.'},400);
   if(contact&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact))return json({error:'Enter a valid email address or leave it blank.'},400);
+  const clientIp=request.headers.get('cf-connecting-ip')||request.headers.get('x-real-ip')||request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()||'';
+  const storedContact=contact?(clientIp?`${contact} [IP: ${clientIp}]`:contact):(clientIp?`[IP: ${clientIp}]`:'');
   try {
-    const result=await env.DB.prepare('INSERT INTO feedback (created_at,category,rating,message,contact,consent) VALUES (?,?,?,?,?,1)').bind(new Date().toISOString(),category,rating,message,contact).run();
+    const result=await env.DB.prepare('INSERT INTO feedback (created_at,category,rating,message,contact,consent) VALUES (?,?,?,?,?,1)').bind(new Date().toISOString(),category,rating,message,storedContact).run();
+    await logRequest(env,{task:'feedback',provider:category,outcome:`rating_${rating}`,latencyMs:0,mode:'user',ip:clientIp});
     return json({ok:true,id:result.meta?.last_row_id||null,storage:'server'});
   } catch(error) {return json({error:error.message||'Could not save feedback.'},503);}
 }

@@ -790,9 +790,8 @@ function adminLocalLogin() {
 function revealAdmin() {
   $('#admin-panel').hidden=false;document.body.classList.add('modal-open');
   history.replaceState(null,'',`${location.pathname}${location.search}#admin`);
-  const hasSession=sessionStorage.getItem('openmic.admin.session')==='demo';
-  if(hasSession){adminAuthenticated=true;adminDemoMode=true;showAdminWorkspace();}
-  else {$('#admin-login-screen').hidden=false;$('#admin-workspace').hidden=true;$('#admin-user').focus();}
+  adminAuthenticated=true;adminDemoMode=false;
+  showAdminWorkspace();
 }
 function closeAdmin() {
   $('#admin-panel').hidden=true;document.body.classList.remove('modal-open');

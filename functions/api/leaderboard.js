@@ -1,4 +1,4 @@
-import {json,parseJson,safeString,isIpBanned} from '../_shared.js';
+import {json,parseJson,safeString,isIpBanned,logRequest} from '../_shared.js';
 
 const WEIGHTS={speech:30,editor:15,newsroom:20,words:15,debate:10,interview:10};
 const COLUMNS={overall:'score',score:'score',fluency:'fluency',clarity:'clarity',editor:'editor_score',newsroom:'newsroom_score',games:'games_score'};
@@ -22,10 +22,12 @@ export async function onRequestPost({request,env}) {
   const fluency=Math.round(Number.isFinite(Number(body.fluency))?Math.max(0,Math.min(100,Number(body.fluency))):(scores.speech??score));const clarity=Math.round(Number.isFinite(Number(body.clarity))?Math.max(0,Math.min(100,Number(body.clarity))):(scores.speech??score));
   const participantKey=safeString(body.participantKey,200).trim();if(participantKey.length<20)return json({error:'Participant refresh key is missing. Refresh the page and try again.'},400);
   const keyHash=await hash(participantKey);const now=new Date().toISOString();const scoreVals=['speech','editor','newsroom','words','debate','interview'].map(key=>scores[key]??0);
+  const clientIp=request.headers.get('cf-connecting-ip')||request.headers.get('x-real-ip')||request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()||'';
   try {
     const existing=await env.DB.prepare('SELECT id FROM leaderboard WHERE participant_key_hash=?').bind(keyHash).first();
     if(existing)await env.DB.prepare('UPDATE leaderboard SET nickname=?,grade=?,score=?,fluency=?,clarity=?,scores_json=?,speech_score=?,editor_score=?,newsroom_score=?,games_score=?,debate_score=?,interview_score=?,consent=1,created_at=? WHERE id=?').bind(nickname,grade,score,fluency,clarity,JSON.stringify(scores),...scoreVals,now,existing.id).run();
     else await env.DB.prepare('INSERT INTO leaderboard (nickname,grade,score,fluency,clarity,consent,created_at,scores_json,participant_key_hash,speech_score,editor_score,newsroom_score,games_score,debate_score,interview_score) VALUES (?,?,?,?,?,1,?,?,?,?,?,?,?,?,?)').bind(nickname,grade,score,fluency,clarity,now,JSON.stringify(scores),keyHash,...scoreVals).run();
+    await logRequest(env,{task:'leaderboard-entry',provider:nickname,outcome:grade,latencyMs:score,mode:'score',ip:clientIp});
     return json({ok:true,score,storedScores:scores});
   } catch(error) {return json({error:error.message||'Could not save leaderboard entry. Confirm migration 0002_v8.sql has been applied.'},503);}
 }

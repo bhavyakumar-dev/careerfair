@@ -48,6 +48,7 @@ async function elevenLabsTranscribe(secrets,file) {
 }
 export async function onRequestPost({request,env}) {
   const started=Date.now();
+  const clientIp=request.headers.get('cf-connecting-ip')||request.headers.get('x-real-ip')||request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()||'';
   if(await isIpBanned(request,env))return json({error:'Your IP address is restricted.'},403);
   if(!request.headers.get('content-type')?.includes('multipart/form-data'))return json({error:'Submit audio or video as multipart form data.'},400);
   let form;try{form=await request.formData();}catch{return json({error:'Could not read the media upload.'},400);}
@@ -67,11 +68,11 @@ export async function onRequestPost({request,env}) {
     try {
       const text=provider==='elevenlabs'?await elevenLabsTranscribe(secrets,file):provider==='cloudflare'?await whisper(env,file):await geminiAudio(env,secrets,file);
       if(!text)throw new Error('This provider returned no transcript.');
-      await logRequest(env,{task:'audio-transcription',provider,outcome:'success',latencyMs:Date.now()-started,mode:speechProvider==='auto'?(settings.automaticFallback?'auto':'manual'):speechProvider});
+      await logRequest(env,{task:'audio-transcription',provider,outcome:'success',latencyMs:Date.now()-started,mode:speechProvider==='auto'?(settings.automaticFallback?'auto':'manual'):speechProvider,ip:clientIp});
       return json({text,provider,latencyMs:Date.now()-started,mode:speechProvider==='auto'?(settings.automaticFallback?'auto':'manual'):speechProvider,mediaType:isVideo?'video':'audio'});
     } catch(error) {failures.push(`${provider}: ${safeString(error.message,120)}`);}
   }
-  await logRequest(env,{task:'audio-transcription',provider:order.join(',')||'none',outcome:'failed',latencyMs:Date.now()-started,mode:speechProvider==='auto'?(settings.automaticFallback?'auto':'manual'):speechProvider});
+  await logRequest(env,{task:'audio-transcription',provider:order.join(',')||'none',outcome:'failed',latencyMs:Date.now()-started,mode:speechProvider==='auto'?(settings.automaticFallback?'auto':'manual'):speechProvider,ip:clientIp});
   const error=order.length?`Transcription providers failed. ${failures.join(' ')}`:'No transcription provider is enabled. For audio, configure an ElevenLabs key, enable Cloudflare Workers AI, or add Gemini keys. Video transcription currently requires ElevenLabs Scribe v2.';
   return json({error,uploaded:false,serverStorageConfigured:!!(env.DB&&env.MEDIA)},503);
 }

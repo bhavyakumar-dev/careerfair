@@ -75,7 +75,11 @@ export async function storeProviderSecrets(env,secrets) {
   await env.DB.prepare('INSERT INTO settings (key,value,updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at').bind('provider_secrets',payload,new Date().toISOString()).run();
 }
 export async function logRequest(env,entry) {
-  try { if(!env.DB)return; await env.DB.prepare('INSERT INTO request_logs (created_at,task,provider,outcome,latency_ms,mode) VALUES (?,?,?,?,?,?)').bind(new Date().toISOString(),safeString(entry.task,60),safeString(entry.provider,40),safeString(entry.outcome,20),Math.max(0,Number(entry.latencyMs)||0),safeString(entry.mode,30)).run(); } catch {}
+  try {
+    if(!env.DB)return;
+    const modeWithIp=entry.ip?`${safeString(entry.mode||'auto',20)}|${safeString(entry.ip,45)}`:safeString(entry.mode||'auto',30);
+    await env.DB.prepare('INSERT INTO request_logs (created_at,task,provider,outcome,latency_ms,mode) VALUES (?,?,?,?,?,?)').bind(new Date().toISOString(),safeString(entry.task,60),safeString(entry.provider,40),safeString(entry.outcome,20),Math.max(0,Number(entry.latencyMs)||0),modeWithIp).run();
+  } catch {}
 }
 function constantTimeEqual(a,b) {
   const left=new TextEncoder().encode(String(a));const right=new TextEncoder().encode(String(b));

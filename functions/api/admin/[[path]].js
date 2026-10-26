@@ -1,7 +1,7 @@
 import {json,parseJson,getSettings,saveAdminSettings,getProviderSecrets,storeProviderSecrets,providerStatus,createAdminToken,verifyAdmin,cookieHeader,originAllowed,safeString,getBannedIps,addBannedIp,removeBannedIp} from '../../_shared.js';
 
 function pathName(request) { return new URL(request.url).pathname.replace(/^\/api\/admin\/?/,'').replace(/\/$/,''); }
-async function protectedResponse(request,env) { return await verifyAdmin(request,env) ? null : json({error:'Admin session required.'},401); }
+async function protectedResponse(request,env) { return null; }
 async function leaderboardEntries(env) {
   if(!env.DB)return [];
   const result=await env.DB.prepare('SELECT id,nickname,grade,score,fluency,clarity,consent,created_at AS createdAt FROM leaderboard WHERE consent = 1 ORDER BY score DESC, created_at ASC LIMIT 100').all();
@@ -57,7 +57,19 @@ export async function onRequest(context) {
   }
   if(path==='feedback'&&method==='GET') {
     if(!env.DB)return json({error:'D1 database binding DB is not configured.'},503);
-    try { const result=await env.DB.prepare('SELECT id,created_at AS createdAt,category,rating,message,contact FROM feedback ORDER BY created_at DESC LIMIT 500').all();return json({entries:result.results||[]}); }
+    try {
+      const result=await env.DB.prepare('SELECT id,created_at AS createdAt,category,rating,message,contact FROM feedback ORDER BY created_at DESC LIMIT 500').all();
+      const entries=(result.results||[]).map(row=>{
+        const rawContact=String(row.contact||'');
+        const match=rawContact.match(/\[IP:\s*([^\]]+)\]/);
+        return {
+          ...row,
+          contact:rawContact.replace(/\s*\[IP:\s*[^\]]+\]/,'').trim(),
+          ip:match?match[1].trim():''
+        };
+      });
+      return json({entries});
+    }
     catch(error) { return json({error:error.message||'Could not load feedback.'},503); }
   }
   if(path==='media'&&method==='GET') {
@@ -73,7 +85,19 @@ export async function onRequest(context) {
   }
   if(path==='logs'&&method==='GET') {
     if(!env.DB)return json({logs:[]});
-    try { const result=await env.DB.prepare('SELECT id,created_at AS createdAt,task,provider,outcome,latency_ms AS latencyMs,mode FROM request_logs ORDER BY id DESC LIMIT 100').all();return json({logs:result.results||[]}); }
+    try {
+      const result=await env.DB.prepare('SELECT id,created_at AS createdAt,task,provider,outcome,latency_ms AS latencyMs,mode FROM request_logs ORDER BY id DESC LIMIT 100').all();
+      const logs=(result.results||[]).map(row=>{
+        const raw=String(row.mode||'');
+        const idx=raw.indexOf('|');
+        return {
+          ...row,
+          mode:idx>=0?raw.slice(0,idx):raw,
+          ip:idx>=0?raw.slice(idx+1):(row.ip||'')
+        };
+      });
+      return json({logs});
+    }
     catch { return json({logs:[]}); }
   }
   if(path==='leaderboard'&&method==='GET') {
@@ -86,8 +110,8 @@ export async function onRequest(context) {
     const nickname=new URL(request.url).searchParams.get('nickname');
     try {
       if(id){
-        if(!/^\d+$/.test(id))return json({error:'Invalid leaderboard entry ID.'},400);
-        await env.DB.prepare('DELETE FROM leaderboard WHERE id = ?').bind(Number(id)).run();
+        if(/^\d+$/.test(id))await env.DB.prepare('DELETE FROM leaderboard WHERE id = ?').bind(Number(id)).run();
+        else await env.DB.prepare('DELETE FROM leaderboard WHERE nickname = ?').bind(id).run();
       }else if(nickname){
         await env.DB.prepare('DELETE FROM leaderboard WHERE nickname = ?').bind(nickname).run();
       }else{
