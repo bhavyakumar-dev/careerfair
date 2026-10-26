@@ -204,6 +204,18 @@ function loadLocalSettings() {
 }
 function saveLocalSettings() { localStorage.setItem(STORAGE.settings, JSON.stringify(settings)); }
 function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char])); }
+function formatMarkdown(value) {
+  let text = escapeHtml(value ?? '');
+  text = text.replace(/^###\s*\*{0,2}(.*?)\*{0,2}$/gim, '<h4 class="ai-heading">$1</h4>');
+  text = text.replace(/^##\s*\*{0,2}(.*?)\*{0,2}$/gim, '<h3 class="ai-heading">$1</h3>');
+  text = text.replace(/^---+$/gim, '<hr class="ai-rule">');
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  text = text.replace(/(?:^|\n)\s*(\d+\.|\-|\*)\s+(.*$)/gim, '<div class="ai-bullet"><span class="ai-bullet-dot">•</span> $2</div>');
+  text = text.replace(/\n\s*\n/g, '</p><p>');
+  text = text.replace(/\n/g, '<br>');
+  return `<div class="formatted-ai-text"><p>${text}</p></div>`;
+}
 function showToast(message) { const toast = $('#toast'); toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 3200); }
 function setMessage(element, message, isError = false) { if (!element) return; element.textContent = message; element.style.color = isError ? '#ffb09a' : ''; }
 function careerByTitle(title) { return CAREERS.find(career => career.title === title) || CAREERS[0]; }
@@ -534,7 +546,7 @@ async function analyzeSpeech() {
     if (result.text) {
       const block = document.createElement('div');
       block.className = 'feedback-copy';
-      block.innerHTML = `<p><strong>Additional AI coaching (${escapeHtml(result.provider||'AI')})</strong></p><p>${escapeHtml(result.text)}</p>`;
+      block.innerHTML = `<p><strong>Additional AI coaching (${escapeHtml(result.provider||'AI')})</strong></p><div class="ai-review-body">${formatMarkdown(result.text)}</div>`;
       feedback.appendChild(block);
     }
     const logs = loadDemoLogs();
@@ -558,7 +570,7 @@ function localInterviewQuestion(title,index,level) {
 }
 function renderInterviewMessages() {
   $('#interview-empty').hidden = interviewHistory.length > 0;
-  $('#interview-messages').innerHTML = interviewHistory.map(item=>`<div class="chat-bubble ${item.role==='user'?'user':'ai'}"><small>${item.role==='user'?'YOUR ANSWER':'INTERVIEWER'}</small>${escapeHtml(item.text)}${item.feedback?`<p class="chat-feedback">${escapeHtml(item.feedback)}</p>`:''}</div>`).join('');
+  $('#interview-messages').innerHTML = interviewHistory.map(item=>`<div class="chat-bubble ${item.role==='user'?'user':'ai'}"><small>${item.role==='user'?'YOUR ANSWER':'INTERVIEWER'}</small>${escapeHtml(item.text)}${item.feedback?`<div class="chat-feedback">${formatMarkdown(item.feedback)}</div>`:''}</div>`).join('');
   $('#interview-messages').scrollTop=$('#interview-messages').scrollHeight;
 }
 function startInterview() {
@@ -595,7 +607,7 @@ async function reviewRoleplay() {
   resultBox.hidden=false;
   resultBox.innerHTML='<p>Reviewing your response…</p>';
   const local = activeRoleplay === 'doctor' ? '<strong>What is working:</strong> Acknowledge the patient’s worry without dismissing it. <strong>Try next:</strong> ask what concerns them, explain that a qualified clinician or pharmacist should answer medicine-specific questions, and identify the safe next step. This exercise is for communication practice, not medical advice.' : `<strong>What is working:</strong> You have a starting point to build on. <strong>Try next:</strong> name the concern or goal, make one clear statement, and explain the next step. <strong>Scenario focus:</strong> ${escapeHtml(scenario.focus)}.`;
-  try { const result=await requestAI('roleplay-feedback',{scenario:scenario.title,context:scenario.cue,text:answer}); resultBox.innerHTML=`<strong>Communication review</strong><p>${escapeHtml(result.text||'')}</p><p class="muted-small">Provider: ${escapeHtml(result.provider||'AI')}</p>`; }
+  try { const result=await requestAI('roleplay-feedback',{scenario:scenario.title,context:scenario.cue,text:answer}); resultBox.innerHTML=`<strong>Communication review</strong><div class="ai-review-body">${formatMarkdown(result.text||'')}</div><p class="muted-small">Provider: ${escapeHtml(result.provider||'AI')}</p>`; }
   catch { resultBox.innerHTML=local+'<p class="muted-small">On-device starter feedback; AI providers are not configured or available.</p>'; }
 }
 function applyRoleplay(key) {
@@ -677,7 +689,7 @@ async function analyzeComparison() {
   renderCompareResult(own,reference,selectedAudioFile?'audio transcription':'typed transcript');
   try {
     const result=await requestAI('compare-communication',{text:own,reference,referenceSpeaker:$('#compare-reference').value,prompt:'Compare clarity, sentence shape, filler words in the supplied text and vocabulary pattern. Do not infer an accent or identify a voice from text. Provide three practical observations.'});
-    if(result.text){const node=document.createElement('div');node.className='compare-insight';node.innerHTML=`<strong>Additional coaching</strong>${escapeHtml(result.text)}`;$('#compare-results').appendChild(node);}
+    if(result.text){const node=document.createElement('div');node.className='compare-insight';node.innerHTML=`<strong>Additional coaching</strong><div class="ai-review-body">${formatMarkdown(result.text)}</div>`;$('#compare-results').appendChild(node);}
   } catch {}
 }
 function setWord(index) {
@@ -940,7 +952,7 @@ async function reviewDebate() {
   const metrics = { words: debateDraft.split(/\s+/).filter(Boolean).length, hasClaim: Boolean($('#debate-claim').value.trim()), hasExample: Boolean($('#debate-evidence').value.trim()), hasCounterargument: Boolean($('#debate-counter').value.trim()) };
   try {
     const result = await requestAI('speech-feedback', { text: debateDraft, metrics, prompt: 'Review this debate argument for logical structure, clarity, fair treatment of an opposing view and usefulness of the supporting example. Give concrete advice without judging the student or requiring a particular opinion.' });
-    target.innerHTML = `<p><strong>Coach feedback · ${escapeHtml(result.provider || 'AI')}</strong></p><p>${escapeHtml(result.text || 'No feedback was returned.')}</p>`;
+    target.innerHTML = `<p><strong>Coach feedback · ${escapeHtml(result.provider || 'AI')}</strong></p><div class="ai-review-body">${formatMarkdown(result.text || 'No feedback was returned.')}</div>`;
   } catch {
     const suggestions = [];
     if (metrics.words < 70) suggestions.push('Add one more concrete detail so your argument is easier to evaluate.');
