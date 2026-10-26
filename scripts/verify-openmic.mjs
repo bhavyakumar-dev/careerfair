@@ -62,7 +62,7 @@ for (const { path, text } of codeText) {
   record(`No code comments in ${path}`, !(hasHtmlComments || hasBlockComments || hasLineComments));
 }
 record('Artistic QR preview asset exists', read('assets/open-mic-qr-repo-preview.png').length > 0);
-record('Deployment configuration present', ['wrangler.toml', 'migrations/0001_init.sql', '.dev.vars.example', 'STITCH_BRIEF.md', 'README.md'].every(path => { try { read(path); return true; } catch { return false; } }));
+record('Deployment configuration present', ['wrangler.json', 'migrations/0001_init.sql', '.dev.vars.example', 'STITCH_BRIEF.md', 'README.md'].every(path => { try { read(path); return true; } catch { return false; } }));
 for (const check of checks) console.log(`${check.passed ? 'PASS' : 'FAIL'} ${check.name}${check.detail ? `: ${check.detail}` : ''}`);
 console.log(`\n${checks.filter(check => check.passed).length}/${checks.length} checks passed.`);
 if (failures.length) process.exitCode = 1;
