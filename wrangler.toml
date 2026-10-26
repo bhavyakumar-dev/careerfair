@@ -1,0 +1,16 @@
+name = "open-mic-career-lab"
+pages_build_output_dir = "."
+compatibility_date = "2026-10-25"
+
+[ai]
+binding = "AI"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "open-mic-career-lab"
+database_id = "ac9fd526-d0f9-47b6-929c-f773fe757e11"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "open-mic-private-media"

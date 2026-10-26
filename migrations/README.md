@@ -1,0 +1,1 @@
+Apply `0001_init.sql` first, then `0002_v8.sql`, to the D1 database connected as `DB`. Create the private Cloudflare R2 bucket named `open-mic-private-media` and bind it to Pages Functions as `MEDIA` before enabling newsroom upload.

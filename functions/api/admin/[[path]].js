@@ -42,6 +42,7 @@ export async function onRequest(context) {
       freeUrl:safeString(body.freeUrl,500).trim()||current.freeUrl,
       freeKey:safeString(body.freeKey,1000).trim()||current.freeKey,
       freeModel:safeString(body.freeModel,120).trim()||current.freeModel,
+      elevenlabsKey:safeString(body.elevenlabsKey,1000).trim()||current.elevenlabsKey,
       laptopUrl:safeString(body.laptopUrl,500).trim()||current.laptopUrl,
       laptopToken:safeString(body.laptopToken,1000).trim()||current.laptopToken,
       laptopModel:safeString(body.laptopModel,120).trim()||current.laptopModel
@@ -49,6 +50,22 @@ export async function onRequest(context) {
     for(const value of [next.freeUrl,next.laptopUrl])if(value){try{const url=new URL(value);if(!['https:','http:'].includes(url.protocol))throw new Error();}catch{return json({error:'Provider URLs must be valid HTTP(S) URLs.'},400);}}
     try { await storeProviderSecrets(env,next);return json({ok:true,status:await providerStatus(env)}); }
     catch(error) { return json({error:error.message||'Credentials could not be encrypted and saved.'},503); }
+  }
+  if(path==='feedback'&&method==='GET') {
+    if(!env.DB)return json({error:'D1 database binding DB is not configured.'},503);
+    try { const result=await env.DB.prepare('SELECT id,created_at AS createdAt,category,rating,message,contact FROM feedback ORDER BY created_at DESC LIMIT 500').all();return json({entries:result.results||[]}); }
+    catch(error) { return json({error:error.message||'Could not load feedback.'},503); }
+  }
+  if(path==='media'&&method==='GET') {
+    if(!env.DB)return json({error:'D1 database binding DB is not configured.'},503);
+    try { const result=await env.DB.prepare('SELECT id,created_at AS createdAt,filename,mime_type AS mimeType,size_bytes AS sizeBytes,headline,subheadline,transcription_status AS transcriptionStatus,analysis_status AS analysisStatus,transcription_provider AS transcriptionProvider,analysis_provider AS analysisProvider FROM media_submissions ORDER BY created_at DESC LIMIT 300').all();return json({entries:result.results||[]}); }
+    catch(error) { return json({error:error.message||'Could not load saved media.'},503); }
+  }
+  if(path==='media'&&method==='DELETE') {
+    if(!env.DB||!env.MEDIA)return json({error:'D1 and private R2 storage must be configured.'},503);
+    const id=new URL(request.url).searchParams.get('id');if(!id)return json({error:'Media record ID is required.'},400);
+    try { const row=await env.DB.prepare('SELECT object_key FROM media_submissions WHERE id = ?').bind(id).first();if(!row)return json({error:'Saved recording not found.'},404);await env.MEDIA.delete(row.object_key);await env.DB.prepare('DELETE FROM media_submissions WHERE id = ?').bind(id).run();return json({ok:true}); }
+    catch(error) { return json({error:error.message||'Could not delete the recording.'},503); }
   }
   if(path==='logs'&&method==='GET') {
     if(!env.DB)return json({logs:[]});

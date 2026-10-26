@@ -1,6 +1,6 @@
-export const FEATURE_KEYS = ['hero','whyEnglish','careers','quiz','plan','speechLab','mockInterview','roleplay','anchor','compare','speakers','leaderboard','wordOfDay','emailGame','pronunciation','debate','qr','closing'];
+export const FEATURE_KEYS = ['hero','whyEnglish','careers','quiz','plan','careerChat','speechLab','mockInterview','roleplay','anchor','compare','speakers','leaderboard','wordOfDay','emailGame','pronunciation','debate','feedback','games','closing'];
 export const DEFAULTS = {
-  theme:'mix',language:'en',showSchoolName:true,schoolName:'Kanakia International School Mira Road',automaticFallback:true,preferredProvider:'cloudflare',qualityMode:'balanced',providerOrder:['cloudflare','gemini','free','laptop'],providerEnabled:{cloudflare:true,gemini:true,free:true,laptop:false},features:Object.fromEntries(FEATURE_KEYS.map(key=>[key,true]))
+  theme:'mix',language:'en',showSchoolName:true,schoolName:'Kanakia International School Mira Road',automaticFallback:true,preferredProvider:'cloudflare',speechProvider:'auto',qualityMode:'balanced',providerOrder:['cloudflare','gemini','free','laptop'],providerEnabled:{cloudflare:true,gemini:true,free:true,laptop:false},features:Object.fromEntries(FEATURE_KEYS.map(key=>[key,true]))
 };
 export function json(data,status=200,headers={}) { return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store',...headers}}); }
 export async function parseJson(request) { try { return await request.json(); } catch { return null; } }
@@ -18,7 +18,7 @@ export async function saveSettings(env,settings) {
   await env.DB.prepare('INSERT INTO settings (key,value,updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at').bind('app_config',JSON.stringify(settings),new Date().toISOString()).run();
 }
 export async function getProviderSecrets(env) {
-  const result={geminiKeys:[],freeUrl:env.FREE_LLM_URL||'',freeKey:env.FREE_LLM_KEY||'',freeModel:env.FREE_LLM_MODEL||'default',laptopUrl:env.LAPTOP_URL||'',laptopToken:env.LAPTOP_TOKEN||'',laptopModel:env.LAPTOP_MODEL||'llama3.2:3b'};
+  const result={geminiKeys:[],elevenlabsKey:env.ELEVENLABS_API_KEY||'',freeUrl:env.FREE_LLM_URL||'',freeKey:env.FREE_LLM_KEY||'',freeModel:env.FREE_LLM_MODEL||'default',laptopUrl:env.LAPTOP_URL||'',laptopToken:env.LAPTOP_TOKEN||'',laptopModel:env.LAPTOP_MODEL||'llama3.2:3b'};
   const envKeys=String(env.GEMINI_API_KEYS||env.GEMINI_API_KEY||'').split(/[\r\n,]+/).map(value=>value.trim()).filter(Boolean);
   result.geminiKeys=envKeys;
   if(!env.DB)return result;
@@ -34,7 +34,7 @@ export async function getProviderSecrets(env) {
     const plaintext=await crypto.subtle.decrypt({name:'AES-GCM',iv},cryptoKey,encrypted);
     const stored=JSON.parse(new TextDecoder().decode(plaintext));
     return {
-      geminiKeys:envKeys.length?envKeys:(Array.isArray(stored.geminiKeys)?stored.geminiKeys:[]),
+      geminiKeys:envKeys.length?envKeys:(Array.isArray(stored.geminiKeys)?stored.geminiKeys:[]),elevenlabsKey:env.ELEVENLABS_API_KEY||stored.elevenlabsKey||'',
       freeUrl:env.FREE_LLM_URL||stored.freeUrl||'',freeKey:env.FREE_LLM_KEY||stored.freeKey||'',freeModel:env.FREE_LLM_MODEL||stored.freeModel||'default',
       laptopUrl:env.LAPTOP_URL||stored.laptopUrl||'',laptopToken:env.LAPTOP_TOKEN||stored.laptopToken||'',laptopModel:env.LAPTOP_MODEL||stored.laptopModel||'llama3.2:3b'
     };
@@ -93,6 +93,7 @@ export async function saveAdminSettings(env,body) {
   next.schoolName=safeString(next.schoolName||'Kanakia International School Mira Road',90);
   next.automaticFallback=next.automaticFallback!==false;
   next.preferredProvider=['cloudflare','gemini','free','laptop'].includes(next.preferredProvider)?next.preferredProvider:'cloudflare';
+  next.speechProvider=['auto','elevenlabs','cloudflare','gemini'].includes(next.speechProvider)?next.speechProvider:'auto';
   next.qualityMode=['best','balanced','saver'].includes(next.qualityMode)?next.qualityMode:'balanced';
   next.features=Object.fromEntries(FEATURE_KEYS.map(key=>[key,body.features?.[key]===undefined?current.features[key]:!!body.features[key]]));
   next.providerEnabled=Object.fromEntries(['cloudflare','gemini','free','laptop'].map(key=>[key,body.providerEnabled?.[key]===undefined?current.providerEnabled[key]:!!body.providerEnabled[key]]));
@@ -103,5 +104,5 @@ export async function saveAdminSettings(env,body) {
 }
 export async function providerStatus(env) {
   const secrets=await getProviderSecrets(env);
-  return {cloudflareConfigured:!!env.AI,geminiCount:secrets.geminiKeys.length,freeConfigured:!!(secrets.freeUrl&&secrets.freeKey&&secrets.freeModel),laptopConfigured:!!secrets.laptopUrl,laptopHasToken:!!secrets.laptopToken};
+  return {cloudflareConfigured:!!env.AI,geminiCount:secrets.geminiKeys.length,elevenlabsConfigured:!!secrets.elevenlabsKey,freeConfigured:!!(secrets.freeUrl&&secrets.freeKey&&secrets.freeModel),laptopConfigured:!!secrets.laptopUrl,laptopHasToken:!!secrets.laptopToken};
 }

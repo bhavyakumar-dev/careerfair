@@ -2,6 +2,10 @@ import { onRequestPost as handleOpenMicAi } from "./functions/api/ai.js";
 import { onRequestPost as handleOpenMicSpeech } from "./functions/api/speech.js";
 import { onRequestGet as handleOpenMicLeaderboardGet, onRequestPost as handleOpenMicLeaderboardPost } from "./functions/api/leaderboard.js";
 import { onRequest as handleOpenMicAdmin } from "./functions/api/admin/[[path]].js";
+import { onRequestPost as handleOpenMicFeedbackPost } from "./functions/api/feedback.js";
+import { onRequest as handleOpenMicMedia } from "./functions/api/media.js";
+import { onRequestGet as handleOpenMicDebateGet, onRequestPost as handleOpenMicDebatePost } from "./functions/api/debate.js";
+import { onRequestPost as handleOpenMicTtsPost } from "./functions/api/tts.js";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -536,10 +540,9 @@ export default {
       if (pathname === "/api/feedback") {
         if (request.method === "POST") {
           try {
-            const entry = await request.json();
-            return jsonResponse({ success: true, saved: true, id: Date.now() });
+            return await handleOpenMicFeedbackPost({ request, env, ctx });
           } catch (e) {
-            return jsonResponse({ error: "Invalid data" }, 400);
+            return jsonResponse({ error: e.message }, 500);
           }
         }
         if (request.method === "GET") {
@@ -560,6 +563,35 @@ export default {
               { date: "2026-10-26 14:45:00", name: "Diya Patel", grade: "Class 10-B", category: "Newsroom", rating: 5, comment: "Anchoring live with the breaking news ticker helped my camera confidence immensely." }
             ]
           });
+        }
+      }
+
+      if (pathname === "/api/media") {
+        try {
+          return await handleOpenMicMedia({ request, env, ctx });
+        } catch (e) {
+          return jsonResponse({ error: e.message }, 500);
+        }
+      }
+
+      if (pathname === "/api/debate") {
+        try {
+          if (request.method === "GET") {
+            return await handleOpenMicDebateGet({ request, env, ctx });
+          }
+          if (request.method === "POST") {
+            return await handleOpenMicDebatePost({ request, env, ctx });
+          }
+        } catch (e) {
+          return jsonResponse({ error: e.message }, 500);
+        }
+      }
+
+      if (pathname === "/api/tts" && request.method === "POST") {
+        try {
+          return await handleOpenMicTtsPost({ request, env, ctx });
+        } catch (e) {
+          return jsonResponse({ error: e.message }, 500);
         }
       }
 
