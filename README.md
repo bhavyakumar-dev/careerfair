@@ -9,7 +9,8 @@ An interactive exhibition and AI voice laboratory designed for Career Fair 2026 
 3. **v3 — Open Mic Lab (`v3.html` / `open-mic.html`)**: Warm editorial aesthetic with lilac, cream and bright amber accents, interactive cards, and speech workout studio.
 4. **v4 — Alexandria Exec (`v4.html`)**: Mobile-first luxury editorial format with sliding drawer, Solar Gold / Cosmic Dark themes, and curated orator benchmarks.
 5. **v5 — Sovereign Mobility (`v5.html`)**: International transit and global mobility theme with world flight vectors, diplomatic career maps, and executive diction training.
-6. **v6 — Theatrical Suite (`v6.html` / `v6/index.html`)**: Five-act classical theatrical play with Three.js particle dynamics, Lenis smooth scrolling, curtain-parting prologue, 3D kinetic book pages for language history, revolving 3D ring for careers, horizontal film-strip reel for top Indian English universities, and 11 interactive games.
+6. **v6 — Theatrical Suite (`v6.html` / `v6/index.html`)**: Five-act classical theatrical play with Three.js particle dynamics, Lenis smooth scrolling, curtain-parting prologue, 3D kinetic book pages for language history, revolving 3D ring for careers, horizontal film-strip reel for top Indian English universities, and 14 interactive revels.
+7. **v7 — Open Mic Fixed (`v7.html` / `v7/index.html`)**: Enhanced and audited Open Mic laboratory with resolved pronunciation engine, dynamic practice score integration, Wikimedia orator portraits, clinical safety disclaimers, and universal 7-version navigation.
 
 ## Core Capabilities
 

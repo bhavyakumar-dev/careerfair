@@ -13,7 +13,7 @@ async function geminiAudio(env,secrets,file) {
   for(let index=0;index<secrets.geminiKeys.length;index++) {
     const key=secrets.geminiKeys[(start+index)%secrets.geminiKeys.length];
     try {
-      const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(env.GEMINI_MODEL||'gemini-3.5-flash-lite')}:generateContent`,{method:'POST',headers:{'content-type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{role:'user',parts:[{text:'Transcribe the supplied audio accurately. Return only the words that are spoken. Do not identify the speaker or infer personal attributes.'},{inline_data:{mime_type:file.type||'audio/webm',data:audio}}]}],generationConfig:{temperature:0,maxOutputTokens:2500}})});
+      const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(env.GEMINI_STT_MODEL||'gemini-3.5-transcribe')}:generateContent`,{method:'POST',headers:{'content-type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{role:'user',parts:[{text:'Transcribe the supplied audio accurately. Return only the words that are spoken. Do not identify the speaker or infer personal attributes.'},{inline_data:{mime_type:(file.type||'audio/webm').split(';')[0],data:audio}}]}],generationConfig:{temperature:0,maxOutputTokens:2500}})});
       const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(`Gemini responded ${response.status}.`);
       const text=data.candidates?.[0]?.content?.parts?.map(part=>part.text||'').join('\n').trim();if(text)return text;
     } catch(error) {failure=error.message;}

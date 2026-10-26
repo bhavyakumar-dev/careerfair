@@ -47,7 +47,19 @@ const files = [
   "public/v6/careers.html",
   "public/v6/colleges.html",
   "public/v6/games.html",
-  "public/v6/feedback.html"
+  "public/v6/feedback.html",
+  "v7.html",
+  "v7-styles.css",
+  "v7-app.js",
+  "v7/index.html",
+  "v7/styles.css",
+  "v7/app.js",
+  "public/v7.html",
+  "public/v7-styles.css",
+  "public/v7-app.js",
+  "public/v7/index.html",
+  "public/v7/styles.css",
+  "public/v7/app.js"
 ];
 
 let totalIssues = 0;

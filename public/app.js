@@ -1,6 +1,6 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-const STORAGE = { settings: 'openmic.settings.v1', scores: 'openmic.scores.v1', savedWords: 'openmic.words.v1', demoLogs: 'openmic.logs.v1', demoLeaderboard: 'openmic.leaderboard.v1' };
+const STORAGE = { settings: 'openmic.settings.v1', scores: 'openmic.scores.v1', practiceScore: 'openmic.practiceScore.v1', savedWords: 'openmic.words.v1', demoLogs: 'openmic.logs.v1', demoLeaderboard: 'openmic.leaderboard.v1' };
 const FEATURE_LABELS = {
   hero: ['Hero experience', 'Opening statement and animated stage'],
   whyEnglish: ['Why English matters', 'Introductory context and skill framing'],
@@ -122,7 +122,7 @@ const QUIZ_PATHS = {
   leadership: ['Founder / Social Entrepreneur','Product Manager / Business Analyst','Marketing / Public Relations Specialist']
 };
 const ROLEPLAY_SCENARIOS = {
-  doctor: {role:'PATIENT COMMUNICATION',title:'A patient is worried about a new medicine and wants to know what to expect.',cue:'You are a medical intern. Explain the next step in plain English without making promises you cannot support.',focus:'clarity · empathy · next steps'},
+  doctor: {role:'PATIENT COMMUNICATION',title:'A patient is worried about a new medicine and asks whether they should take it.',cue:'Acknowledge the concern, ask what worries the patient, and explain that a qualified clinician or pharmacist should answer individual medical questions. Do not diagnose, recommend changing a dose, or promise a medicine is safe. If symptoms are severe or rapidly worsening, encourage urgent medical help.',focus:'empathy · clear questions · safe next steps'},
   pilot: {role:'CREW BRIEFING',title:'A delayed flight means passengers are anxious and your team needs a clear update.',cue:'You are leading a crew briefing. Give a calm update, explain the immediate plan and invite essential questions.',focus:'structure · calmness · precision'},
   customer: {role:'CUSTOMER SUPPORT',title:'A customer received the wrong order and is frustrated that it has happened twice.',cue:'Acknowledge the problem, ask one useful question and explain the next step without blaming the customer.',focus:'empathy · ownership · resolution'},
   press: {role:'PUBLIC COMMUNICATION',title:'A reporter asks whether your school project will actually solve the problem it targets.',cue:'Answer with what you know, be honest about limits and describe how you will measure progress.',focus:'composure · evidence · honesty'}
@@ -145,6 +145,12 @@ const REFERENCE_TEXTS = {
   fry:'Language is a remarkable instrument. A word can be precise, playful or profound, and the same sentence can change its effect when we alter the rhythm, the pause or the emphasis.',
   obama:'The next step is not always the easiest one. It asks us to listen carefully, make a choice and be willing to learn when we get something wrong. That is how a promise becomes a practice.'
 };
+const PRONUNCIATION_SOUNDS = {
+  th:{label:'/θ/',title:'TH as in think',placement:'Let the tongue tip appear just between the teeth and send a small stream of air through the gap. Keep the sound unvoiced.',lips:'Keep your jaw relaxed. Do not clamp your teeth together or force the tongue forward.',examples:['think','three','thought','healthy'],contrast:'Try: think / sink · three / tree',practice:'I think three thoughtful ideas can change things.'},
+  vw:{label:'/v/ · /w/',title:'V and W contrast',placement:'For /v/, let the top teeth gently touch the lower lip and let your voice vibrate. For /w/, round your lips and glide into the vowel without touching your teeth.',lips:'Keep /v/ lightly voiced. For /w/, make a rounded opening and avoid lip tension.',examples:['vest','west','vine','wine'],contrast:'Try: vest / west · vine / wine',practice:'We visited a very wide valley.'},
+  iy:{label:'/ɪ/ · /iː/',title:'Short I and long EE',placement:'For /ɪ/ as in ship, keep the tongue high but relaxed. For /iː/ as in sheep, raise the tongue a little more and hold the vowel longer.',lips:'Keep the lips relaxed; do not add an exaggerated smile to either vowel.',examples:['ship','sheep','live','leave'],contrast:'Try: ship / sheep · live / leave',practice:'The sheep is on the ship.'},
+  rl:{label:'/r/ · /l/',title:'R and L contrast',placement:'For /l/, place the tongue tip near the ridge behind the top teeth. For /r/, pull the tongue slightly back without touching the roof of the mouth.',lips:'Use a relaxed jaw and avoid forcing either sound. English R varies by accent.',examples:['right','light','glass','grass'],contrast:'Try: right / light · glass / grass',practice:'Lara read a little red letter.'}
+};
 const INTERVIEW_QUESTIONS = {
   'Screenwriter / Scriptwriter': ['Tell me about a story idea you would love to develop, and what makes its central conflict interesting.','How would you change a scene if a viewer says the character’s decision feels unbelievable?','What makes dialogue sound natural without making every line ordinary?'],
   'Novelist / Fiction Author': ['Which story do you wish existed, and what would make yours different?','How would you handle a chapter that feels slow but contains important information?','How do you know when feedback improves your story rather than changing your voice?'],
@@ -161,6 +167,10 @@ let careerShowAll = false;
 let quizIndex = 0;
 let quizAnswers = [];
 let activeWordIndex = 0;
+let activePronunciationSound = 'th';
+let speechPromptIndex = -1;
+let debateDraft = '';
+let lastPracticeScore = null;
 let emailScore = 0;
 let emailRound = 0;
 let selectedBoard = 'overall';
@@ -244,9 +254,10 @@ function showCareerDetail(title) {
   const guidance = CAREER_GUIDANCE[career.title] || {};
   const resourceLinks = (guidance.links || []).map(key => CAREER_RESOURCES[key]).filter(Boolean).map(resource => `<a href="${resource.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(resource.label)} ↗</a>`).join('');
   const salarySearch = `https://www.google.com/search?q=${encodeURIComponent(`${career.title} salary India current job listings`)}`;
+  const pathwaySearch = `https://www.google.com/search?q=${encodeURIComponent(`${career.title} official course admission eligibility India`)}`;
   const detail = $('#career-detail');
   detail.hidden = false;
-  detail.innerHTML = `<button class="career-detail-close" type="button" aria-label="Close career detail">×</button><p class="eyebrow">${escapeHtml(career.category)} / ENGLISH IN THE ROLE</p><h3>${escapeHtml(career.title)}</h3><p>${escapeHtml(career.summary)}</p><div class="career-detail-grid"><div><h4>What the work looks like</h4><p>${escapeHtml(career.work)}</p></div><div><h4>Why communication matters</h4><p>${escapeHtml(career.english)}</p></div><div><h4>Try this first</h4><p>${escapeHtml(career.start)}</p><h4>Possible next steps</h4><p>${escapeHtml(career.next)}</p></div><div><h4>Study routes & examples</h4><p>${escapeHtml(guidance.study || 'Compare related degrees, recognised training routes and practical portfolios. Verify requirements with the institution or employer.')}</p></div><div><h4>Entry exams or portfolio</h4><p>${escapeHtml(guidance.entry || 'Requirements vary by role and institution. Check official admission notices and job descriptions; there is rarely one exam that covers every employer.')}</p></div><div><h4>Pay and package reality</h4><p>${escapeHtml(guidance.income || 'Compensation depends on location, employer, experience and specialist skills. Compare current postings and distinguish base salary from bonuses, project fees or royalties.')}</p><p class="career-live-links"><a href="${salarySearch}" target="_blank" rel="noopener noreferrer">Look up current India salary listings ↗</a></p></div></div>${resourceLinks?`<div class="career-source-links"><span>Official starting points</span>${resourceLinks}</div>`:''}<p class="career-caveat">These are exploration routes, not admission or employment guarantees. Course names, exam rules, fees and compensation change; verify the current details before making a decision.</p><button class="button button-accent career-plan-link" type="button" data-plan-career="${escapeHtml(career.title)}">Build a plan for this path <span aria-hidden="true">↗</span></button>`;
+  detail.innerHTML = `<button class="career-detail-close" type="button" aria-label="Close career detail">×</button><p class="eyebrow">${escapeHtml(career.category)} / ENGLISH IN THE ROLE</p><h3>${escapeHtml(career.title)}</h3><p>${escapeHtml(career.summary)}</p><div class="career-detail-grid"><div><h4>What the work looks like</h4><p>${escapeHtml(career.work)}</p></div><div><h4>Why communication matters</h4><p>${escapeHtml(career.english)}</p></div><div><h4>Try this first</h4><p>${escapeHtml(career.start)}</p><h4>Possible next steps</h4><p>${escapeHtml(career.next)}</p></div><div><h4>Study routes & examples</h4><p>${escapeHtml(guidance.study || 'Compare related degrees, recognised training routes and practical portfolios. Verify requirements with the institution or employer.')}</p></div><div><h4>Entry exams or portfolio</h4><p>${escapeHtml(guidance.entry || 'Requirements vary by role and institution. Check official admission notices and job descriptions; there is rarely one exam that covers every employer.')}</p></div><div><h4>Pay and package reality</h4><p>${escapeHtml(guidance.income || 'Compensation depends on location, employer, experience and specialist skills. Compare current postings and distinguish base salary from bonuses, project fees or royalties.')}</p><p class="career-live-links"><a href="${pathwaySearch}" target="_blank" rel="noopener noreferrer">Search course, admission and eligibility requirements ↗</a><a href="${salarySearch}" target="_blank" rel="noopener noreferrer">Look up current India salary listings ↗</a></p></div></div>${resourceLinks?`<div class="career-source-links"><span>Official starting points</span>${resourceLinks}</div>`:''}<p class="career-caveat">These are exploration routes, not admission or employment guarantees. Course names, exam rules, fees and compensation change; verify the current details before making a decision.</p><button class="button button-accent career-plan-link" type="button" data-plan-career="${escapeHtml(career.title)}">Build a plan for this path <span aria-hidden="true">↗</span></button>`;
   detail.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});
 }
 function populateCareerSelects() {
@@ -332,7 +343,7 @@ function renderFeedback(element, scored, provider = 'on-device scoring') {
 }
 async function requestAI(task, payload = {}) {
   const body = { task, ...payload };
-  const response = await fetch('/api/ai', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const response = await fetch('/api/ai', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(18000)});
   let data = {};
   try { data = await response.json(); } catch {}
   if (!response.ok) throw new Error(data.error || `AI service returned ${response.status}`);
@@ -341,7 +352,7 @@ async function requestAI(task, payload = {}) {
 async function requestSpeechTranscription(file) {
   const form = new FormData();
   form.append('audio', file, file.name || 'practice-audio');
-  const response = await fetch('/api/speech', {method:'POST',body:form});
+  const response = await fetch('/api/speech', {method:'POST',body:form,signal:AbortSignal.timeout(30000)});
   let data = {};
   try { data = await response.json(); } catch {}
   if (!response.ok) throw new Error(data.error || 'Transcription service unavailable');
@@ -355,54 +366,189 @@ function setSpeechRecordingState(recording, title, description) {
   $('#speech-stop').disabled = !recording;
 }
 function startSpeechRecording() {
+  if (isListening) return;
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   speechDuration = 0;
+  speechAudioBlob = null;
+  speechRecorderChunks = [];
   listenStartedAt = Date.now();
-  if (SpeechRecognition) {
-    recognition = new SpeechRecognition();
-    recognition.lang = settings.language === 'hi' ? 'en-IN' : 'en-GB';
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.onresult = event => {
-      const lines = [];
-      for (let i = 0; i < event.results.length; i++) lines.push(event.results[i][0].transcript);
-      $('#speech-transcript').value = lines.join(' ').trim();
-    };
-    recognition.onerror = event => { setSpeechRecordingState(false,'Microphone needs attention',`Speech recognition reported: ${event.error}. You can still type a transcript.`); isListening=false; };
-    recognition.onend = () => { if (isListening) { isListening=false; speechDuration = Math.max(0,(Date.now()-(listenStartedAt||Date.now()))/1000); setSpeechRecordingState(false,'Recording stopped','Review or edit the transcript, then analyze it.'); } };
-    try { recognition.start(); isListening = true; setSpeechRecordingState(true,'Listening…','Speak naturally. Select Stop when you are finished.'); return; } catch {}
+  setSpeechRecordingState(false,'Requesting microphone…','Audio stays on this device until you choose Analyze my English.');
+  const startBrowserRecognition = () => {
+    if (!SpeechRecognition) return false;
+    try {
+      recognition = new SpeechRecognition();
+      recognition.lang = settings.language === 'hi' ? 'en-IN' : 'en-GB';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.onresult = event => {
+        const lines = [];
+        for (let i = 0; i < event.results.length; i++) lines.push(event.results[i][0].transcript);
+        $('#speech-transcript').value = lines.join(' ').trim();
+      };
+      recognition.onerror = event => {
+        if (speechRecorder && speechRecorder.state !== 'inactive') {
+          $('#record-description').textContent = `Live captioning is unavailable (${event.error}); audio is still recording and can be transcribed when you analyze it.`;
+        } else {
+          isListening = false;
+          speechDuration = Math.max(0,(Date.now()-(listenStartedAt||Date.now()))/1000);
+          setSpeechRecordingState(false,'Speech recognition needs attention',`Browser recognition reported ${event.error}. You can still type a transcript.`);
+        }
+      };
+      recognition.onend = () => {
+        if (speechRecorder && speechRecorder.state !== 'inactive') return;
+        if (isListening) {
+          isListening = false;
+          speechDuration = Math.max(0,(Date.now()-(listenStartedAt||Date.now()))/1000);
+          setSpeechRecordingState(false,'Recording stopped','Review the transcript, then analyze it.');
+        }
+      };
+      recognition.start();
+      return true;
+    } catch { recognition = null; return false; }
+  };
+  if (navigator.mediaDevices?.getUserMedia && window.MediaRecorder) {
+    navigator.mediaDevices.getUserMedia({audio:true}).then(stream => {
+      try {
+        const options = MediaRecorder.isTypeSupported?.('audio/webm;codecs=opus') ? {mimeType:'audio/webm;codecs=opus'} : undefined;
+        speechRecorder = new MediaRecorder(stream, options);
+        speechRecorder.ondataavailable = event => { if (event.data && event.data.size) speechRecorderChunks.push(event.data); };
+        speechRecorder.onerror = () => { $('#record-description').textContent = 'Audio capture hit a browser issue. Live transcription or typed text may still work.'; };
+        speechRecorder.onstop = () => {
+          speechAudioBlob = speechRecorderChunks.length ? new Blob(speechRecorderChunks,{type:speechRecorder.mimeType||'audio/webm'}) : null;
+          stream.getTracks().forEach(track => track.stop());
+          speechDuration = Math.max(0,(Date.now()-(listenStartedAt||Date.now()))/1000);
+          isListening = false;
+          setSpeechRecordingState(false,speechAudioBlob?'Audio captured':'Recording stopped',speechAudioBlob?'Choose Analyze my English to send this audio for transcription and then review the transcript with AI.':'No audio was captured. You can still analyze a typed transcript.');
+        };
+        speechRecorder.start();
+        isListening = true;
+        setSpeechRecordingState(true,'Recording audio…','Live captions may appear too. Audio is sent to AI only after you choose Analyze my English.');
+        startBrowserRecognition();
+      } catch (error) {
+        stream.getTracks().forEach(track => track.stop());
+        speechRecorder = null;
+        if (startBrowserRecognition()) {
+          isListening = true;
+          setSpeechRecordingState(true,'Listening…','This browser is providing live transcription.');
+        } else {
+          isListening = false;
+          setSpeechRecordingState(false,'Voice capture could not start','Check microphone permission or type your response.');
+        }
+      }
+    }).catch(() => {
+      if (startBrowserRecognition()) {
+        isListening = true;
+        setSpeechRecordingState(true,'Listening…','Browser speech recognition is active. Raw audio capture is unavailable on this device.');
+      } else {
+        isListening = false;
+        setSpeechRecordingState(false,'Microphone permission needed','Allow microphone access on a secure site, or type your response.');
+      }
+    });
+    return;
   }
-  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { setSpeechRecordingState(false,'Voice capture is not supported','Type your answer in the transcript box instead.'); return; }
-  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
-    speechRecorderChunks=[];
-    speechRecorder = new MediaRecorder(stream);
-    speechRecorder.ondataavailable = event => { if (event.data.size) speechRecorderChunks.push(event.data); };
-    speechRecorder.onstop = () => { speechAudioBlob = new Blob(speechRecorderChunks,{type:speechRecorder.mimeType||'audio/webm'}); stream.getTracks().forEach(track=>track.stop()); speechDuration = Math.max(0,(Date.now()-(listenStartedAt||Date.now()))/1000); setSpeechRecordingState(false,'Audio captured','Transcription may require a configured server provider.'); };
-    speechRecorder.start(); isListening=true; setSpeechRecordingState(true,'Recording audio…','Your browser records locally until you choose to transcribe it.');
-  }).catch(()=>setSpeechRecordingState(false,'Microphone permission needed','Allow microphone access or type a transcript.'));
+  if (startBrowserRecognition()) {
+    isListening = true;
+    setSpeechRecordingState(true,'Listening…','Browser speech recognition is active; raw audio upload is not available in this browser.');
+    return;
+  }
+  setSpeechRecordingState(false,'Voice capture is not supported','Use a secure HTTPS site with microphone access, or type your answer.');
 }
 function stopSpeechRecording() {
-  if (recognition && isListening) { isListening=false; try { recognition.stop(); } catch {} }
-  if (speechRecorder && speechRecorder.state !== 'inactive') { isListening=false; speechRecorder.stop(); }
+  isListening = false;
+  if (recognition) { try { recognition.stop(); } catch {} }
+  if (speechRecorder && speechRecorder.state !== 'inactive') {
+    try { speechRecorder.stop(); } catch {
+      speechDuration = Math.max(0,(Date.now()-(listenStartedAt||Date.now()))/1000);
+      setSpeechRecordingState(false,'Recording stopped','Review the transcript, then analyze it.');
+    }
+    return;
+  }
   speechDuration = Math.max(0,(Date.now()-(listenStartedAt||Date.now()))/1000);
-  setSpeechRecordingState(false,'Recording stopped','Review or edit the transcript, then analyze it.');
+  setSpeechRecordingState(false,'Recording stopped','Review the transcript, then analyze it.');
+}
+function readStoredPracticeScore() {
+  try {
+    const score = JSON.parse(localStorage.getItem(STORAGE.practiceScore) || 'null');
+    if (score && Number.isFinite(Number(score.score)) && Number(score.score) >= 0 && Number(score.score) <= 100) return score;
+  } catch {}
+  return null;
+}
+function updatePracticeScoreDisplay() {
+  const output = $('#leader-score');
+  if (!output) return;
+  output.textContent = lastPracticeScore ? `${lastPracticeScore.score} / 100 · generated ${new Date(lastPracticeScore.createdAt).toLocaleString()}` : 'Not generated yet';
+  const help = $('#leader-score-help');
+  if (help) help.textContent = lastPracticeScore ? `Fluency ${lastPracticeScore.fluency}/100 · clarity ${lastPracticeScore.clarity}/100. Scores are calculated from your latest analyzed sample.` : 'Complete Analyze my English in the Speech Lab first. This score is calculated automatically and cannot be edited here.';
+}
+function storePracticeScore(scored) {
+  lastPracticeScore = {score:scored.score,fluency:scored.fluency,clarity:scored.clarity,createdAt:new Date().toISOString()};
+  try { localStorage.setItem(STORAGE.practiceScore,JSON.stringify(lastPracticeScore)); } catch {}
+  updatePracticeScoreDisplay();
 }
 async function analyzeSpeech() {
-  const feedback = $('#speech-feedback');
-  let transcript = $('#speech-transcript').value.trim();
-  if (!transcript && speechAudioBlob) {
-    feedback.hidden=false; feedback.textContent='Transcribing the local audio file…';
-    try { const result=await requestSpeechTranscription(new File([speechAudioBlob],'speech-practice.webm',{type:speechAudioBlob.type})); transcript=result.text||''; $('#speech-transcript').value=transcript; }
-    catch(error) { const scored=scoreText(''); renderFeedback(feedback,scored,'on-device scoring'); showToast(`Audio transcription unavailable: ${error.message}`); return; }
+  if (isListening || (speechRecorder && speechRecorder.state !== 'inactive')) {
+    showToast('Stop the recording first so the complete audio can be transcribed and analyzed.');
+    return;
   }
-  if (!transcript) { showToast('Record or enter a short answer before analyzing.'); return; }
-  const scored=scoreText(transcript,speechDuration);
-  renderFeedback(feedback,scored,'on-device scoring');
+  const feedback = $('#speech-feedback');
+  const analyzeButton = $('#analyze-speech');
+  let transcript = $('#speech-transcript').value.trim();
+  let transcriptionProvider = '';
+  analyzeButton.disabled = true;
+  analyzeButton.textContent = 'Analyzing your sample…';
+  feedback.hidden = false;
+  feedback.textContent = 'Preparing your transcript and practice feedback…';
+  if (speechAudioBlob) {
+    try {
+      feedback.textContent = 'Sending the recorded audio for AI transcription…';
+      const audioFile = new File([speechAudioBlob], 'speech-practice.webm', {type:speechAudioBlob.type || 'audio/webm'});
+      const result = await requestSpeechTranscription(audioFile);
+      if (result.text?.trim()) {
+        transcript = result.text.trim();
+        transcriptionProvider = result.provider || 'AI transcription';
+        $('#speech-transcript').value = transcript;
+      }
+    } catch (error) {
+      if (!transcript) {
+        feedback.textContent = `AI transcription is not available yet: ${error.message}. Check the deployed speech endpoint and provider settings, or try recording on a supported browser.`;
+        showToast('Audio transcription failed. Type a transcript or configure the AI speech endpoint.');
+        analyzeButton.disabled = false;
+        analyzeButton.innerHTML = 'Analyze my English <span aria-hidden="true">↗</span>';
+        return;
+      }
+      showToast('Audio transcription was unavailable; using the visible transcript instead.');
+    }
+  }
+  if (!transcript) {
+    feedback.hidden = true;
+    showToast('Record or enter a short answer before analyzing.');
+    analyzeButton.disabled = false;
+    analyzeButton.innerHTML = 'Analyze my English <span aria-hidden="true">↗</span>';
+    return;
+  }
+  const scored = scoreText(transcript,speechDuration);
+  storePracticeScore(scored);
+  renderFeedback(feedback,scored,transcriptionProvider ? `${transcriptionProvider} + on-device scoring` : 'on-device scoring');
   try {
-    const result=await requestAI('speech-feedback',{text:transcript,metrics:{words:scored.words,wpm:scored.wpm,fillers:scored.fillers,clarity:scored.clarity,fluency:scored.fluency,structure:scored.structure}});
-    if (result.text) { const block=document.createElement('div'); block.className='feedback-copy'; block.innerHTML=`<p><strong>Additional coaching (${escapeHtml(result.provider||'AI')})</strong></p><p>${escapeHtml(result.text)}</p>`; feedback.appendChild(block); }
-    const localLogs = loadDemoLogs(); localLogs.unshift({time:new Date().toISOString(),task:'speech-feedback',provider:result.provider||'unknown',outcome:'success',latencyMs:result.latencyMs||0}); localStorage.setItem(STORAGE.demoLogs,JSON.stringify(localLogs.slice(0,80)));
-  } catch(error) { showToast('Using local scoring. AI providers are not configured or available.'); }
+    const result = await requestAI('speech-feedback',{text:transcript,metrics:{words:scored.words,wpm:scored.wpm,fillers:scored.fillers,clarity:scored.clarity,fluency:scored.fluency,structure:scored.structure},prompt:'Analyze this English transcript for clarity, grammar patterns, structure, filler words and practical ways to improve. Do not infer pronunciation from text. Keep the feedback student-friendly and give one practice exercise.'});
+    if (result.text) {
+      const block = document.createElement('div');
+      block.className = 'feedback-copy';
+      block.innerHTML = `<p><strong>Additional AI coaching (${escapeHtml(result.provider||'AI')})</strong></p><p>${escapeHtml(result.text)}</p>`;
+      feedback.appendChild(block);
+    }
+    const logs = loadDemoLogs();
+    logs.unshift({time:new Date().toISOString(),task:'speech-feedback',provider:result.provider||'unknown',outcome:'success',latencyMs:result.latencyMs||0});
+    try { localStorage.setItem(STORAGE.demoLogs,JSON.stringify(logs.slice(0,80))); } catch {}
+  } catch {
+    const note = document.createElement('p');
+    note.className = 'muted-small';
+    note.textContent = 'AI coaching is unavailable right now. The automatic on-device score and improvement tips above are still available.';
+    feedback.appendChild(note);
+  } finally {
+    analyzeButton.disabled = false;
+    analyzeButton.innerHTML = 'Analyze my English <span aria-hidden="true">↗</span>';
+  }
 }
 function localInterviewQuestion(title,index,level) {
   const custom = INTERVIEW_QUESTIONS[title] || [`What interests you about ${title.toLowerCase()}, and what have you done to explore it?`,`Tell me about a time you needed to explain a complex idea clearly.`,`What skill would you most like to improve for this role, and how will you practise it?`];
@@ -419,8 +565,10 @@ function startInterview() {
   interviewCareer=$('#interview-career').value;
   interviewQuestionIndex=0;
   interviewHistory=[{role:'ai',text:localInterviewQuestion(interviewCareer,interviewQuestionIndex,$('#interview-level').value)}];
-  $('#interview-answer').disabled=false; $('#interview-form button').disabled=false; $('#interview-answer').focus();
+  $('#interview-answer').disabled=false; $('#interview-form button').disabled=false; $('#start-interview').textContent='Restart practice ↻';
   renderInterviewMessages();
+  $('#interview-chat').scrollIntoView({behavior:'smooth',block:'nearest'});
+  $('#interview-answer').focus({preventScroll:true});
 }
 async function submitInterviewAnswer(event) {
   event.preventDefault();
@@ -446,14 +594,14 @@ async function reviewRoleplay() {
   const resultBox=$('#roleplay-result');
   resultBox.hidden=false;
   resultBox.innerHTML='<p>Reviewing your response…</p>';
-  const local=`<strong>What is working:</strong> You have a starting point to build on. <strong>Try next:</strong> name the concern or goal, make one clear statement, and explain the next step. <strong>Scenario focus:</strong> ${escapeHtml(scenario.focus)}.`;
+  const local = activeRoleplay === 'doctor' ? '<strong>What is working:</strong> Acknowledge the patient’s worry without dismissing it. <strong>Try next:</strong> ask what concerns them, explain that a qualified clinician or pharmacist should answer medicine-specific questions, and identify the safe next step. This exercise is for communication practice, not medical advice.' : `<strong>What is working:</strong> You have a starting point to build on. <strong>Try next:</strong> name the concern or goal, make one clear statement, and explain the next step. <strong>Scenario focus:</strong> ${escapeHtml(scenario.focus)}.`;
   try { const result=await requestAI('roleplay-feedback',{scenario:scenario.title,context:scenario.cue,text:answer}); resultBox.innerHTML=`<strong>Communication review</strong><p>${escapeHtml(result.text||'')}</p><p class="muted-small">Provider: ${escapeHtml(result.provider||'AI')}</p>`; }
   catch { resultBox.innerHTML=local+'<p class="muted-small">On-device starter feedback; AI providers are not configured or available.</p>'; }
 }
 function applyRoleplay(key) {
   activeRoleplay=key;
   const scenario=ROLEPLAY_SCENARIOS[key];
-  $$('.scenario-card').forEach(button=>button.classList.toggle('selected',button.dataset.roleplay===key));
+  $$('.scenario-card').forEach(button=>{const selected=button.dataset.roleplay===key;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});
   $('#roleplay-role').textContent=scenario.role;
   $('#roleplay-situation').textContent=scenario.title;
   $('#roleplay-cue').textContent=scenario.cue;
@@ -518,7 +666,11 @@ function renderCompareResult(own,reference,transcriptSource='transcript') {
 }
 async function analyzeComparison() {
   let own=$('#compare-own').value.trim();
-  if(!own&&selectedAudioFile){showToast('Transcribing your chosen audio. It is sent only now, after you selected Analyze.');try{const result=await requestSpeechTranscription(selectedAudioFile);own=result.text||'';$('#compare-own').value=own;}catch(error){showToast(`Audio transcription could not run: ${error.message}`);return;}}
+  if(selectedAudioFile){
+    showToast('Transcribing your chosen audio. It is sent only now, after you selected Analyze.');
+    try { const result=await requestSpeechTranscription(selectedAudioFile); own=(result.text||'').trim(); if(!own)throw new Error('The transcription provider returned an empty transcript.'); $('#compare-own').value=own; }
+    catch(error){ if(!own){showToast(`Audio transcription could not run: ${error.message}`);return;} showToast('Audio transcription is unavailable; comparing the transcript you entered instead.'); }
+  }
   if(!own){showToast('Paste a transcript or choose an audio file first.');return;}
   let reference=compareReferenceText();
   if(!reference){showToast('Paste a reference transcript to compare.');return;}
@@ -575,8 +727,10 @@ async function refreshLeaderboard() {
 async function submitLeaderboard(event) {
   event.preventDefault();
   if(!$('#leader-consent').checked){showToast('Please give permission before joining the shared leaderboard.');return;}
-  const entry={nickname:$('#leader-nickname').value.trim().slice(0,20),grade:$('#leader-grade').value,score:Number($('#leader-score').value),fluency:Number($('#leader-score').value),clarity:Number($('#leader-score').value),consent:true,createdAt:new Date().toISOString()};
-  if(!entry.nickname||entry.score<0||entry.score>100){showToast('Check your nickname and score.');return;}
+  lastPracticeScore = lastPracticeScore || readStoredPracticeScore();
+  if(!lastPracticeScore){showToast('Analyze an English sample in the Speech Lab first. The practice score is generated automatically.');$('#speech-lab').scrollIntoView({behavior:'smooth',block:'start'});return;}
+  const entry={nickname:$('#leader-nickname').value.trim().slice(0,20),grade:$('#leader-grade').value,score:Number(lastPracticeScore.score),fluency:Number(lastPracticeScore.fluency),clarity:Number(lastPracticeScore.clarity),consent:true,createdAt:new Date().toISOString()};
+  if(!entry.nickname||entry.score<0||entry.score>100){showToast('Check your nickname and complete a practice analysis.');return;}
   try {
     const response=await fetch('/api/leaderboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
     const data=await response.json();
@@ -811,7 +965,7 @@ function bindEvents() {
   $('#plan-form').addEventListener('submit',buildPlan);
   $('#plan-output').addEventListener('click',async event=>{if(event.target.closest('#copy-plan')){const output=$('#plan-output').innerText;try{await navigator.clipboard.writeText(output);showToast('Plan copied.');}catch{showToast('Select and copy the plan text.');}}});
   $('#speech-record').addEventListener('click',startSpeechRecording);$('#speech-stop').addEventListener('click',stopSpeechRecording);$('#analyze-speech').addEventListener('click',analyzeSpeech);
-  $('#new-speech-prompt').addEventListener('click',()=>{const prompts=[['THE ONE-MINUTE EXPLAINER','Explain a topic you learned recently as if your listener has never heard of it.','Start with the big idea, explain one example, and end with why it matters.'],['THE STORY BEHIND IT','Tell us about a decision, invention or moment that changed how you think.','Set the scene, describe the turning point and share what you learned.'],['THE KIND DISAGREEMENT','Explain an opinion you hold while showing that you understand another view.','State your position, give evidence and acknowledge what the other side gets right.']];const prompt=prompts[Math.floor(Math.random()*prompts.length)];$('.prompt-kicker').textContent=prompt[0];$('.lab-prompt-card h3').textContent=prompt[1];$('.lab-prompt-card>p:not(.prompt-kicker)').textContent=prompt[2];$('.tiny-index').textContent=`0${Math.floor(Math.random()*3)+1} / 03`;});
+  $('#new-speech-prompt').addEventListener('click',()=>{const prompts=[['THE ONE-MINUTE EXPLAINER','Explain a topic you learned recently as if your listener has never heard of it.','Start with the big idea, explain one example, and end with why it matters.'],['THE STORY BEHIND IT','Tell us about a decision, invention or moment that changed how you think.','Set the scene, describe the turning point and share what you learned.'],['THE KIND DISAGREEMENT','Explain an opinion you hold while showing that you understand another view.','State your position, give evidence and acknowledge what the other side gets right.']];speechPromptIndex=(speechPromptIndex+1)%prompts.length;const prompt=prompts[speechPromptIndex];$('.prompt-kicker').textContent=prompt[0];$('.lab-prompt-card h3').textContent=prompt[1];$('.lab-prompt-card>p:not(.prompt-kicker)').textContent=prompt[2];$('.tiny-index').textContent=`0${speechPromptIndex+1} / 03`;});
   $('#start-interview').addEventListener('click',startInterview);$('#interview-form').addEventListener('submit',submitInterviewAnswer);
   $$('.scenario-card').forEach(button=>button.addEventListener('click',()=>applyRoleplay(button.dataset.roleplay)));$('#roleplay-feedback').addEventListener('click',reviewRoleplay);
   $('#anchor-script').addEventListener('change',()=>{stopTeleprompter();setTeleprompterText();});$('#anchor-custom-script').addEventListener('input',()=>{if($('#anchor-script').value==='custom')$('#teleprompter-text').textContent=$('#anchor-custom-script').value;});$('#anchor-play').addEventListener('click',toggleTeleprompter);$('#anchor-reset').addEventListener('click',()=>{stopTeleprompter();teleprompterOffset=0;$('#teleprompter-text').style.transform=$('#anchor-mirror').checked?'scaleX(-1)':'translateY(0)';});$('#anchor-mirror').addEventListener('change',()=>{$('#teleprompter-text').classList.toggle('mirrored',$('#anchor-mirror').checked);});$('#anchor-record').addEventListener('click',toggleAnchorRecording);
@@ -854,8 +1008,25 @@ async function loadPublicSettings() {
   catch {}
 }
 function init() {
-  $('#current-year').textContent=String(new Date().getFullYear());
-  applySettings(settings,false);populateCareerSelects();renderCareerCards();renderQuizQuestion();setTeleprompterText();setWord(Math.floor((Date.now()/86400000)%WORDS.length));loadSavedWords();setPronunciationSound('th');bindEvents();initQR();refreshLeaderboard();setupScrollReveal();window.addEventListener('scroll',updateScrollProgress,{passive:true});updateScrollProgress();
+  const year = $('#current-year');
+  if (year) year.textContent = String(new Date().getFullYear());
+  bindEvents();
+  $$('.speaker-photo').forEach(image => image.addEventListener('error', () => { const frame = image.closest('.speaker-art'); if (frame) frame.classList.add('photo-failed'); image.remove(); }, {once:true}));
+  lastPracticeScore = readStoredPracticeScore();
+  updatePracticeScoreDisplay();
+  applySettings(settings,false);
+  populateCareerSelects();
+  renderCareerCards();
+  renderQuizQuestion();
+  setTeleprompterText();
+  setWord(Math.floor((Date.now()/86400000)%WORDS.length));
+  loadSavedWords();
+  setPronunciationSound('th');
+  initQR();
+  refreshLeaderboard();
+  setupScrollReveal();
+  window.addEventListener('scroll',updateScrollProgress,{passive:true});
+  updateScrollProgress();
   if(location.hash==='#admin')revealAdmin();
   loadPublicSettings();
 }
