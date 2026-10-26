@@ -1660,16 +1660,36 @@ async function enumerateObsVideoDevices() {
   } catch {}
 }
 
+let obsRecorder = null;
+let obsRecordedChunks = [];
+let obsRecordTimerInterval = 0;
+let obsRecordStartTime = 0;
+
 function setupObsStudioFeed() {
   enumerateObsVideoDevices();
   const toggleBtn = document.getElementById('obs-feed-toggle');
   const container = document.getElementById('obs-feed-container');
   const connectBtn = document.getElementById('obs-connect-btn');
   const stopBtn = document.getElementById('obs-stop-btn');
+  const recordBtn = document.getElementById('obs-record-btn');
+  const recordTimer = document.getElementById('obs-record-timer');
+  const recordProgress = document.getElementById('obs-record-progress');
+  const recordLog = document.getElementById('obs-record-log');
+  const placeholder = document.getElementById('obs-video-placeholder');
   const deviceSelect = document.getElementById('obs-device-select');
   const streamUrlInput = document.getElementById('obs-stream-url');
   const videoPreview = document.getElementById('obs-video-preview');
   const statusTag = document.getElementById('obs-status-tag');
+
+  const logObs = (msg, isSuccess, isError) => {
+    if (!recordLog) return;
+    const p = document.createElement('p');
+    if (isSuccess) p.className = 'success';
+    if (isError) p.className = 'error';
+    p.textContent = msg;
+    recordLog.appendChild(p);
+    recordLog.scrollTop = recordLog.scrollHeight;
+  };
 
   if (toggleBtn && container) {
     toggleBtn.addEventListener('click', () => {
@@ -1691,7 +1711,9 @@ function setupObsStudioFeed() {
         videoPreview.srcObject = null;
         videoPreview.src = customUrl;
         videoPreview.play().catch(()=>{});
+        if (placeholder) placeholder.style.display = 'none';
         if (statusTag) statusTag.textContent = 'CONNECTING TO STREAM URL...';
+        if (recordBtn) recordBtn.disabled = false;
         showToast('Connecting to external OBS stream feed…');
         return;
       }
@@ -1710,8 +1732,10 @@ function setupObsStudioFeed() {
         videoPreview.src = '';
         videoPreview.srcObject = obsMediaStream;
         await videoPreview.play();
+        if (placeholder) placeholder.style.display = 'none';
         if (statusTag) statusTag.textContent = 'ONLINE · OBS VIRTUAL CAMERA';
         if (stopBtn) stopBtn.disabled = false;
+        if (recordBtn) recordBtn.disabled = false;
         connectBtn.textContent = 'Re-sync Stream';
         setupAudioWaveformVisualizer(obsMediaStream, 'obs-waveform-canvas');
         showToast('Live interview feed from OBS Studio connected!');
@@ -1724,6 +1748,10 @@ function setupObsStudioFeed() {
 
   if (stopBtn && videoPreview) {
     stopBtn.addEventListener('click', () => {
+      if (obsRecorder && obsRecorder.state === 'recording') {
+        try { obsRecorder.stop(); } catch(e) {}
+      }
+      if (obsRecordTimerInterval) clearInterval(obsRecordTimerInterval);
       if (obsMediaStream) {
         obsMediaStream.getTracks().forEach(t => t.stop());
         obsMediaStream = null;
@@ -1731,10 +1759,97 @@ function setupObsStudioFeed() {
       videoPreview.srcObject = null;
       videoPreview.src = '';
       stopAudioWaveformVisualizer();
+      if (placeholder) placeholder.style.display = 'block';
       if (statusTag) statusTag.textContent = 'STANDBY · FEED PAUSED';
       stopBtn.disabled = true;
+      if (recordBtn) recordBtn.disabled = true;
       if (connectBtn) connectBtn.textContent = 'Start Live Feed';
       showToast('OBS Live feed stopped.');
+    });
+  }
+
+  if (recordBtn && videoPreview) {
+    recordBtn.addEventListener('click', async () => {
+      if (obsRecorder && obsRecorder.state === 'recording') {
+        recordBtn.disabled = true;
+        recordBtn.textContent = 'Finalizing Recording…';
+        if (obsRecordTimerInterval) clearInterval(obsRecordTimerInterval);
+        obsRecorder.stop();
+        return;
+      }
+
+      const streamToRecord = obsMediaStream || (videoPreview.captureStream ? videoPreview.captureStream() : null);
+      if (!streamToRecord) {
+        showToast('Please start the OBS live feed before recording.');
+        return;
+      }
+
+      const s = getVaultSettings();
+      if (!s.ghToken || !s.ghOwner || !s.ghRepo) {
+        showToast('Please configure GitHub Vault settings in remote storage vault section first.');
+        const vaultSec = document.getElementById('github-vault');
+        if (vaultSec) vaultSec.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+
+      obsRecordedChunks = [];
+      const mime = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t => MediaRecorder.isTypeSupported(t));
+      try {
+        obsRecorder = mime ? new MediaRecorder(streamToRecord, { mimeType: mime }) : new MediaRecorder(streamToRecord);
+      } catch(e) {
+        obsRecorder = new MediaRecorder(streamToRecord);
+      }
+
+      obsRecorder.ondataavailable = e => {
+        if (e.data && e.data.size > 0) obsRecordedChunks.push(e.data);
+      };
+
+      obsRecorder.onstop = async () => {
+        const fullBlob = new Blob(obsRecordedChunks, { type: obsRecorder.mimeType || 'video/webm' });
+        recordBtn.textContent = 'Splitting & Uploading to GitHub…';
+        logObs(`🎬 Incoming OBS stream captured: ${(fullBlob.size / 1024).toFixed(1)} KB. Slicing into split video chunks…`, true);
+
+        const localUrl = URL.createObjectURL(fullBlob);
+        const downloadP = document.createElement('p');
+        downloadP.innerHTML = `<a href="${localUrl}" download="obs-interview-${Date.now()}.webm" style="color:#ff6b3d;text-decoration:underline;font-weight:bold;">Download recorded OBS clip (${Math.round(fullBlob.size / 1024)} KB) ↓</a>`;
+        recordLog.appendChild(downloadP);
+
+        const labels = ['obs_header_sync', 'obs_interview_part1', 'obs_interview_part2', 'obs_trailer_sync'];
+
+        try {
+          const res = await chunkAndUploadLabeledVideoToGitHub(
+            fullBlob,
+            `obs-live-interview-${Date.now()}.webm`,
+            labels,
+            pct => {
+              if (recordProgress) recordProgress.style.width = pct + '%';
+            },
+            (msg, isSuccess) => logObs(msg, isSuccess)
+          );
+          logObs(`🎉 OBS video successfully split and committed to GitHub: ${res.owner}/${res.repo} in ${res.totalChunks} chunks!`, true);
+          showToast('OBS video split and stored in GitHub vault successfully!');
+        } catch(err) {
+          logObs('GitHub upload error: ' + err.message, false, true);
+          showToast('Failed to push chunks: ' + err.message);
+        } finally {
+          recordBtn.disabled = false;
+          recordBtn.textContent = 'Record & Split-Store to GitHub';
+          if (recordTimer) recordTimer.textContent = '';
+        }
+      };
+
+      obsRecordStartTime = Date.now();
+      obsRecorder.start(500);
+      recordBtn.textContent = 'Stop & Split-Store to GitHub ⏹';
+      logObs('🔴 Recording incoming OBS stream...', false);
+      if (recordProgress) recordProgress.style.width = '0%';
+
+      obsRecordTimerInterval = setInterval(() => {
+        const elapsed = Math.round((Date.now() - obsRecordStartTime) / 1000);
+        const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const secs = String(elapsed % 60).padStart(2, '0');
+        if (recordTimer) recordTimer.textContent = `REC ${mins}:${secs}`;
+      }, 1000);
     });
   }
 }
