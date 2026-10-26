@@ -795,8 +795,17 @@ function setWord(index) {
 }
 async function speakWordOfDay(){
   const word=WORDS[activeWordIndex],status=$('#word-audio-status'),button=$('#hear-word');button.disabled=true;status.textContent='Preparing pronunciation audio…';
-  try{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:`${word.word}. ${word.definition}. Example: ${word.example}`,voice:'british'})});if(response.ok){const blob=await response.blob(),url=URL.createObjectURL(blob),audio=new Audio(url);audio.onended=()=>URL.revokeObjectURL(url);await audio.play();status.textContent='Playing model pronunciation and example sentence.';return;}}catch{}
-  try{if(!window.SpeechSynthesisUtterance||!window.speechSynthesis)throw new Error('unsupported');window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(`${word.word}. ${word.definition}. Example: ${word.example}`);utterance.lang='en-GB';utterance.rate=.86;window.speechSynthesis.speak(utterance);status.textContent='Using your browser’s English voice. Configure ElevenLabs on the server for its voice.';}catch{status.textContent='Audio is unavailable in this browser. The pronunciation guide and sample sentence remain available.';}finally{button.disabled=false;}
+  const staticSrc=`audio/word_${word.word.toLowerCase()}.mp3`;
+  try {
+    const audio=new Audio(staticSrc);
+    await new Promise((resolve,reject)=>{audio.oncanplaythrough=()=>resolve();audio.onerror=()=>reject();setTimeout(()=>reject(new Error('timeout')),1500);});
+    audio.onended=()=>{button.disabled=false;status.textContent='Played pronunciation (Indian English voice).';};
+    await audio.play();
+    status.textContent='Playing pronunciation (Indian English voice)…';
+    return;
+  }catch{}
+  try{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:`${word.word}. ${word.definition}. Example: ${word.example}`,voice:'indian'})});if(response.ok){const blob=await response.blob(),url=URL.createObjectURL(blob),audio=new Audio(url);audio.onended=()=>{URL.revokeObjectURL(url);button.disabled=false;status.textContent='Played pronunciation.';};await audio.play();status.textContent='Playing model pronunciation.';return;}}catch{}
+  try{if(!window.SpeechSynthesisUtterance||!window.speechSynthesis)throw new Error('unsupported');window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(`${word.word}. ${word.definition}. Example: ${word.example}`);const voices=window.speechSynthesis.getVoices?.()||[];const indianVoice=voices.find(v=>v.lang==='en-IN'||(v.name&&v.name.includes('India')));if(indianVoice)utterance.voice=indianVoice;utterance.lang=indianVoice?indianVoice.lang:'en-GB';utterance.rate=.88;utterance.onend=()=>{button.disabled=false;status.textContent='Pronunciation complete.';};window.speechSynthesis.speak(utterance);status.textContent=indianVoice?"Using your device's Indian English voice.":"Using your browser’s English voice.";}catch{status.textContent='Audio is unavailable in this browser. The pronunciation guide and sample sentence remain available.';button.disabled=false;}
 }
 function loadSavedWords() {
   let words=[];try{words=JSON.parse(localStorage.getItem(STORAGE.savedWords)||'[]');}catch{}
