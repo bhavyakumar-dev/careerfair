@@ -1,9 +1,10 @@
 const FEEDBACK={formspree:'',email:'your-email@example.com'};
 const $=(s,r=document)=>[...r.querySelectorAll(s)],cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
 const calm=matchMedia('(prefers-reduced-motion:reduce)').matches,F=[];
-const P=[['index','Prologue'],['history','History'],['careers','Careers'],['colleges','Colleges'],['feedback','Feedback']];
+const P=[['index','Prologue'],['history','History'],['careers','Careers'],['colleges','Colleges'],['games','Games'],['feedback','Feedback']];
 const cur=location.pathname.split('/').pop().replace('.html','')||'index';
-document.body.insertAdjacentHTML('afterbegin',`<canvas id=bg></canvas><nav><a class=logo href=index.html>English · X-D</a><div>${P.map(([h,n])=>`<a href=${h}.html${h==cur?' class=on':''}>${n}</a>`).join('')}</div></nav>`);
+const vPill='<div class=v-switcher><a href=../index.html title="v1 Pavilion">v1</a><a href=../v2.html title="v2 Premier">v2</a><a href=../v3.html title="v3 Open Mic">v3</a><a href=../v4.html title="v4 Alexandria">v4</a><a href=../v5.html title="v5 Mobility">v5</a><span class=act title="v6 Theatrical">v6</span></div>';
+document.body.insertAdjacentHTML('afterbegin',`<canvas id=bg></canvas><nav><a class=logo href=index.html>English · X-D</a><div>${P.map(([h,n])=>`<a href=${h}.html${h==cur?' class=on':''}>${n}</a>`).join('')}</div>${vPill}</nav>`);
 document.body.insertAdjacentHTML('beforeend','<footer>Class X-D · Career Fair 2026 · Creators: to be added</footer>');
 const L=!calm&&window.Lenis?new Lenis({lerp:.09}):null;
 let mx=0,my=0;addEventListener('pointermove',e=>{mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5});
@@ -29,4 +30,4 @@ const fm=$('#fm')[0];if(fm)fm.onsubmit=async e=>{e.preventDefault();const m=$('#
 if(!fm.checkValidity()){m.textContent='Add your name and a message before sealing.';fm.reportValidity();return}
 if(FEEDBACK.formspree){try{const r=await fetch(FEEDBACK.formspree,{method:'POST',body:d,headers:{Accept:'application/json'}});if(!r.ok)throw 0;seal();m.textContent='Sealed and sent. Thank you.';fm.reset()}catch{m.textContent='Couldn’t send. Check your connection and try again.'}return}
 const body=[...d].map(([k,v])=>k+': '+v).join('\n');location.href=`mailto:${FEEDBACK.email}?subject=${encodeURIComponent('Feedback: '+d.get('topic'))}&body=${encodeURIComponent(body)}`;seal();m.textContent='Sealed. Your mail app should open with the message ready. Press send.'};
-const tick=t=>{L&&L.raf(t);F.forEach(f=>f(t));requestAnimationFrame(tick)};requestAnimationFrame(tick);
+const tick=t=>{L&&L.raf(t);F.forEach(f=>f(t));requestAnimationFrame(tick)};requestAnimationFrame(tick);

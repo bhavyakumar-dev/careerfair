@@ -1,6 +1,15 @@
 # Every Career Speaks English — Kanakia Career Fair & Speech Lab
 
-An interactive exhibition and AI voice laboratory designed for the Career Fair 2026 (Class X-D, Kanakia International School, Mira Road).
+An interactive exhibition and AI voice laboratory designed for Career Fair 2026 (Class X-D, Kanakia International School, Mira Road).
+
+## Multi-Version Experience Suite
+
+1. **v1 — Classic Pavilion (`index.html`)**: The flagship exhibition portal featuring the comprehensive 80+ role career directory, live AI Speech & Pronunciation Lab, Mock Interview Simulator, News Anchor Studio, Student Leaderboard, and Admin Console (`careers2026`).
+2. **v2 — Verbum Premier (`v2.html`)**: Institutional executive dark theme with Syne / Outfit typography, C-Suite benchmarking, 5-tier AI failover telemetry, and speech spectrograms.
+3. **v3 — Open Mic Lab (`v3.html` / `open-mic.html`)**: Warm editorial aesthetic with lilac, cream and bright amber accents, interactive cards, and speech workout studio.
+4. **v4 — Alexandria Exec (`v4.html`)**: Mobile-first luxury editorial format with sliding drawer, Solar Gold / Cosmic Dark themes, and curated orator benchmarks.
+5. **v5 — Sovereign Mobility (`v5.html`)**: International transit and global mobility theme with world flight vectors, diplomatic career maps, and executive diction training.
+6. **v6 — Theatrical Suite (`v6.html` / `v6/index.html`)**: Five-act classical theatrical play with Three.js particle dynamics, Lenis smooth scrolling, curtain-parting prologue, 3D kinetic book pages for language history, revolving 3D ring for careers, horizontal film-strip reel for top Indian English universities, and 11 interactive games.
 
 ## Core Capabilities
 
@@ -14,7 +23,7 @@ An interactive exhibition and AI voice laboratory designed for the Career Fair 2
 
 ## Tech Stack
 
-- **Frontend**: Pure semantic HTML5, vanilla JavaScript, CSS custom properties, Syne / Outfit / Plus Jakarta Sans / JetBrains Mono typography.
-- **Visuals**: HTML5 Canvas particle network, Web Audio API frequency visualizer, Chart.js radar analytics.
+- **Frontend**: Pure semantic HTML5, vanilla JavaScript, CSS custom properties, Three.js, Lenis, Syne / Outfit / Plus Jakarta Sans / JetBrains Mono / Cinzel / EB Garamond typography.
+- **Visuals**: HTML5 Canvas particle network, Web Audio API frequency visualizer, Chart.js radar analytics, WebGL floating parchment particles.
 - **Backend**: Cloudflare Pages / Cloudflare Workers (`worker.js` and `functions/api/[[route]].js`).
 - **Audio Assets**: Pre-rendered high-bitrate MP3 voice benchmarks generated with ElevenLabs Indian English model.

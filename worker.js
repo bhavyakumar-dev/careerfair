@@ -733,6 +733,9 @@ export default {
       if (pathname === "/v5") {
         return env.ASSETS.fetch(new Request(new URL("/v5.html", request.url), request));
       }
+      if (pathname === "/v6" || pathname === "/v6/" || pathname === "/v6.html") {
+        return env.ASSETS.fetch(new Request(new URL("/v6/index.html", request.url), request));
+      }
       return env.ASSETS.fetch(request);
     }
 
