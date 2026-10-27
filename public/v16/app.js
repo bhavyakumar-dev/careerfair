@@ -662,13 +662,22 @@ function initAdminQuickUnlockAndRouting() {
           adminAuthenticated = true;
           adminDemoMode = false;
           adminSettings = data.settings || null;
+          sessionStorage.setItem('openmic.admin.session', 'unlocked');
+          const note = document.getElementById('demo-credential-note');
+          if (note) note.hidden = true;
         } else {
           adminAuthenticated = true;
           adminDemoMode = true;
+          sessionStorage.setItem('openmic.admin.session', 'demo');
+          const note = document.getElementById('demo-credential-note');
+          if (note) note.hidden = false;
         }
       } catch {
         adminAuthenticated = true;
         adminDemoMode = true;
+        sessionStorage.setItem('openmic.admin.session', 'demo');
+        const note = document.getElementById('demo-credential-note');
+        if (note) note.hidden = false;
       }
       showAdminWorkspace();
       showToast('⚡ Admin unlocked successfully!');
@@ -1501,13 +1510,13 @@ function adminLocalLogin() {
 function revealAdmin() {
   $('#admin-panel').hidden=false;document.body.classList.add('modal-open');
   history.replaceState(null,'',`${location.pathname}${location.search}#admin`);
-  const hasSession=sessionStorage.getItem('openmic.admin.session')==='demo';
-  if(hasSession){adminAuthenticated=true;adminDemoMode=true;showAdminWorkspace();}
+  const session=sessionStorage.getItem('openmic.admin.session');
+  if(session==='demo'||session==='unlocked'){adminAuthenticated=true;adminDemoMode=(session==='demo');showAdminWorkspace();}
   else {$('#admin-login-screen').hidden=false;$('#admin-workspace').hidden=true;$('#admin-user').focus();}
 }
 function closeAdmin() {
   $('#admin-panel').hidden=true;document.body.classList.remove('modal-open');
-  if(location.hash==='#admin')history.replaceState(null,'',`${location.pathname}${location.search}`);
+  if(location.hash==='#admin'||location.hash==='#admin-panel')history.replaceState(null,'',`${location.pathname}${location.search}`);
 }
 async function adminLogin(event) {
   event.preventDefault();

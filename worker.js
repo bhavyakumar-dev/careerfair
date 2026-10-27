@@ -877,7 +877,7 @@ export default {
       if (pathname === "/v15" || pathname === "/v15/" || pathname === "/v15.html") {
         return env.ASSETS.fetch(new Request(new URL("/v15.html", request.url), request));
       }
-      if (pathname === "/v16" || pathname === "/v16/" || pathname === "/v16.html") {
+      if (pathname === "/v16" || pathname === "/v16/" || pathname === "/v16.html" || pathname === "/v16/index.html") {
         return env.ASSETS.fetch(new Request(new URL("/v16.html", request.url), request));
       }
       if (pathname === "/versions" || pathname === "/versions/" || pathname === "/versions/index.html") {
