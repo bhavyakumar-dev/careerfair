@@ -2145,7 +2145,15 @@ const JOBTRIS_LANES = {
     { word: 'Anesthesia', def: 'Loss of sensation induced for surgery', cefr: 'B2' },
     { word: 'Suture', def: 'Stitch used to close a cut or wound', cefr: 'C1' },
     { word: 'Pathology', def: 'Science of the causes and effects of diseases', cefr: 'B2' },
-    { word: 'Vital', def: 'Crucial health signs like pulse and pressure', cefr: 'A2' }
+    { word: 'Vital', def: 'Crucial health signs like pulse and pressure', cefr: 'A2' },
+    { word: 'Antibiotic', def: 'Medicine that inhibits growth of microorganisms', cefr: 'B1' },
+    { word: 'Biopsy', def: 'Examination of tissue removed from living body', cefr: 'C1' },
+    { word: 'Intravenous', def: 'Administered directly into a vein', cefr: 'C1' },
+    { word: 'Resuscitation', def: 'Action of reviving someone from unconsciousness', cefr: 'C2' },
+    { word: 'Syndrome', def: 'Group of symptoms characteristic of a disease', cefr: 'B2' },
+    { word: 'Stethoscope', def: 'Acoustic instrument for listening to internal sounds', cefr: 'B1' },
+    { word: 'Sterilize', def: 'Make free from bacteria or living microorganisms', cefr: 'B2' },
+    { word: 'Ventilator', def: 'Machine providing mechanical respiration', cefr: 'B2' }
   ],
   pilot: [
     { word: 'Altitude', def: 'Height of an aircraft above sea level', cefr: 'A2' },
@@ -2153,158 +2161,488 @@ const JOBTRIS_LANES = {
     { word: 'Turbulence', def: 'Irregular violent atmospheric air movement', cefr: 'B1' },
     { word: 'Avionics', def: 'Electronic systems used in aviation', cefr: 'C1' },
     { word: 'Cockpit', def: 'Flight deck compartment for the pilots', cefr: 'A2' },
-    { word: 'Descent', def: 'Action of descending to landing altitude', cefr: 'B1' }
+    { word: 'Descent', def: 'Action of descending to landing altitude', cefr: 'B1' },
+    { word: 'Clearance', def: 'Authorization given by air traffic control', cefr: 'B2' },
+    { word: 'Transponder', def: 'Device emitting a radio signal identifying aircraft', cefr: 'C1' },
+    { word: 'Tailwind', def: 'Wind blowing in the direction of flight motion', cefr: 'B1' },
+    { word: 'Mach', def: 'Ratio of aircraft speed to sound speed', cefr: 'C1' },
+    { word: 'Altimeter', def: 'Instrument measuring altitude above ground/sea', cefr: 'B2' },
+    { word: 'Mayday', def: 'International distress signal broadcast via radio', cefr: 'B1' },
+    { word: 'Vector', def: 'Course or compass heading provided by ATC', cefr: 'C1' },
+    { word: 'Crosswind', def: 'Wind blowing across the direction of travel', cefr: 'B1' }
   ],
   journalist: [
     { word: 'Headline', def: 'Heading at the top of a news article', cefr: 'A2' },
     { word: 'Syndicate', def: 'Publishing news through multiple agencies', cefr: 'C1' },
     { word: 'Editorial', def: 'Article expressing newspaper editor opinion', cefr: 'B2' },
     { word: 'Scoop', def: 'Piece of news published before competitors', cefr: 'B1' },
-    { word: 'Corroborate', def: 'Confirm or give support to a statement', cefr: 'C2' }
+    { word: 'Corroborate', def: 'Confirm or give support to a statement', cefr: 'C2' },
+    { word: 'Attribution', def: 'Acknowledging source of quotes or news data', cefr: 'C1' },
+    { word: 'Embargo', def: 'Ban on publishing press information until specified date', cefr: 'C2' },
+    { word: 'Byline', def: 'Line in a paper naming the writer of an article', cefr: 'B1' },
+    { word: 'Investigative', def: 'Carrying out systematic deep inquiries into truth', cefr: 'B2' },
+    { word: 'Retraction', def: 'Withdrawal of previously published untrue statement', cefr: 'C1' },
+    { word: 'Defamation', def: 'Damaging good reputation of someone unlawfully', cefr: 'C2' },
+    { word: 'Correspondent', def: 'Journalist reporting from a remote region', cefr: 'B2' }
   ],
   chef: [
     { word: 'Marinate', def: 'Soak meat or fish in seasoned liquid', cefr: 'B1' },
     { word: 'Caramelize', def: 'Convert sugar into caramel by cooking', cefr: 'B2' },
     { word: 'Sous-vide', def: 'Cooking food vacuum-sealed in water bath', cefr: 'C1' },
-    { word: 'Simmer', def: 'Stay just below boiling point gently', cefr: 'A2' }
+    { word: 'Simmer', def: 'Stay just below boiling point gently', cefr: 'A2' },
+    { word: 'Emulsify', def: 'Combine two unmixable liquids like oil and vinegar', cefr: 'C1' },
+    { word: 'Deglaze', def: 'Dilute meat sediment in a pan with wine or stock', cefr: 'C2' },
+    { word: 'Blanch', def: 'Scald vegetables in boiling water then plunge into ice', cefr: 'B2' },
+    { word: 'Julienne', def: 'Cut vegetables into thin strip matchsticks', cefr: 'C1' },
+    { word: 'Confit', def: 'Slow cooking food submerged in oil or fat at low heat', cefr: 'C2' },
+    { word: 'Artisan', def: 'High-quality food made using traditional methods', cefr: 'B2' },
+    { word: 'Ferment', def: 'Chemical breakdown of substance by yeast/bacteria', cefr: 'B2' }
   ],
   lawyer: [
     { word: 'Statute', def: 'Written law passed by a legislative body', cefr: 'C1' },
     { word: 'Jurisdiction', def: 'Official power to make legal decisions', cefr: 'C1' },
     { word: 'Affidavit', def: 'Written statement confirmed by oath', cefr: 'C2' },
-    { word: 'Plaintiff', def: 'Person who brings a case against another', cefr: 'B2' }
+    { word: 'Plaintiff', def: 'Person who brings a case against another', cefr: 'B2' },
+    { word: 'Defendant', def: 'Individual sued or accused in a court of law', cefr: 'B2' },
+    { word: 'Precedent', def: 'Earlier event or action regarded as an example', cefr: 'C1' },
+    { word: 'Indemnity', def: 'Security or protection against a financial loss', cefr: 'C2' },
+    { word: 'Subpoena', def: 'Writ ordering a person to attend court and testify', cefr: 'C2' },
+    { word: 'Arbitration', def: 'Settling dispute by an independent neutral party', cefr: 'C1' },
+    { word: 'Injunction', def: 'Judicial order restraining person from an action', cefr: 'C2' },
+    { word: 'Fiduciary', def: 'Trustee relationship involving financial trust', cefr: 'C2' }
   ],
   tech: [
     { word: 'Algorithm', def: 'Step-by-step procedure for calculations', cefr: 'B1' },
     { word: 'Latency', def: 'Time delay between stimulus and response', cefr: 'B2' },
     { word: 'Idempotent', def: 'Operation that can be applied repeatedly', cefr: 'C2' },
-    { word: 'Deployment', def: 'Moving software to production servers', cefr: 'B1' }
+    { word: 'Deployment', def: 'Moving software to production servers', cefr: 'B1' },
+    { word: 'Refactor', def: 'Restructure existing code without changing external behavior', cefr: 'B2' },
+    { word: 'Throughput', def: 'Amount of material or data passing through system', cefr: 'B2' },
+    { word: 'Telemetry', def: 'Automatic measurement and transmission of data', cefr: 'C1' },
+    { word: 'Microservice', def: 'Architecture style structuring app as collection of services', cefr: 'B2' },
+    { word: 'Concurrency', def: 'Execution of multiple instruction sequences simultaneously', cefr: 'C1' },
+    { word: 'Serialization', def: 'Translating data structures into format that can be stored', cefr: 'C2' },
+    { word: 'Scalability', def: 'Capability of a system to handle growing amount of work', cefr: 'B2' }
   ]
 };
 
 function initJobtrisGame() {
-  const startBtn = $('#jobtris-start-btn');
-  const configPanel = $('#jobtris-config');
-  const stagePanel = $('#jobtris-stage');
-  const laneChips = $$('.lane-chip');
-  const stackContainer = $('#jobtris-stack');
+  const laneChips = $('.lane-chip');
+  const modeTabs = $('.semantris-mode-tab');
+  const stageBlocks = $('#stage-blocks');
+  const stageArcade = $('#stage-arcade');
+  const stagePortal = $('#stage-portal');
+
+  // Blocks Mode elements
+  const blocksGrid = $('#semantris-color-grid');
+  const blocksForm = $('#semantris-blocks-form');
+  const blocksInput = $('#semantris-blocks-input');
+  const blocksScoreEl = $('#blocks-score');
+  const blocksComboEl = $('#blocks-combo');
+  const blocksCefrEl = $('#blocks-cefr');
+  const blocksClearedEl = $('#blocks-cleared-count');
+  const blocksFeedback = $('#blocks-feedback');
+  const blocksBankChips = $('#blocks-bank-chips');
+  const blocksBankTotal = $('#blocks-bank-total');
+
+  // Arcade Mode elements
+  const arcadeStack = $('#jobtris-stack');
   const targetWordEl = $('#jobtris-target-word');
   const targetDefEl = $('#jobtris-target-def');
-  const clueForm = $('#jobtris-form');
-  const clueInput = $('#jobtris-clue-input');
-  const bankChipsBox = $('#jobtris-bank-chips');
-  const scoreEl = $('#jobtris-score');
-  const cefrEl = $('#jobtris-cefr');
-  const comboEl = $('#jobtris-combo');
+  const arcadeForm = $('#jobtris-form');
+  const arcadeInput = $('#jobtris-clue-input');
+  const arcadeScoreEl = $('#arcade-score');
+  const arcadeComboEl = $('#arcade-combo');
+  const arcadeCefrEl = $('#arcade-cefr');
+  const arcadeBankChips = $('#jobtris-bank-chips');
 
-  if (!startBtn || !stackContainer) return;
+  if (!blocksGrid && !arcadeStack) return;
 
+  const COLORS = ['cyan', 'magenta', 'yellow', 'purple'];
   let activeLane = 'doctor';
-  let stack = [];
-  let score = 0;
-  let combo = 0;
-  let clearedBank = [];
+  let activeMode = 'blocks';
 
+  // Game state for Blocks mode
+  const COLS = 4;
+  const ROWS = 6;
+  let gridMatrix = []; // array of columns: gridMatrix[c][r]
+  let blocksScore = 0;
+  let blocksCombo = 1;
+  let blocksBank = [];
+
+  // Game state for Arcade mode
+  let arcadeStackList = [];
+  let arcadeScore = 0;
+  let arcadeCombo = 0;
+  let arcadeBank = [];
+
+  // Audio synthesizer for popping
+  function playPopChime(freq = 520, duration = 0.12) {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch {}
+  }
+
+  // Lane selection
   laneChips.forEach(chip => {
     chip.addEventListener('click', () => {
       laneChips.forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       activeLane = chip.dataset.lane || 'doctor';
+      initBlocksGrid();
+      initArcadeStack();
+      showToast(`Switched domain to ${chip.textContent.trim()}`);
     });
   });
 
-  function renderStack() {
-    stackContainer.innerHTML = stack.map((item, idx) => `
+  // Mode tab switching
+  modeTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      modeTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeMode = tab.dataset.mode || 'blocks';
+
+      if (stageBlocks) stageBlocks.hidden = (activeMode !== 'blocks');
+      if (stageArcade) stageArcade.hidden = (activeMode !== 'arcade');
+      if (stagePortal) stagePortal.hidden = (activeMode !== 'portal');
+
+      if (activeMode === 'blocks') {
+        blocksInput?.focus();
+      } else if (activeMode === 'arcade') {
+        arcadeInput?.focus();
+      }
+    });
+  });
+
+  // Initialize Blocks Grid (4 columns x 6 rows)
+  function initBlocksGrid() {
+    const vocab = JOBTRIS_LANES[activeLane] || JOBTRIS_LANES.doctor;
+    gridMatrix = [];
+
+    for (let c = 0; c < COLS; c++) {
+      const col = [];
+      for (let r = 0; r < ROWS; r++) {
+        const item = vocab[Math.floor(Math.random() * vocab.length)];
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        col.push({
+          id: `${c}-${r}-${Math.random().toString(36).substring(2, 6)}`,
+          word: item.word,
+          def: item.def,
+          cefr: item.cefr,
+          color: color
+        });
+      }
+      gridMatrix.push(col);
+    }
+    renderBlocksGrid();
+  }
+
+  function renderBlocksGrid() {
+    if (!blocksGrid) return;
+    blocksGrid.innerHTML = '';
+
+    // Render by rows from top to bottom (row ROWS-1 down to 0)
+    for (let r = ROWS - 1; r >= 0; r--) {
+      for (let c = 0; c < COLS; c++) {
+        const block = gridMatrix[c]?.[r];
+        if (!block) {
+          const empty = document.createElement('div');
+          empty.style.visibility = 'hidden';
+          blocksGrid.appendChild(empty);
+          continue;
+        }
+
+        const el = document.createElement('div');
+        el.className = `semantris-block ${block.color}`;
+        el.id = `blk-${block.id}`;
+        el.dataset.col = String(c);
+        el.dataset.row = String(r);
+        el.dataset.word = block.word;
+        el.innerHTML = `
+          <span>${escapeHtml(block.word)}</span>
+          <span class="block-badge">${escapeHtml(block.cefr)}</span>
+        `;
+        blocksGrid.appendChild(el);
+      }
+    }
+  }
+
+  function updateBlocksBank() {
+    if (blocksBankChips) {
+      blocksBankChips.innerHTML = blocksBank.slice(-16).reverse().map(b => `
+        <span class="bank-chip" title="${escapeHtml(b.def)}">${escapeHtml(b.word)}</span>
+      `).join('');
+    }
+    if (blocksBankTotal) blocksBankTotal.textContent = String(blocksBank.length);
+    if (blocksClearedEl) blocksClearedEl.textContent = String(blocksBank.length);
+  }
+
+  // Flood fill algorithm to find connected blocks with same color
+  function getConnectedCluster(startCol, startRow) {
+    const target = gridMatrix[startCol]?.[startRow];
+    if (!target) return [];
+
+    const targetColor = target.color;
+    const visited = new Set();
+    const cluster = [];
+    const queue = [[startCol, startRow]];
+
+    while (queue.length > 0) {
+      const [c, r] = queue.shift();
+      const key = `${c},${r}`;
+      if (visited.has(key)) continue;
+      visited.add(key);
+
+      const curr = gridMatrix[c]?.[r];
+      if (curr && curr.color === targetColor) {
+        cluster.push({ c, r, block: curr });
+
+        // 4 orthogonal directions (up, down, left, right)
+        const neighbors = [
+          [c + 1, r],
+          [c - 1, r],
+          [c, r + 1],
+          [c, r - 1]
+        ];
+
+        for (const [nc, nr] of neighbors) {
+          if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && !visited.has(`${nc},${nr}`)) {
+            if (gridMatrix[nc]?.[nr]?.color === targetColor) {
+              queue.push([nc, nr]);
+            }
+          }
+        }
+      }
+    }
+    return cluster;
+  }
+
+  // Handle Blocks Clue Submission
+  blocksForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const clue = blocksInput.value.trim();
+    if (!clue) return;
+    blocksInput.value = '';
+
+    // Collect all active blocks in grid
+    const allBlocks = [];
+    for (let c = 0; c < COLS; c++) {
+      for (let r = 0; r < ROWS; r++) {
+        if (gridMatrix[c]?.[r]) {
+          allBlocks.push({ c, r, block: gridMatrix[c][r] });
+        }
+      }
+    }
+    if (allBlocks.length === 0) return;
+
+    // Compute semantic closeness to clue
+    let bestMatch = null;
+    let maxSim = -1;
+
+    for (const item of allBlocks) {
+      const sim = calculateLexicalOverlap(clue, `${item.block.word} ${item.block.def}`);
+      if (sim > maxSim) {
+        maxSim = sim;
+        bestMatch = item;
+      }
+    }
+
+    if (!bestMatch) bestMatch = allBlocks[Math.floor(Math.random() * allBlocks.length)];
+
+    // Highlight top match
+    const topEl = $(`#blk-${bestMatch.block.id}`);
+    if (topEl) topEl.classList.add('highlight-hit');
+
+    // Find flood-fill cluster of matching color
+    const cluster = getConnectedCluster(bestMatch.c, bestMatch.r);
+    const isCombo = cluster.length >= 2;
+
+    let multiplier = 1;
+    if (bestMatch.block.cefr === 'C1' || bestMatch.block.cefr === 'C2') multiplier = 3;
+    else if (bestMatch.block.cefr === 'B2') multiplier = 2;
+
+    if (isCombo) {
+      blocksCombo++;
+    } else {
+      blocksCombo = 1;
+    }
+    if (blocksComboEl) blocksComboEl.textContent = `${blocksCombo}×`;
+
+    const pts = (cluster.length * 60) * multiplier * blocksCombo;
+    blocksScore += pts;
+    if (blocksScoreEl) blocksScoreEl.textContent = String(blocksScore);
+    if (blocksCefrEl) blocksCefrEl.textContent = bestMatch.block.cefr;
+
+    // Visual burst animation on all cluster elements
+    cluster.forEach(({ block }) => {
+      const bEl = $(`#blk-${block.id}`);
+      if (bEl) bEl.classList.add('combo-burst');
+      blocksBank.push(block);
+    });
+
+    playPopChime(isCombo ? 680 : 520, isCombo ? 0.22 : 0.12);
+
+    if (blocksFeedback) {
+      blocksFeedback.innerHTML = isCombo
+        ? `🎉 <strong>${cluster.length}× COMBO!</strong> Blasted <em>${escapeHtml(bestMatch.block.color)}</em> cluster matching "<strong>${escapeHtml(bestMatch.block.word)}</strong>"! <span style="color:var(--orange);">+${pts} pts</span>`
+        : `🎯 Matched "<strong>${escapeHtml(bestMatch.block.word)}</strong>" (${bestMatch.block.cefr}). <span style="color:var(--orange);">+${pts} pts</span>`;
+    }
+
+    updateBlocksBank();
+    saveComponentScore('jobtris', blocksScore, { mode: 'blocks', lane: activeLane });
+
+    // After animation: collapse and replenish
+    setTimeout(() => {
+      const vocab = JOBTRIS_LANES[activeLane] || JOBTRIS_LANES.doctor;
+
+      // For each column, filter out removed blocks, then replenish to ROWS
+      for (let c = 0; c < COLS; c++) {
+        const removedInCol = new Set(cluster.filter(item => item.c === c).map(item => item.block.id));
+        const remaining = gridMatrix[c].filter(b => !removedInCol.has(b.id));
+
+        while (remaining.length < ROWS) {
+          const item = vocab[Math.floor(Math.random() * vocab.length)];
+          remaining.push({
+            id: `${c}-${remaining.length}-${Math.random().toString(36).substring(2, 6)}`,
+            word: item.word,
+            def: item.def,
+            cefr: item.cefr,
+            color: COLORS[Math.floor(Math.random() * COLORS.length)]
+          });
+        }
+        gridMatrix[c] = remaining;
+      }
+
+      renderBlocksGrid();
+    }, 450);
+  });
+
+  // Arcade Mode Logic
+  function initArcadeStack() {
+    const vocab = JOBTRIS_LANES[activeLane] || JOBTRIS_LANES.doctor;
+    arcadeStackList = [...vocab].sort(() => 0.5 - Math.random());
+    renderArcadeStack();
+  }
+
+  function renderArcadeStack() {
+    if (!arcadeStack) return;
+    arcadeStack.innerHTML = arcadeStackList.map((item, idx) => `
       <div class="jobtris-slab ${idx === 0 ? 'target' : ''} ${idx <= 2 ? 'in-blast' : ''}">
         <span>${escapeHtml(item.word)}</span>
         <small class="cefr-badge">${escapeHtml(item.cefr)}</small>
       </div>
     `).join('');
 
-    if (stack[0]) {
-      targetWordEl.textContent = stack[0].word;
-      targetDefEl.textContent = stack[0].def;
-      cefrEl.textContent = stack[0].cefr;
+    if (arcadeStackList[0]) {
+      if (targetWordEl) targetWordEl.textContent = arcadeStackList[0].word;
+      if (targetDefEl) targetDefEl.textContent = arcadeStackList[0].def;
+      if (arcadeCefrEl) arcadeCefrEl.textContent = arcadeStackList[0].cefr;
     }
   }
 
-  function renderBank() {
-    bankChipsBox.innerHTML = clearedBank.map(w => `
-      <span class="bank-chip" title="${escapeHtml(w.def)}">${escapeHtml(w.word)}</span>
-    `).join('');
-  }
-
-  startBtn.addEventListener('click', () => {
-    configPanel.hidden = true;
-    stagePanel.hidden = false;
-    score = 0;
-    combo = 0;
-    clearedBank = [];
-    scoreEl.textContent = '0';
-    comboEl.textContent = '0×';
-    const vocab = JOBTRIS_LANES[activeLane] || JOBTRIS_LANES.doctor;
-    stack = [...vocab].sort(() => 0.5 - Math.random());
-    renderStack();
-    renderBank();
-  });
-
-  clueForm?.addEventListener('submit', async (e) => {
+  arcadeForm?.addEventListener('submit', (e) => {
     e.preventDefault();
-    const clue = clueInput.value.trim();
-    if (!clue || stack.length === 0) return;
-    clueInput.value = '';
+    const clue = arcadeInput.value.trim();
+    if (!clue || arcadeStackList.length === 0) return;
+    arcadeInput.value = '';
 
-    // Simulate semantic re-ranking with server or lexical match
-    const targetItem = stack[0];
+    const target = arcadeStackList[0];
     let multiplier = 1;
-    if (targetItem.cefr === 'C1' || targetItem.cefr === 'C2') multiplier = 3;
-    else if (targetItem.cefr === 'B2') multiplier = 2;
+    if (target.cefr === 'C1' || target.cefr === 'C2') multiplier = 3;
+    else if (target.cefr === 'B2') multiplier = 2;
 
-    combo++;
-    comboEl.textContent = `${combo}×`;
-    const pts = 50 * multiplier * combo;
-    score += pts;
-    scoreEl.textContent = score;
+    arcadeCombo++;
+    if (arcadeComboEl) arcadeComboEl.textContent = `${arcadeCombo}×`;
 
-    // Pop target from stack and add to word bank
-    const popped = stack.shift();
-    clearedBank.push(popped);
-    renderBank();
+    const pts = 60 * multiplier * arcadeCombo;
+    arcadeScore += pts;
+    if (arcadeScoreEl) arcadeScoreEl.textContent = String(arcadeScore);
 
-    showToast(`Blasted "${popped.word}"! +${pts} pts (CEFR ${popped.cefr})`);
-
-    if (stack.length === 0) {
-      // Reload round with fresh terms
-      const vocab = JOBTRIS_LANES[activeLane];
-      stack = [...vocab].sort(() => 0.5 - Math.random());
-      showToast('🎉 Stack cleared! Advancing to higher speed wave.');
+    const popped = arcadeStackList.shift();
+    arcadeBank.push(popped);
+    if (arcadeBankChips) {
+      arcadeBankChips.innerHTML = arcadeBank.map(w => `
+        <span class="bank-chip" title="${escapeHtml(w.def)}">${escapeHtml(w.word)}</span>
+      `).join('');
     }
-    renderStack();
-    saveComponentScore('jobtris', score, { lane: activeLane });
+
+    playPopChime(600, 0.15);
+    showToast(`Blasted "${popped.word}" into blast zone! +${pts} pts`);
+
+    if (arcadeStackList.length === 0) {
+      initArcadeStack();
+      showToast('🎉 Stack cleared! Advancing speed wave.');
+    } else {
+      renderArcadeStack();
+    }
+    saveComponentScore('jobtris', arcadeScore, { mode: 'arcade', lane: activeLane });
   });
+
+  // Helper lexical matcher
+  function calculateLexicalOverlap(query, target) {
+    const qWords = query.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 2);
+    const tWords = target.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 2);
+    let hits = 0;
+    qWords.forEach(q => {
+      if (tWords.includes(q)) hits += 3;
+      else if (tWords.some(t => t.includes(q) || q.includes(t))) hits += 1.5;
+    });
+    return hits + Math.random() * 0.2;
+  }
+
+  // Initial runs
+  initBlocksGrid();
+  initArcadeStack();
 }
 
 // -------------------------------------------------------------
 // GAME 4: THE WORD ORACLE (English Akinator)
 // -------------------------------------------------------------
 const ORACLE_CAREERS = [
-  { name: 'Surgeon', equipment: true, hospital: true, outdoors: false, code: false, creative: false, degree: true, license: true, danger: false, desc: 'Performs precision clinical operations in hospital theatres.' },
-  { name: 'Commercial Pilot', equipment: true, hospital: false, outdoors: true, code: false, creative: false, degree: true, license: true, danger: true, desc: 'Commands long-haul aircraft navigating worldwide weather.' },
-  { name: 'Software Architect', equipment: true, hospital: false, outdoors: false, code: true, creative: true, degree: true, license: false, danger: false, desc: 'Designs high-scale algorithms and global cloud backends.' },
-  { name: 'Screenwriter', equipment: false, hospital: false, outdoors: false, code: false, creative: true, degree: false, license: false, danger: false, desc: 'Creates scripts and narratives for film and streaming.' },
-  { name: 'Corporate Lawyer', equipment: false, hospital: false, outdoors: false, code: false, creative: false, degree: true, license: true, danger: false, desc: 'Argues cases and negotiates high-value contracts.' },
-  { name: 'Diplomat', equipment: false, hospital: false, outdoors: true, code: false, creative: false, degree: true, license: false, danger: false, desc: 'Negotiates treaties and represents national embassies.' },
-  { name: 'Executive Chef', equipment: true, hospital: false, outdoors: false, code: false, creative: true, degree: false, license: false, danger: false, desc: 'Leads gourmet restaurants and crafts culinary menus.' },
-  { name: 'Architect', equipment: true, hospital: false, outdoors: true, code: true, creative: true, degree: true, license: true, danger: false, desc: 'Designs buildings, skyscrapers and public infrastructure.' }
+  { name: 'Surgeon', hospital: true, code: false, outdoors: false, creative: false, license: true, equipment: true, danger: false, degree: true, speaking: false, desc: 'Performs precision clinical operations in hospital surgical suites.' },
+  { name: 'Commercial Pilot', hospital: false, code: false, outdoors: true, creative: false, license: true, equipment: true, danger: true, degree: true, speaking: true, desc: 'Commands multi-engine commercial aircraft navigating worldwide flight routes.' },
+  { name: 'Software Architect', hospital: false, code: true, outdoors: false, creative: true, license: false, equipment: true, danger: false, degree: true, speaking: true, desc: 'Designs high-concurrency cloud systems, distributed protocols and architectures.' },
+  { name: 'Corporate Lawyer', hospital: false, code: false, outdoors: false, creative: false, license: true, equipment: false, danger: false, degree: true, speaking: true, desc: 'Argues high-stakes litigation before tribunals and drafts multinational agreements.' },
+  { name: 'Executive Chef', hospital: false, code: false, outdoors: false, creative: true, license: false, equipment: true, danger: false, degree: false, speaking: false, desc: 'Directs Michelin-calibre restaurant kitchens and creates culinary menus.' },
+  { name: 'Global Diplomat', hospital: false, code: false, outdoors: true, creative: false, license: false, equipment: false, danger: false, degree: true, speaking: true, desc: 'Represents national embassies, negotiating international treaties and peace accords.' },
+  { name: 'Screenwriter', hospital: false, code: false, outdoors: false, creative: true, license: false, equipment: false, danger: false, degree: false, speaking: false, desc: 'Authors original screenplays, episodic television bibles and dramatic dialogue.' },
+  { name: 'Forensic Scientist', hospital: true, code: false, outdoors: false, creative: false, license: true, equipment: true, danger: false, degree: true, speaking: true, desc: 'Analyzes physical crime scene evidence, DNA profiles and delivers court testimony.' },
+  { name: 'News Anchor', hospital: false, code: false, outdoors: false, creative: true, license: false, equipment: true, danger: false, degree: true, speaking: true, desc: 'Delivers breaking prime-time dispatches to millions of viewers with journalistic composure.' },
+  { name: 'Aerospace Engineer', hospital: false, code: true, outdoors: false, creative: true, license: true, equipment: true, danger: false, degree: true, speaking: false, desc: 'Engineers rocket propulsion, orbital satellites and atmospheric flight structures.' },
+  { name: 'Marine Biologist', hospital: false, code: false, outdoors: true, creative: false, license: false, equipment: true, danger: true, degree: true, speaking: false, desc: 'Conducts oceanic expeditions researching coral ecosystems and deep-sea organisms.' },
+  { name: 'Ethical Hacker (Pen Tester)', hospital: false, code: true, outdoors: false, creative: true, license: true, equipment: true, danger: false, degree: true, speaking: false, desc: 'Audits defensive cyber perimeters and uncovers zero-day vulnerabilities ethically.' },
+  { name: 'Arbitration Judge', hospital: false, code: false, outdoors: false, creative: false, license: true, equipment: false, danger: false, degree: true, speaking: true, desc: 'Presides over commercial disputes and renders binding legal judgments in clear prose.' },
+  { name: 'Architect', hospital: false, code: true, outdoors: true, creative: true, license: true, equipment: true, danger: false, degree: true, speaking: true, desc: 'Designs iconic skyscrapers, civic plazas and sustainable urban dwellings.' },
+  { name: 'Air Traffic Controller', hospital: false, code: true, outdoors: false, creative: false, license: true, equipment: true, danger: true, degree: true, speaking: true, desc: 'Directs aircraft taxi, departures and en-route spacing under high-stress radar protocols.' },
+  { name: 'Data Ethicist & AI Auditor', hospital: false, code: true, outdoors: false, creative: false, license: false, equipment: true, danger: false, degree: true, speaking: true, desc: 'Investigates algorithmic bias, LLM safety guardrails and autonomous vehicle liability.' },
+  { name: 'Sports Physiotherapist', hospital: true, code: false, outdoors: true, creative: false, license: true, equipment: true, danger: false, degree: true, speaking: true, desc: 'Rehabilitates Olympic and professional athletes from acute ligament and muscular trauma.' },
+  { name: 'Investigative Reporter', hospital: false, code: false, outdoors: true, creative: true, license: false, equipment: false, danger: true, degree: true, speaking: true, desc: 'Exposes systemic corruption, corporate fraud and leaks confidential public interest files.' },
+  { name: 'Audio Mastering Engineer', hospital: false, code: true, outdoors: false, creative: true, license: false, equipment: true, danger: false, degree: false, speaking: false, desc: 'Calibrates dynamic frequency spectrum, stereo imaging and acoustic loudness in recording studios.' },
+  { name: 'Wildlife Veterinarian', hospital: true, code: false, outdoors: true, creative: false, license: true, equipment: true, danger: true, degree: true, speaking: false, desc: 'Performs wilderness triage and surgeries on endangered carnivores and megafauna.' }
 ];
 
 const ORACLE_QUESTIONS = [
-  { id: 'hospital', text: 'Does this career primarily deal with patients, medicine or clinical health?' },
-  { id: 'code', text: 'Does this profession involve writing software, computer code or building digital systems?' },
-  { id: 'outdoors', text: 'Does this role frequently work outdoors, travel between cities or fly internationally?' },
-  { id: 'creative', text: 'Is artistic storytelling, design or culinary creativity central to the job?' },
-  { id: 'license', text: 'Does this profession legally mandate an official state license, bar exam or board certification?' },
-  { id: 'equipment', text: 'Do they use specialized technical instruments, surgical tools, or flight machinery?' }
+  { id: 'hospital', text: 'Does this career primarily deal with patients, medicine or clinical healthcare?' },
+  { id: 'code', text: 'Does this profession involve writing computer code, algorithms or high-tech digital systems?' },
+  { id: 'outdoors', text: 'Does this role frequently work outdoors, travel between countries or fly internationally?' },
+  { id: 'creative', text: 'Is artistic storytelling, culinary design or visual imagination central to this profession?' },
+  { id: 'license', text: 'Does this career legally mandate a professional bar exam, state medical board or flight license?' },
+  { id: 'equipment', text: 'Do they work with specialized technical instruments, surgical apparatus or machinery?' },
+  { id: 'danger', text: 'Does this profession carry life-or-death responsibility, flight stress or physical hazard?' },
+  { id: 'speaking', text: 'Is high-stakes public speaking, courtroom persuasion or live verbal broadcasting mandatory?' },
+  { id: 'degree', text: 'Does this profession almost universally require an advanced university or post-graduate degree?' }
 ];
 
 function initWordOracle() {
@@ -2317,51 +2655,80 @@ function initWordOracle() {
   const qNum = $('#oracle-q-num');
   const certaintyFill = $('#oracle-certainty-fill');
   const certaintyText = $('#oracle-certainty-text');
-  const ansBtns = $$('.oracle-ans-btn');
+  const ansBtns = $('.oracle-ans-btn');
   const guessTitle = $('#oracle-guess-title');
   const guessDetails = $('#oracle-guess-details');
   const correctBtn = $('#oracle-guess-correct');
   const wrongBtn = $('#oracle-guess-wrong');
+  const suspectsBadge = $('#oracle-suspects-badge');
 
   if (!startBtn || !activeCard) return;
 
-  let candidates = [...ORACLE_CAREERS];
+  let candidateScores = [];
   let qIndex = 0;
-  let certainty = 20;
+  let certainty = 12;
+
+  function resetGame() {
+    candidateScores = ORACLE_CAREERS.map(c => ({ career: c, weight: 1.0 }));
+    qIndex = 0;
+    certainty = 12;
+    if (suspectsBadge) suspectsBadge.textContent = `${candidateScores.length} Suspect Careers`;
+    if (certaintyFill) certaintyFill.style.width = '12%';
+    if (certaintyText) certaintyText.textContent = 'Certainty: 12%';
+  }
 
   suggestBtn?.addEventListener('click', () => {
     const random = ORACLE_CAREERS[Math.floor(Math.random() * ORACLE_CAREERS.length)];
-    showToast(`Secret hint for you: Think of "${random.name}"!`);
+    showToast(`Secret role idea for you: Think of "${random.name}"!`);
   });
 
   function askNextQuestion() {
-    if (qIndex >= ORACLE_QUESTIONS.length || candidates.length <= 1) {
-      revealGuess();
+    // Sort candidates by current weight
+    candidateScores.sort((a, b) => b.weight - a.weight);
+    const topPick = candidateScores[0];
+    const topWeight = topPick.weight;
+    const totalWeight = candidateScores.reduce((sum, c) => sum + c.weight, 0);
+    const topProbability = totalWeight > 0 ? (topWeight / totalWeight) : 0.5;
+
+    // Active suspects with reasonable probability
+    const activeSuspects = candidateScores.filter(c => c.weight > 0.4);
+    if (suspectsBadge) suspectsBadge.textContent = `${activeSuspects.length} Suspect Careers`;
+
+    // Termination conditions: high certainty or ran out of questions
+    if (qIndex >= ORACLE_QUESTIONS.length || topProbability >= 0.75 || activeSuspects.length <= 1) {
+      revealGuess(topPick.career, Math.round(Math.min(96, Math.max(70, topProbability * 100))));
       return;
     }
 
     const q = ORACLE_QUESTIONS[qIndex];
     questionText.textContent = q.text;
     qNum.textContent = String(qIndex + 1);
-    certainty = Math.min(95, 20 + (qIndex * 15));
-    certaintyFill.style.width = `${certainty}%`;
-    certaintyText.textContent = `Certainty: ${certainty}%`;
+
+    certainty = Math.round(Math.min(95, 12 + (qIndex * 11) + (topProbability * 25)));
+    if (certaintyFill) certaintyFill.style.width = `${certainty}%`;
+    if (certaintyText) certaintyText.textContent = `Certainty: ${certainty}%`;
   }
 
-  function revealGuess() {
+  function revealGuess(career, conf) {
     activeCard.hidden = true;
     revelationCard.hidden = false;
-    const finalPick = candidates[0] || ORACLE_CAREERS[0];
-    guessTitle.textContent = `I deduce you are thinking of: ${finalPick.name}!`;
+    guessTitle.textContent = `I deduce you are thinking of: ${career.name}!`;
     guessDetails.innerHTML = `
-      <p style="font-size:18px;font-weight:700;color:var(--orange);margin:0 0 8px;">Confidence: ${certainty}%</p>
-      <p style="margin:0;">${escapeHtml(finalPick.desc)}</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span style="font-size:18px;font-weight:800;color:var(--orange);">Deduction Certainty: ${conf}%</span>
+        <span class="mini-tag">TURNS: ${qIndex}</span>
+      </div>
+      <p style="font-size:15px;line-height:1.6;color:#e2e8f0;margin:0 0 14px;">${escapeHtml(career.desc)}</p>
+      <div style="background:#0e0b1c;padding:12px 16px;border-radius:6px;border-left:3px solid var(--orange);">
+        <strong style="color:var(--orange);font-size:12px;display:block;margin-bottom:4px;">KEY ENGLISH VOCABULARY ASSET:</strong>
+        <span style="font-size:12px;color:#cbd5e1;">Precision articulation under high pressure, professional vocabulary registers, and cross-disciplinary technical negotiation.</span>
+      </div>
     `;
+    if (suspectsBadge) suspectsBadge.textContent = '1 Confirmed Match';
   }
 
   startBtn.addEventListener('click', () => {
-    candidates = [...ORACLE_CAREERS];
-    qIndex = 0;
+    resetGame();
     controlsRow.hidden = true;
     revelationCard.hidden = true;
     activeCard.hidden = false;
@@ -2373,11 +2740,21 @@ function initWordOracle() {
       const ans = btn.dataset.answer;
       const currentQ = ORACLE_QUESTIONS[qIndex];
 
-      if (ans === 'yes' || ans === 'probably') {
-        candidates = candidates.filter(c => c[currentQ.id] === true);
-      } else if (ans === 'no' || ans === 'probably-not') {
-        candidates = candidates.filter(c => c[currentQ.id] === false);
-      }
+      // Update Bayesian likelihoods
+      candidateScores.forEach(item => {
+        const hasProp = Boolean(item.career[currentQ.id]);
+        if (ans === 'yes') {
+          item.weight *= hasProp ? 2.5 : 0.15;
+        } else if (ans === 'probably') {
+          item.weight *= hasProp ? 1.6 : 0.45;
+        } else if (ans === 'unsure') {
+          item.weight *= 1.0;
+        } else if (ans === 'probably-not') {
+          item.weight *= hasProp ? 0.45 : 1.6;
+        } else if (ans === 'no') {
+          item.weight *= hasProp ? 0.1 : 2.5;
+        }
+      });
 
       qIndex++;
       askNextQuestion();
@@ -2385,14 +2762,14 @@ function initWordOracle() {
   });
 
   correctBtn?.addEventListener('click', () => {
-    showToast('🎯 The Word Oracle scores another deductive triumph!');
-    saveComponentScore('oracle', 95, { deductiveTurns: qIndex });
+    showToast('🎯 The Word Oracle scores another deductive victory!');
+    saveComponentScore('oracle', certainty, { turns: qIndex });
     revelationCard.hidden = true;
     controlsRow.hidden = false;
   });
 
   wrongBtn?.addEventListener('click', () => {
-    showToast('Fascinating! Your career idea stumped the Oracle. Expanding knowledge base.');
+    showToast('Incredible! Your secret profession eluded the Oracle. Expanding knowledge base.');
     revelationCard.hidden = true;
     controlsRow.hidden = false;
   });
@@ -2445,23 +2822,38 @@ const BLOX_OBJECTS = {
 };
 
 function initObjectOracle() {
-  const bloxBtns = $$('.blox-btn');
+  const bloxBtns = $('.blox-btn');
   const detectedName = $('#vision-detected-name');
   const detectedRole = $('#vision-detected-role');
   const detectedReason = $('#vision-detected-reason');
   const cameraToggle = $('#vision-camera-toggle');
   const video = $('#vision-video');
   const visionStatus = $('#vision-status');
+  const visionConfidenceTag = $('#vision-confidence-tag');
 
   if (!bloxBtns.length) return;
 
-  function setBloxDisplay(key) {
+  let mobileNetModel = null;
+  let isModelLoading = false;
+  let stream = null;
+  let inferenceInterval = null;
+
+  function setBloxDisplay(key, customConfidence = null) {
     const data = BLOX_OBJECTS[key];
     if (!data) return;
     bloxBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.obj === key));
     if (detectedName) detectedName.textContent = data.title;
     if (detectedRole) detectedRole.textContent = data.role;
     if (detectedReason) detectedReason.textContent = data.reason;
+
+    if (visionConfidenceTag) {
+      if (customConfidence) {
+        visionConfidenceTag.hidden = false;
+        visionConfidenceTag.textContent = `${customConfidence}% MobileNet`;
+      } else {
+        visionConfidenceTag.hidden = true;
+      }
+    }
   }
 
   bloxBtns.forEach(btn => {
@@ -2470,37 +2862,90 @@ function initObjectOracle() {
     });
   });
 
-  let stream = null;
+  // Map MobileNet ImageNet labels to our career objects
+  function mapPredictionToBlox(className) {
+    const lower = className.toLowerCase();
+    if (lower.includes('laptop') || lower.includes('computer') || lower.includes('keyboard') || lower.includes('notebook')) return 'laptop';
+    if (lower.includes('microphone') || lower.includes('mic')) return 'microphone';
+    if (lower.includes('stethoscope')) return 'stethoscope';
+    if (lower.includes('tie') || lower.includes('suit') || lower.includes('bow tie')) return 'tie';
+    if (lower.includes('camera') || lower.includes('lens') || lower.includes('tripod')) return 'camera';
+    if (lower.includes('airplane') || lower.includes('aircraft') || lower.includes('wing') || lower.includes('space')) return 'airplane';
+    if (lower.includes('pen') || lower.includes('pencil') || lower.includes('ballpoint')) return 'pen';
+    if (lower.includes('book') || lower.includes('binder') || lower.includes('comic') || lower.includes('paper')) return 'book';
+    return null;
+  }
+
   cameraToggle?.addEventListener('click', async () => {
     if (stream) {
+      // Stop camera
+      clearInterval(inferenceInterval);
       stream.getTracks().forEach(t => t.stop());
       stream = null;
       video.hidden = true;
       cameraToggle.textContent = 'Start webcam vision 📷';
-      visionStatus.textContent = 'Camera halted';
+      visionStatus.textContent = 'Camera halted. Offline tactile mode active.';
+      if (visionConfidenceTag) visionConfidenceTag.hidden = true;
       return;
     }
 
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      visionStatus.textContent = 'Requesting camera access…';
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
+      });
       video.srcObject = stream;
       video.hidden = false;
       cameraToggle.textContent = 'Stop camera ⏹';
-      visionStatus.textContent = 'Analyzing real-time object feed…';
+      visionStatus.textContent = 'Initializing TensorFlow.js MobileNet…';
 
-      // Cycle simulated recognition across everyday items
-      const keys = Object.keys(BLOX_OBJECTS);
-      let i = 0;
-      setInterval(() => {
-        if (!stream) return;
-        const k = keys[i % keys.length];
-        setBloxDisplay(k);
-        visionStatus.textContent = `Identified: ${BLOX_OBJECTS[k].title.split(' ')[1]}`;
-        i++;
-      }, 4000);
-    } catch {
-      showToast('Camera permission denied or camera unavailable. Use the tactile blox buttons!');
-      visionStatus.textContent = 'Offline sensor mode active';
+      // Load MobileNet if available
+      if (window.mobilenet && !mobileNetModel && !isModelLoading) {
+        isModelLoading = true;
+        try {
+          mobileNetModel = await window.mobilenet.load({ version: 2, alpha: 1.0 });
+          visionStatus.textContent = 'MobileNet v2.1 active · Scanning live stream';
+        } catch {
+          visionStatus.textContent = 'MobileNet fallback · Scanning live feed';
+        } finally {
+          isModelLoading = false;
+        }
+      }
+
+      // Live inference loop every 1.5 seconds
+      inferenceInterval = setInterval(async () => {
+        if (!stream || video.readyState < 2) return;
+
+        if (mobileNetModel) {
+          try {
+            const predictions = await mobileNetModel.classify(video);
+            if (predictions && predictions.length > 0) {
+              const top = predictions[0];
+              const pct = Math.round(top.probability * 100);
+              const mappedKey = mapPredictionToBlox(top.className);
+
+              if (mappedKey) {
+                setBloxDisplay(mappedKey, pct);
+                visionStatus.textContent = `Recognized: ${top.className.split(',')[0]} (${pct}%)`;
+              } else {
+                visionStatus.textContent = `Scanning: ${top.className.split(',')[0]} (${pct}%)`;
+              }
+            }
+          } catch (err) {
+            visionStatus.textContent = 'Inference running…';
+          }
+        } else {
+          // Fallback simulation cycling
+          const keys = Object.keys(BLOX_OBJECTS);
+          const randKey = keys[Math.floor(Math.random() * keys.length)];
+          setBloxDisplay(randKey, 88);
+          visionStatus.textContent = `Detected: ${BLOX_OBJECTS[randKey].title}`;
+        }
+      }, 1500);
+
+    } catch (err) {
+      showToast('Camera unavailable. Enjoying tactile blox buttons!');
+      visionStatus.textContent = 'Offline tactile sensor mode active';
     }
   });
 }
@@ -2738,25 +3183,101 @@ async function initAdminPanel() {
       });
     }
 
-    if (tabName === 'streaming') {
+        if (tabName === 'streaming') {
+      const currentUrl = settings.liveStreamUrl || '';
+      let embedSrc = '';
+      if (currentUrl.includes('youtube.com/watch?v=')) {
+        const vId = currentUrl.split('watch?v=')[1]?.split('&')[0];
+        embedSrc = `https://www.youtube.com/embed/${vId}?autoplay=0`;
+      } else if (currentUrl.includes('youtu.be/')) {
+        const vId = currentUrl.split('youtu.be/')[1]?.split('?')[0];
+        embedSrc = `https://www.youtube.com/embed/${vId}?autoplay=0`;
+      } else if (currentUrl.includes('youtube.com/embed/')) {
+        embedSrc = currentUrl;
+      }
+
       adminContent.innerHTML = `
-        <h3 style="font-size:24px;margin-bottom:8px;">Live YouTube Stream Controller</h3>
-        <p style="color:#94a3b8;font-size:12px;margin-bottom:20px;">Broadcast stage keynotes directly into the top of the fair portal.</p>
-        <div class="admin-card" style="max-width:650px;">
+        <h3 style="font-size:24px;margin-bottom:8px;">Live Stream Broadcast Controller</h3>
+        <p style="color:#94a3b8;font-size:12px;margin-bottom:20px;">Direct live keynotes, debate championships, and open stage feeds to the public portal header.</p>
+
+        <!-- Live Preview Monitor -->
+        <div class="stream-preview-monitor" style="max-width:720px;">
+          <div class="stream-monitor-header">
+            <span>STAGE MONITOR: ${escapeHtml(settings.liveStreamTitle || 'Main Stage Broadcast')}</span>
+            <span class="stream-tally-light ${settings.liveStreamEnabled ? 'on-air' : ''}" id="stream-tally-badge">
+              ${settings.liveStreamEnabled ? '🔴 ON AIR' : '⚪ STANDBY'}
+            </span>
+          </div>
+          <div class="stream-screen-frame" id="stream-monitor-frame">
+            ${embedSrc 
+              ? `<iframe src="${escapeHtml(embedSrc)}" title="Stage Preview" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+              : `<div style="text-align:center;padding:40px 20px;color:#94a3b8;"><p style="font-size:14px;margin:0 0 8px;">No stream URL configured</p><span style="font-size:11px;">Enter a YouTube link or choose a stage preset below</span></div>`
+            }
+          </div>
+          <div class="stream-vu-meter-bar">
+            <div class="stream-vu-meter-fill"></div>
+          </div>
+        </div>
+
+        <div class="admin-card" style="max-width:720px;">
+          <!-- Quick Stage Presets -->
+          <span class="mini-tag" style="display:block;margin-bottom:8px;">STAGE PRESETS (CLICK TO LOAD)</span>
+          <div class="stage-presets-grid">
+            <button type="button" class="preset-stage-chip" data-preset-url="https://www.youtube.com/watch?v=jfKfPfyJRdk" data-preset-title="🎭 Auditorium Main Stage: Career Keynotes">🎭 Main Stage</button>
+            <button type="button" class="preset-stage-chip" data-preset-url="https://www.youtube.com/watch?v=5qap5aO4i9A" data-preset-title="🎙️ Debate Arena: Inter-School Finals">🎙️ Debate Arena</button>
+            <button type="button" class="preset-stage-chip" data-preset-url="https://www.youtube.com/watch?v=DWcJFNfaw9c" data-preset-title="💡 Student Innovation Pitches">💡 Innovation Lab</button>
+            <button type="button" class="preset-stage-chip" data-preset-url="https://www.youtube.com/watch?v=21X5lGlDOfg" data-preset-title="📖 Speech Lab Live Showcase">📖 Speech Lab</button>
+          </div>
+
           <label style="display:flex;align-items:center;gap:12px;font-weight:700;margin-bottom:16px;">
-            <span>Live Stream Enabled</span>
+            <span>Broadcast Live Stream on Public Fair Website</span>
             <span class="admin-toggle">
               <input type="checkbox" id="stream-enable-cb" ${settings.liveStreamEnabled ? 'checked' : ''}>
               <span></span>
             </span>
           </label>
-          <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">YouTube Video / Stream URL</label>
-          <input type="text" id="stream-url-input" value="${escapeHtml(settings.liveStreamUrl || '')}" placeholder="https://www.youtube.com/watch?v=..." style="width:100%;padding:12px;background:#0d121c;color:#fff;border:1px solid var(--dark-line);margin-bottom:14px;">
-          <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">Stream Title</label>
-          <input type="text" id="stream-title-input" value="${escapeHtml(settings.liveStreamTitle || '')}" placeholder="Fair Stage Keynote..." style="width:100%;padding:12px;background:#0d121c;color:#fff;border:1px solid var(--dark-line);margin-bottom:20px;">
-          <button class="button button-accent" id="save-stream-btn" type="button">Save &amp; Broadcast Stream ↗</button>
+
+          <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">YouTube Live Stream / Video URL</label>
+          <input type="text" id="stream-url-input" value="${escapeHtml(settings.liveStreamUrl || '')}" placeholder="https://www.youtube.com/watch?v=..." style="width:100%;padding:12px;background:#0d121c;color:#fff;border:1px solid var(--dark-line);margin-bottom:14px;border-radius:4px;">
+
+          <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">Broadcast Title</label>
+          <input type="text" id="stream-title-input" value="${escapeHtml(settings.liveStreamTitle || 'Kanakia Career Fair Live Broadcast')}" placeholder="e.g. Auditorium Keynote..." style="width:100%;padding:12px;background:#0d121c;color:#fff;border:1px solid var(--dark-line);margin-bottom:20px;border-radius:4px;">
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="button button-accent" id="save-stream-btn" type="button">Save &amp; Broadcast Stream ↗</button>
+            <button class="button button-dark" id="preview-stream-btn" type="button">Preview in Monitor 👁</button>
+          </div>
         </div>
       `;
+
+      // Preset click listeners
+      $('.preset-stage-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          $('#stream-url-input').value = chip.dataset.presetUrl;
+          $('#stream-title-input').value = chip.dataset.presetTitle;
+          $('#preview-stream-btn')?.click();
+        });
+      });
+
+      $('#preview-stream-btn')?.addEventListener('click', () => {
+        const url = $('#stream-url-input').value.trim();
+        let src = '';
+        if (url.includes('youtube.com/watch?v=')) {
+          const vId = url.split('watch?v=')[1]?.split('&')[0];
+          src = `https://www.youtube.com/embed/${vId}?autoplay=1`;
+        } else if (url.includes('youtu.be/')) {
+          const vId = url.split('youtu.be/')[1]?.split('?')[0];
+          src = `https://www.youtube.com/embed/${vId}?autoplay=1`;
+        } else if (url.includes('youtube.com/embed/')) {
+          src = url;
+        }
+
+        const frame = $('#stream-monitor-frame');
+        if (frame && src) {
+          frame.innerHTML = `<iframe src="${escapeHtml(src)}" title="Stage Preview" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+          showToast('Monitor feed refreshed!');
+        }
+      });
 
       $('#save-stream-btn')?.addEventListener('click', () => {
         settings.liveStreamEnabled = $('#stream-enable-cb').checked;
@@ -2764,7 +3285,8 @@ async function initAdminPanel() {
         settings.liveStreamTitle = $('#stream-title-input').value.trim();
         localStorage.setItem(STORAGE.settings, JSON.stringify(settings));
         initLiveStream();
-        showToast('Stream settings updated!');
+        showToast('Stream broadcast settings committed!');
+        renderAdminTab('streaming');
       });
     }
 

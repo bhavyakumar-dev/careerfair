@@ -803,6 +803,62 @@ export default {
         }
       }
 
+            if (pathname === "/api/semantic" || pathname.endsWith("/api/semantic")) {
+        if (request.method === "OPTIONS") {
+          return new Response(null, {
+            status: 204,
+            headers: CORS_HEADERS
+          });
+        }
+        if (request.method === "POST") {
+          try {
+            const body = await request.json();
+            const text = String(body.text || "").toLowerCase().trim();
+            const target = String(body.target || "").toLowerCase().trim();
+
+            if (env && env.AI) {
+              try {
+                const response = await env.AI.run('@cf/baai/bge-small-en-v1.5', {
+                  text: [text, target]
+                });
+                if (response?.data && response.data.length >= 2) {
+                  const [a, b] = response.data;
+                  let dot = 0, normA = 0, normB = 0;
+                  for (let i = 0; i < a.length; i++) {
+                    dot += a[i] * b[i];
+                    normA += a[i] * a[i];
+                    normB += b[i] * b[i];
+                  }
+                  const sim = dot / (Math.sqrt(normA) * Math.sqrt(normB) + 1e-8);
+                  return jsonResponse({
+                    similarity: Math.max(0, Math.min(1, sim)),
+                    provider: 'cloudflare-bge'
+                  });
+                }
+              } catch (aiErr) {
+                // fall through to lexical calculation
+              }
+            }
+
+            const tTokens = text.split(/[^a-z0-9]+/).filter(w => w.length > 2);
+            const gTokens = target.split(/[^a-z0-9]+/).filter(w => w.length > 2);
+            let hits = 0;
+            tTokens.forEach(t => {
+              if (gTokens.includes(t)) hits += 2;
+              else if (gTokens.some(g => g.includes(t) || t.includes(g))) hits += 1;
+            });
+            const denominator = Math.max(1, Math.min(tTokens.length, 6));
+            const calculatedSim = Math.max(0.12, Math.min(0.96, (hits * 0.28) / denominator));
+            return jsonResponse({
+              similarity: calculatedSim,
+              provider: 'worker-heuristic'
+            });
+          } catch (err) {
+            return jsonResponse({ similarity: 0.2, error: err.message }, 400);
+          }
+        }
+      }
+
       if (pathname.endsWith("/api/admin/config")) {
         if (request.method === "GET") {
           return jsonResponse({
@@ -891,6 +947,9 @@ export default {
       }
       if (pathname === "/v15" || pathname === "/v15/" || pathname === "/v15.html") {
         return env.ASSETS.fetch(new Request(new URL("/v15.html", request.url), request));
+      }
+            if (pathname === "/v18" || pathname === "/v18/" || pathname === "/v18.html") {
+        return env.ASSETS.fetch(new Request(new URL("/v18.html", request.url), request));
       }
       if (pathname === "/v16" || pathname === "/v16/" || pathname === "/v16.html" || pathname === "/v16/index.html") {
         return env.ASSETS.fetch(new Request(new URL("/v16.html", request.url), request));

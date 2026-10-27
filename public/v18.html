@@ -1,0 +1,1255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111319">
+<meta name="description" content="Open Mic v18 — Interactive English Career Fair Lab. Explore careers, train public speaking, play Career Guesser, Jobtris, Velocity RSVP, and Word Oracle Akinator.">
+<meta name="keywords" content="English career fair, English communication, Jobtris, Semantris English, Career Guesser, Word Oracle, Speed reading RSVP, Kanakia International School">
+<meta name="author" content="Kanakia International School Mira Road & Open Mic Team">
+<title>Open Mic v18 — English for the Work You Want (Live Fair Edition)</title>
+
+<!-- Canonical & SEO -->
+<link rel="canonical" href="https://careerswithenglish.bhavyakumar.workers.dev/v18">
+<meta property="og:title" content="Open Mic v18 — English for the Work You Want">
+<meta property="og:description" content="Interactive career games and communication labs. Test your speed with Velocity, ride the 10-floor Elevator Guesser, clear stacks in Jobtris, and challenge the Word Oracle Akinator.">
+<meta property="og:url" content="https://careerswithenglish.bhavyakumar.workers.dev/v18">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Open Mic English Career Lab">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Open Mic v18 — English for the Work You Want">
+<meta name="twitter:description" content="Career exploration games, speed-reading labs, and interactive English training for ambitious students.">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  "name": "Open Mic — The English Career Lab",
+  "url": "https://careerswithenglish.bhavyakumar.workers.dev/v18",
+  "description": "Student-led English career fair platform with interactive semantic games, teleprompter studio, and speech labs.",
+  "parentOrganization": {
+    "@type": "School",
+    "name": "Kanakia International School, Mira Road"
+  }
+}
+</script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="v18-styles.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js" defer></script>
+<script src="v18-app.js" defer></script>
+</head>
+<body>
+<div class="reading-progress" id="reading-progress"></div>
+
+<!-- Live YouTube Stream Banner (Admin toggled) -->
+<aside class="live-stream-banner" id="live-stream-banner" hidden aria-label="Live event broadcast">
+  <div class="live-stream-inner">
+    <div class="live-stream-info">
+      <span class="live-badge"><i class="live-pulse"></i> LIVE STAGE</span>
+      <strong id="live-stream-display-title">Career Fair Keynote &amp; Open Stage Broadcast</strong>
+      <span class="live-meta">Streaming live from Kanakia Auditorium</span>
+    </div>
+    <div class="live-player-container" id="live-player-container">
+      <iframe id="live-stream-frame" src="" title="Live Event Stream" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <div class="live-stream-actions">
+      <button class="live-toggle-btn" id="live-stream-minimize" type="button" aria-label="Minimize stream">Minimize _</button>
+      <button class="live-toggle-btn" id="live-stream-close" type="button" aria-label="Dismiss stream banner">Close ×</button>
+    </div>
+  </div>
+</aside>
+
+<header class="site-header" id="top">
+  <a class="brand" href="#top" aria-label="Open Mic home" id="brand-mark">
+    <span class="brand-symbol" aria-hidden="true"><span>O</span><span>M</span></span>
+    <span class="brand-copy"><strong>open mic</strong><small>THE ENGLISH CAREER LAB</small></span>
+  </a>
+  <div class="header-right">
+    <nav class="version-nav" aria-label="Version history" style="display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:3px;gap:3px;font-family:monospace;font-size:11px;">
+      <a href="index.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v1</a>
+      <a href="v2.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v2</a>
+      <a href="v3.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v3</a>
+      <a href="v4.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v4</a>
+      <a href="v5.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v5</a>
+      <a href="v6.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v6</a>
+      <a href="v7.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v7</a>
+      <a href="v8.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v8</a>
+      <a href="v9.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v9</a>
+      <a href="v10.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v10</a>
+      <a href="v12.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v12</a>
+      <a href="v14.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v14</a>
+      <a href="v15.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v15</a>
+      <a href="v16.html" style="padding:2px 6px;border-radius:5px;color:#94a3b8;text-decoration:none;">v16</a>
+      <span style="padding:2px 7px;border-radius:5px;background:#f59e0b;color:#000;font-weight:bold;">v18</span>
+    </nav>
+    <span class="live-dot" title="System operational"></span>
+    <span class="header-note" id="header-note">Kanakia International School Mira Road</span>
+    <a class="header-link" href="#career-paths">Explore paths <span aria-hidden="true">↘</span></a>
+  </div>
+</header>
+
+<main id="main-content">
+
+<!-- SECTION 00: HERO -->
+<section class="hero section-shell" id="hero" data-feature="hero">
+  <div class="hero-copy">
+    <p class="eyebrow"><span class="eyebrow-line"></span> YOUR NEXT CHAPTER STARTS HERE</p>
+    <h1>Good English<br>opens <span class="word-ring">doors.</span></h1>
+    <p class="hero-lede">Not just for exams. For the stories you tell, the rooms you enter, the ideas people remember, and the work you choose to do.</p>
+    <div class="hero-actions">
+      <a class="button button-accent" href="#velocity-game">Play Velocity RSVP <span aria-hidden="true">↗</span></a>
+      <a class="button button-dark" href="#career-guesser">Elevator Guesser <span aria-hidden="true">↗</span></a>
+      <a class="quiet-link" href="#career-paths">Explore Career Atlas <span aria-hidden="true">↓</span></a>
+    </div>
+    <div class="hero-proof">
+      <div class="avatar-stack" aria-hidden="true"><span>W</span><span>↗</span><span>✳</span></div>
+      <p><strong>Explore. Practise. Find your voice.</strong><br><span>Built for curious students in Class 8, 9, 10, 11 &amp; 12.</span></p>
+    </div>
+  </div>
+  <div class="hero-art" aria-label="A three-dimensional abstract stage made of bright orange, lilac and cream shapes">
+    <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
+    <div class="art-stage">
+      <div class="stage-disc"></div><div class="stage-block block-back"></div>
+      <div class="stage-block block-front"></div><div class="stage-ring"></div>
+      <div class="stage-star">✳</div><div class="stage-letter">A</div>
+    </div>
+    <div class="floating-note note-top"><span class="note-glyph">Aa</span><span><strong>Find your voice</strong><small>One sentence at a time</small></span></div>
+    <div class="floating-note note-bottom"><span class="note-wave">∿</span><span><strong>Sound like you</strong><small>Clarity over perfection</small></span></div>
+    <div class="art-caption">01 / LANGUAGE IN MOTION</div>
+  </div>
+  <div class="hero-bottom">
+    <span>SCROLL TO EXPLORE</span><span class="scroll-line"></span><span>CAREERS · GAMES · VELOCITY · JOBTRIS · ORACLE</span>
+  </div>
+</section>
+
+<!-- SECTION 01: WHY ENGLISH -->
+<section class="intro-band section-shell" id="why-english" data-feature="whyEnglish">
+  <div class="section-index">01 <span>THE WHY</span></div>
+  <div class="intro-content">
+    <p class="eyebrow">ENGLISH IS A WORKING SKILL</p>
+    <h2>It is not about<br>losing your accent.</h2>
+    <p class="intro-text">It is about making your idea land. English can help you pitch a film, explain a surgical breakthrough, negotiate an international treaty, present a tech architecture, or simply stand in any room with steady poise.</p>
+  </div>
+  <div class="intro-metrics">
+    <div><strong>01</strong><span>Express high-impact ideas</span></div>
+    <div><strong>02</strong><span>Reach global colleagues</span></div>
+    <div><strong>03</strong><span>Open unlimited routes</span></div>
+  </div>
+</section>
+
+<!-- SECTION 02: CAREER ATLAS -->
+<section class="career-section section-shell" id="career-paths" data-feature="careers">
+  <div class="section-head">
+    <div><p class="eyebrow">02 / CAREER ATLAS</p><h2>Where can words<br>take you?</h2></div>
+    <p class="section-summary">From screenwriting to aerospace, explore careers where clear English makes a real difference. Filter by your interests, then see what the work actually looks like.</p>
+  </div>
+  <div class="career-stream-step" id="career-stream-step">
+    <div class="stream-step-copy">
+      <p class="eyebrow">START WITH YOUR INTEREST</p>
+      <h3>Which stream do you like most?</h3>
+      <p>Choose one to see a curated, relevant career list. These are exploration suggestions, not rigid rules; many modern careers welcome cross-disciplinary thinkers.</p>
+    </div>
+    <div class="stream-choice-grid" id="career-stream-options" role="group" aria-label="Choose your favourite stream">
+      <button class="stream-choice" data-stream="science" type="button"><span class="stream-choice-icon" aria-hidden="true">⚗</span><span><strong>Science (PCM / PCB)</strong><small>Research, healthcare, aviation and explaining complex systems</small></span><span class="stream-choice-mark" aria-hidden="true">↗</span></button>
+      <button class="stream-choice" data-stream="commerce" type="button"><span class="stream-choice-icon" aria-hidden="true">↗</span><span><strong>Commerce &amp; Finance</strong><small>Business, markets, M&amp;A, fintech and corporate leadership</small></span><span class="stream-choice-mark" aria-hidden="true">↗</span></button>
+      <button class="stream-choice" data-stream="humanities" type="button"><span class="stream-choice-icon" aria-hidden="true">Aa</span><span><strong>Humanities &amp; Law</strong><small>Public policy, diplomacy, advocacy, history and journalism</small></span><span class="stream-choice-mark" aria-hidden="true">↗</span></button>
+      <button class="stream-choice" data-stream="creative" type="button"><span class="stream-choice-icon" aria-hidden="true">✳</span><span><strong>Arts &amp; Media</strong><small>Screenwriting, advertising, creative direction and publishing</small></span><span class="stream-choice-mark" aria-hidden="true">↗</span></button>
+      <button class="stream-choice" data-stream="technology" type="button"><span class="stream-choice-icon" aria-hidden="true">⌘</span><span><strong>Technology &amp; Computing</strong><small>AI architecture, product design, game writing and cybersecurity</small></span><span class="stream-choice-mark" aria-hidden="true">↗</span></button>
+      <button class="stream-choice stream-choice-explore" data-stream="explore" type="button"><span class="stream-choice-icon" aria-hidden="true">?</span><span><strong>I'm still exploring</strong><small>Give me a balanced shortlist across multiple domains</small></span><span class="stream-choice-mark" aria-hidden="true">↗</span></button>
+    </div>
+  </div>
+  <div class="career-selected-stream" id="career-selected-summary" hidden>
+    <span class="selected-stream-label">YOUR STARTING POINT</span>
+    <strong id="career-active-stream-label"></strong>
+    <button class="text-button" id="career-change-stream" type="button">Change stream ↻</button>
+  </div>
+  <div id="career-browser" hidden>
+    <div class="career-tools">
+      <label class="search-field"><span aria-hidden="true">⌕</span><input type="search" id="career-search" placeholder="Search within your matches…" aria-label="Search careers in this stream"></label>
+      <div class="filter-pills" id="career-filters" aria-label="Filter matching careers">
+        <button class="filter-pill active" data-filter="All" type="button">All matches</button>
+        <button class="filter-pill" data-filter="Entertainment" type="button">Entertainment</button>
+        <button class="filter-pill" data-filter="Media" type="button">Media</button>
+        <button class="filter-pill" data-filter="Business" type="button">Business</button>
+        <button class="filter-pill" data-filter="Public service" type="button">Public service</button>
+        <button class="filter-pill" data-filter="Education" type="button">Education</button>
+        <button class="filter-pill" data-filter="Technology" type="button">Technology</button>
+        <button class="filter-pill" data-filter="Health" type="button">Health</button>
+      </div>
+    </div>
+    <div class="career-results-line">
+      <span id="career-result-count" aria-live="polite">Choose a stream to begin</span>
+      <span>English importance is a guide, not a barrier.</span>
+    </div>
+    <div class="career-grid" id="career-grid"></div>
+    <div class="career-more-row"><button class="button button-outline" id="career-more" type="button" hidden>Show more careers</button></div>
+    <div class="career-detail" id="career-detail" hidden aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- SECTION 03: CAREER QUIZ -->
+<section class="quiz-section section-shell" id="career-quiz" data-feature="quiz">
+  <div class="section-index">03 <span>FIND YOUR FIT</span></div>
+  <div class="quiz-layout">
+    <div class="quiz-intro">
+      <p class="eyebrow">A FIVE-QUESTION RESET</p>
+      <h2>Follow your<br>curiosity.</h2>
+      <p>There is no single correct answer. Pick what sounds most like you and uncover three career paths tailored to your communication instincts.</p>
+      <div class="quiz-mark" aria-hidden="true">?</div>
+    </div>
+    <div class="quiz-card" id="quiz-card">
+      <div class="quiz-progress-row"><span id="quiz-step-label">QUESTION 01 / 05</span><div class="quiz-progress"><span id="quiz-progress-fill"></span></div></div>
+      <h3 id="quiz-question">What kind of work gives you energy?</h3>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="quiz-footer">
+        <span id="quiz-hint">Go with your first instinct.</span>
+        <button class="button button-dark" id="quiz-next" type="button" disabled>Next question <span aria-hidden="true">↗</span></button>
+      </div>
+      <div class="quiz-results" id="quiz-results" hidden></div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 04: ROADMAP -->
+<section class="plan-section section-shell" id="my-plan" data-feature="plan">
+  <div class="section-head">
+    <div><p class="eyebrow">04 / YOUR ROADMAP</p><h2>Turn a big goal<br>into next steps.</h2></div>
+    <p class="section-summary">Choose a career you want to explore. Get a practical English practice plan that fits around school, with bite-sized daily milestones.</p>
+  </div>
+  <form class="plan-form" id="plan-form">
+    <div class="field-block"><label for="plan-grade">Your current class</label><select id="plan-grade"><option>Class 8</option><option>Class 9</option><option selected>Class 10</option><option>Class 11</option><option>Class 12</option><option>College</option><option>Exploring</option></select></div>
+    <div class="field-block"><label for="plan-career">Career to explore</label><select id="plan-career"></select></div>
+    <div class="field-block"><label for="plan-time">Time each day</label><select id="plan-time"><option value="10">10 minutes</option><option value="20" selected>20 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option></select></div>
+    <button class="button button-accent" type="submit">Build my plan <span aria-hidden="true">↗</span></button>
+  </form>
+  <div class="plan-output" id="plan-output" hidden aria-live="polite"></div>
+</section>
+
+<!-- SECTION 05: CAREER CHAT -->
+<section class="career-chat-section section-shell" id="career-chat" data-feature="careerChat">
+  <div class="section-head">
+    <div><p class="eyebrow">05 / CAREER CONVERSATION</p><h2>Let’s find a route<br>that fits you.</h2></div>
+    <p class="section-summary">A structured guidance mentor that asks focused questions before recommending courses, colleges, and practical roadmaps.</p>
+  </div>
+  <div class="career-chat-layout">
+    <form class="career-chat-context" id="career-chat-context">
+      <p class="mini-tag">YOUR STARTING POINT</p>
+      <label for="career-chat-grade">Current class or stage</label>
+      <select id="career-chat-grade"><option>Class 8</option><option>Class 9</option><option selected>Class 10</option><option>Class 11</option><option>Class 12</option><option>College</option><option>Exploring</option></select>
+      <label for="career-chat-stream">Favourite stream</label>
+      <select id="career-chat-stream"><option value="unsure">Still exploring</option><option value="science">Science</option><option value="commerce">Commerce</option><option value="humanities">Humanities</option><option value="creative">Arts and media</option><option value="technology">Technology and computing</option></select>
+      <label for="career-chat-location">Where might you study?</label>
+      <select id="career-chat-location"><option value="India, open to all cities">India, open to all cities</option><option value="Mumbai or nearby">Mumbai or nearby</option><option value="My home state only">My home state only</option><option value="International options too">International options too</option><option value="Online or distance options">Online or distance options</option></select>
+      <label for="career-chat-budget">Budget preference</label>
+      <select id="career-chat-budget"><option value="low-cost and public options first">Low-cost and public options first</option><option value="compare public and private options">Compare public and private options</option><option value="scholarships and financial aid are important">Scholarships and financial aid are important</option><option value="not sure yet">Not sure yet</option></select>
+      <label for="career-chat-priorities">What matters most?</label>
+      <select id="career-chat-priorities"><option value="career fit and interests">Career fit and interests</option><option value="admission route and entrance exams">Admission route and entrance exams</option><option value="fees and scholarships">Fees and scholarships</option><option value="colleges and course choices">Colleges and course choices</option><option value="portfolio and skills I can build now">Portfolio and skills I can build now</option><option value="job roles and realistic income">Job roles and realistic income</option></select>
+    </form>
+    <div class="career-chat-panel">
+      <div class="career-chat-head">
+        <div><span class="mini-tag">YOUR CAREER GUIDE</span><h3>Ask a question. Build the picture.</h3></div>
+        <span class="career-chat-status">Personalised</span>
+      </div>
+      <div class="career-chat-messages" id="career-chat-messages" aria-live="polite">
+        <div class="career-chat-message assistant">
+          <strong>Career guide</strong>
+          <p>What subjects or activities do you enjoy most—and is there a career you are already curious about? I’ll ask one question at a time, then help compare practical routes and colleges.</p>
+        </div>
+      </div>
+      <form class="career-chat-compose" id="career-chat-form">
+        <label class="visually-hidden" for="career-chat-input">Your question</label>
+        <textarea id="career-chat-input" rows="3" maxlength="1800" required placeholder="I like solving complex puzzles and building things with code. What paths should I explore?"></textarea>
+        <div class="chat-compose-footer">
+          <span class="muted-small">Use official college and admissions portals to confirm current fees and cutoffs.</span>
+          <button class="button button-dark" type="submit" id="career-chat-send">Ask the guide <span aria-hidden="true">↗</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 06: SPEECH LAB -->
+<section class="speech-section section-shell" id="speech-lab" data-feature="speechLab">
+  <div class="section-head section-head-light">
+    <div><p class="eyebrow">06 / SPEECH LAB</p><h2>Speak. Notice.<br>Refine.</h2></div>
+    <p class="section-summary">Practise a short spoken answer, read a prompt aloud, or paste your transcript. Your first score is an encouraging baseline—never a harsh judgement.</p>
+  </div>
+  <div class="lab-grid">
+    <div class="lab-prompt-card">
+      <div class="card-topline"><span class="mini-tag">TODAY'S CHALLENGE</span><span class="tiny-index">01 / 03</span></div>
+      <p class="prompt-kicker">THE 30-SECOND PITCH</p>
+      <h3>Tell us about something you care about.</h3>
+      <p>Say what it is, why it matters to you, and one thing you want people to understand about it.</p>
+      <button class="text-button" id="new-speech-prompt" type="button">Give me another prompt <span aria-hidden="true">↻</span></button>
+      <div class="prompt-decoration" aria-hidden="true">“</div>
+    </div>
+    <div class="lab-workspace">
+      <div class="lab-workspace-head"><span>YOUR PRACTICE</span><span class="privacy-chip"><span></span> Safe &amp; Local</span></div>
+      <div class="record-state" id="record-state">
+        <div class="record-orb" id="record-orb"><span class="record-icon">●</span></div>
+        <div><strong id="record-title">Ready when you are.</strong><p id="record-description">Record audio or type an answer. Audio is evaluated strictly for constructive feedback.</p></div>
+      </div>
+      <div class="record-controls">
+        <button class="button button-accent" id="speech-record" type="button">Start speaking <span aria-hidden="true">●</span></button>
+        <button class="button button-outline" id="speech-stop" type="button" disabled>Stop</button>
+      </div>
+      <label class="field-label" for="speech-transcript">Your transcript</label>
+      <textarea id="speech-transcript" rows="5" placeholder="Your spoken words appear here, or type/paste an answer…"></textarea>
+      <div class="lab-actions">
+        <span class="muted-small">Spoken audio is processed locally with web speech recognition where available.</span>
+        <button class="button button-light" id="analyze-speech" type="button">Analyze my English <span aria-hidden="true">↗</span></button>
+      </div>
+      <div class="speech-feedback" id="speech-feedback" hidden aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 07: INTERVIEW STUDIO -->
+<section class="interview-section section-shell" id="mock-interview" data-feature="mockInterview">
+  <div class="section-head">
+    <div><p class="eyebrow">07 / INTERVIEW STUDIO</p><h2>Practise before<br>the real room.</h2></div>
+    <p class="section-summary">Select a career and rehearse the high-value questions a mentor, college admissions panel, or internship lead would ask.</p>
+  </div>
+  <div class="interview-workbench">
+    <div class="interview-controls">
+      <label for="interview-career">Interview for</label><select id="interview-career"></select>
+      <label for="interview-level">Question style</label>
+      <select id="interview-level"><option value="starter">Friendly starter</option><option value="realistic" selected>Realistic interview</option><option value="challenging">Stretch me</option></select>
+      <button class="button button-dark" id="start-interview" type="button">Start practice <span aria-hidden="true">↗</span></button>
+      <div class="interview-tip">
+        <strong>Structured Answer Tip</strong>
+        <p>Use PRE: Point, Reason, Example. You don't need to put on a false accent; speak clearly and with conviction.</p>
+      </div>
+    </div>
+    <div class="interview-chat" id="interview-chat">
+      <div class="chat-label">YOUR PRACTICE ROOM <span>AI MOCK INTERVIEW</span></div>
+      <div class="chat-empty" id="interview-empty">
+        <span class="chat-spark">✳</span>
+        <h3>Your first question is waiting.</h3>
+        <p>Pick your career and start the session. Practice runs directly in your browser.</p>
+      </div>
+      <div class="chat-messages" id="interview-messages"></div>
+      <form class="chat-compose" id="interview-form">
+        <textarea id="interview-answer" rows="2" placeholder="Write or dictate your answer here…" disabled></textarea>
+        <button class="round-send" type="submit" aria-label="Submit interview answer" disabled>↗</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 08: CONVERSATION GYM -->
+<section class="roleplay-section section-shell" id="roleplay" data-feature="roleplay">
+  <div class="section-head">
+    <div><p class="eyebrow">08 / CONVERSATION GYM</p><h2>Learn by being<br>in the moment.</h2></div>
+    <p class="section-summary">Practise tone, composure, and precise vocabulary in real workplace scenarios.</p>
+  </div>
+  <div class="scenario-grid">
+    <button class="scenario-card selected" data-roleplay="doctor" type="button"><span class="scenario-icon">＋</span><span class="scenario-number">01</span><strong>Explain a medical condition</strong><small>Be empathetic, structured, avoid jargon</small></button>
+    <button class="scenario-card" data-roleplay="pilot" type="button"><span class="scenario-icon">↗</span><span class="scenario-number">02</span><strong>Brief a flight crew</strong><small>Calm, precise, standard aviation protocol</small></button>
+    <button class="scenario-card" data-roleplay="customer" type="button"><span class="scenario-icon">◎</span><span class="scenario-number">03</span><strong>Handle high-stakes negotiation</strong><small>Firm, respectful, finding common ground</small></button>
+    <button class="scenario-card" data-roleplay="press" type="button"><span class="scenario-icon">⌁</span><span class="scenario-number">04</span><strong>Address a press conference</strong><small>Composed, concise, staying on message</small></button>
+  </div>
+  <div class="roleplay-stage">
+    <div class="roleplay-stage-top"><span class="mini-tag">SCENARIO</span><span id="roleplay-role">PATIENT COMMUNICATION</span></div>
+    <h3 id="roleplay-situation">A patient is anxious about an upcoming diagnostic procedure and needs clear reassurance.</h3>
+    <p id="roleplay-cue">You are a junior clinician. Explain what will happen in plain English without making clinical guarantees you cannot uphold.</p>
+    <label for="roleplay-answer">Your response</label>
+    <textarea id="roleplay-answer" rows="4" placeholder="What would you say in this situation?"></textarea>
+    <div class="roleplay-bottom">
+      <span>Focus: clarity · calm authority · empathy</span>
+      <button class="button button-accent" id="roleplay-feedback" type="button">Review my response <span aria-hidden="true">↗</span></button>
+    </div>
+    <div id="roleplay-result" class="roleplay-result" hidden aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- SECTION 09: KEYNOTE & TELEPROMPTER STUDIO (News Reporter persona removed!) -->
+<section class="anchor-section section-shell" id="anchor-mode" data-feature="anchor">
+  <div class="anchor-copy">
+    <p class="eyebrow">09 / KEYNOTE &amp; TELEPROMPTER STUDIO</p>
+    <h2>Master the art<br>of public address.</h2>
+    <p>Read from a moving teleprompter with natural cadence, pause management, and eye contact. Choose an executive keynote, scientific dispatch, or write your own speech.</p>
+    <div class="anchor-metrics">
+      <div><strong>01</strong><span>Pacing</span></div>
+      <div><strong>02</strong><span>Cadence</span></div>
+      <div><strong>03</strong><span>Presence</span></div>
+    </div>
+  </div>
+  <div class="teleprompter">
+    <div class="teleprompter-top">
+      <span><i></i> TELEPROMPTER ON AIR</span>
+      <label class="toggle-small"><input type="checkbox" id="anchor-mirror"><span></span><b>Mirror text</b></label>
+    </div>
+    <div class="teleprompter-window" id="teleprompter-window">
+      <p id="teleprompter-text">Good morning, members of the delegation. Today, we stand at a critical inflection point where technology, communication, and human empathy intersect. Our objective is not simply to build faster algorithms, but to ensure that the tools we design expand opportunity for every classroom, community, and country.</p>
+    </div>
+    <div class="teleprompter-settings">
+      <label>Scroll speed <input type="range" id="anchor-speed" min="0" max="100" value="25"></label>
+      <label for="anchor-script">Speech template</label>
+      <select id="anchor-script">
+        <option value="keynote">Executive Keynote Address</option>
+        <option value="science">Scientific Discovery Briefing</option>
+        <option value="launch">Product Architecture Launch</option>
+        <option value="custom">Write my own speech</option>
+      </select>
+    </div>
+    <textarea id="anchor-custom-script" rows="3" placeholder="Paste or draft your custom address here…" hidden></textarea>
+    <div class="teleprompter-actions">
+      <button class="button button-light" id="anchor-play" type="button">Start teleprompter <span aria-hidden="true">▶</span></button>
+      <button class="button button-outline" id="anchor-reset" type="button">Reset</button>
+      <button class="button button-outline" id="anchor-record" type="button">Record delivery</button>
+    </div>
+    <div class="anchor-record-state" id="anchor-record-state" hidden></div>
+  </div>
+</section>
+
+<!-- SECTION 10: VOICE COMPARISON -->
+<section class="compare-section section-shell" id="compare-voices" data-feature="compare">
+  <div class="section-head">
+    <div><p class="eyebrow">10 / VOICE COMPARISON</p><h2>Study the craft.<br>Keep your voice.</h2></div>
+    <p class="section-summary">Compare your spoken transcript against master orators. Analyze sentence rhythm, filler word density, and vocabulary variety—without losing your unique persona.</p>
+  </div>
+  <div class="compare-layout">
+    <div class="compare-input-card">
+      <div class="compare-input-head"><span class="mini-tag">YOUR SAMPLE</span><span>Text or audio</span></div>
+      <label for="compare-own">Your transcript</label>
+      <textarea id="compare-own" rows="5" placeholder="Paste your speech transcript here, or copy from the Speech Lab…"></textarea>
+      <label for="compare-reference">Benchmark reference</label>
+      <select id="compare-reference">
+        <option value="att">David Attenborough — documentary precision</option>
+        <option value="watson">Emma Watson — persuasive public address</option>
+        <option value="fry">Stephen Fry — literary cadence &amp; wit</option>
+        <option value="obama">Barack Obama — deliberate pacing &amp; pauses</option>
+        <option value="custom">Paste a custom reference speech</option>
+      </select>
+      <textarea id="reference-custom" rows="4" placeholder="Paste reference text here…" hidden></textarea>
+      <button class="button button-dark" id="compare-analyze" type="button">Compare speech characteristics <span aria-hidden="true">↗</span></button>
+    </div>
+    <div class="compare-result-card" id="compare-results">
+      <div class="compare-placeholder">
+        <span class="compare-rings">Aa</span>
+        <h3>Look for rhythm and structure.</h3>
+        <p>After running comparison, you will see pacing analysis, filler word ratios, and actionable tips to elevate your delivery.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 11: GREAT SPEAKERS -->
+<section class="speaker-section section-shell" id="great-speakers" data-feature="speakers">
+  <div class="section-head">
+    <div><p class="eyebrow">11 / THE LISTENING ROOM</p><h2>Learn from orators<br>who command a room.</h2></div>
+    <p class="section-summary">Listen to how masters handle pauses, rhythm, and emotional resonance. These are reference models to inspire your own authentic voice.</p>
+  </div>
+  <div class="speaker-grid">
+    <article class="speaker-card speaker-att"><div class="speaker-art"><span>01</span><div class="speaker-monogram" aria-hidden="true">DA</div><div class="speaker-art-caption">STORY / OBSERVATION</div></div><div class="speaker-info"><p>Documentary narration</p><h3>David Attenborough</h3><a href="https://www.youtube.com/results?search_query=David+Attenborough+documentary+narration" target="_blank" rel="noreferrer">Study his narration <span aria-hidden="true">↗</span></a></div></article>
+    <article class="speaker-card speaker-watson"><div class="speaker-art"><span>02</span><div class="speaker-monogram" aria-hidden="true">EW</div><div class="speaker-art-caption">ARGUMENT / EMPATHY</div></div><div class="speaker-info"><p>Prepared public speech</p><h3>Emma Watson</h3><a href="https://www.youtube.com/results?search_query=Emma+Watson+UN+speech" target="_blank" rel="noreferrer">Study her structure <span aria-hidden="true">↗</span></a></div></article>
+    <article class="speaker-card speaker-fry"><div class="speaker-art"><span>03</span><div class="speaker-monogram" aria-hidden="true">SF</div><div class="speaker-art-caption">RHYTHM / VOCABULARY</div></div><div class="speaker-info"><p>Literary narration</p><h3>Stephen Fry</h3><a href="https://www.youtube.com/results?search_query=Stephen+Fry+reading" target="_blank" rel="noreferrer">Study his rhythm <span aria-hidden="true">↗</span></a></div></article>
+    <article class="speaker-card speaker-obama"><div class="speaker-art"><span>04</span><div class="speaker-monogram" aria-hidden="true">BO</div><div class="speaker-art-caption">PAUSES / EMPHASIS</div></div><div class="speaker-info"><p>Public speaking</p><h3>Barack Obama</h3><a href="https://www.youtube.com/results?search_query=Barack+Obama+keynote+speech" target="_blank" rel="noreferrer">Study his emphasis <span aria-hidden="true">↗</span></a></div></article>
+  </div>
+</section>
+
+<!-- SECTION 12: LEADERBOARD (No AI Speech tab, includes new games!) -->
+<section class="leaderboard-section section-shell" id="leaderboard" data-feature="leaderboard">
+  <div class="section-head">
+    <div><p class="eyebrow">12 / THE PRACTICE BOARD</p><h2>Progress is<br>worth celebrating.</h2></div>
+    <p class="section-summary">Join with an anonymous nickname. Opt-in only; practice scores reflect game progress, vocabulary agility, and speed.</p>
+  </div>
+  <div class="leaderboard-layout">
+    <div class="leaderboard-panel">
+      <div class="leaderboard-head"><div><span class="mini-tag">FAIR LEADERBOARD</span><h3>English practice board</h3></div><span class="board-icon">↗</span></div>
+      <div class="leaderboard-tabs" role="tablist">
+        <button class="board-tab active" data-board="overall" type="button">Overall</button>
+        <button class="board-tab" data-board="fluency" type="button">Fluency</button>
+        <button class="board-tab" data-board="clarity" type="button">Clarity</button>
+        <button class="board-tab" data-board="velocity" type="button">Velocity</button>
+        <button class="board-tab" data-board="guesser" type="button">Elevator</button>
+        <button class="board-tab" data-board="jobtris" type="button">Jobtris</button>
+        <button class="board-tab" data-board="oracle" type="button">Oracle</button>
+        <button class="board-tab" data-board="editor" type="button">Editor’s Desk</button>
+        <button class="board-tab" data-board="games" type="button">Games</button>
+      </div>
+      <div class="leaderboard-list" id="leaderboard-list">
+        <div class="leader-row leader-placeholder"><span class="rank-number">01</span><span class="leader-avatar">★</span><span class="leader-name"><strong>Be the first to join</strong><small>Opt in below when ready</small></span><span class="leader-score">—</span></div>
+      </div>
+      <p class="leaderboard-note" id="leaderboard-note">All participation is voluntary. Rankings sync with the school fair database.</p>
+    </div>
+    <form class="leaderboard-join" id="leaderboard-form">
+      <span class="mini-tag">OPT IN TO PARTICIPATE</span>
+      <h3>Put your practice<br>on the board.</h3>
+      <label for="leader-nickname">Nickname</label><input id="leader-nickname" maxlength="20" required placeholder="Choose a creative nickname">
+      <label for="leader-grade">Class</label>
+      <select id="leader-grade"><option>Class 8</option><option>Class 9</option><option selected>Class 10</option><option>Class 11</option><option>Class 12</option></select>
+      <div class="leader-score-source">
+        <label for="leader-score">Practice score · automatically generated</label>
+        <output id="leader-score" class="practice-score-output" aria-live="polite">0 pts</output>
+        <p id="leader-score-help" class="muted-small">Play Velocity, Elevator Guesser, Jobtris, or complete Speech Lab to accumulate verified score.</p>
+      </div>
+      <label class="consent-line">
+        <input id="leader-consent" type="checkbox" required>
+        <span>I agree to display my nickname, class, and accumulated practice scores on the fair leaderboard.</span>
+      </label>
+      <p class="consent-warning">Use an alias or nickname, never your private contact information.</p>
+      <button class="button button-accent" type="submit">Join the board <span aria-hidden="true">↗</span></button>
+      <span class="form-message" id="leaderboard-message" aria-live="polite"></span>
+    </form>
+  </div>
+</section>
+
+<!-- SECTION 13: WORD OF DAY -->
+<section class="word-section section-shell" id="word-of-day" data-feature="wordOfDay">
+  <div class="word-art"><span class="word-art-label">A WORD TO KEEP</span><span class="word-art-star">✳</span><span class="word-art-stem">WORD<br>NO. 025</span></div>
+  <div class="word-content">
+    <p class="eyebrow">13 / WORD OF THE DAY</p>
+    <h2 id="daily-word">Articulate</h2>
+    <p class="word-pronunciation" id="daily-pronunciation">/ɑːˈtɪk.jə.lət/ · adjective</p>
+    <p class="word-definition" id="daily-definition">Able to express ideas clearly, cohesively, and effectively.</p>
+    <blockquote id="daily-example">“A powerful leader is not the person who uses convoluted vocabulary, but the person who makes a complex idea articulate.”</blockquote>
+    <div class="word-actions">
+      <button class="button button-dark" id="next-word" type="button">Another word <span aria-hidden="true">↻</span></button>
+      <button class="button button-outline" id="hear-word" type="button">Hear pronunciation <span aria-hidden="true">▶</span></button>
+      <button class="text-button" id="save-word" type="button">Save to my vocabulary bank <span aria-hidden="true">＋</span></button>
+    </div>
+    <div class="saved-words" id="saved-words"></div>
+  </div>
+</section>
+
+<!-- SECTION 14: EDITOR'S DESK -->
+<section class="email-section section-shell" id="email-game" data-feature="emailGame">
+  <div class="email-copy">
+    <p class="eyebrow">14 / THE EDITOR'S DESK</p>
+    <h2>Small edit.<br>Big difference.</h2>
+    <p>Executive communication is about clarity, precision, and courtesy—not padding sentences with pompous fillers.</p>
+    <div class="email-score"><span>YOUR EDITOR'S SCORE</span><strong id="email-score">—</strong></div>
+  </div>
+  <div class="email-game-card">
+    <div class="email-topbar"><span>INBOX / DRAFT REVIEW</span><span class="email-window-dot">● ● ●</span></div>
+    <div class="email-addresses"><span>TO</span><strong>Project Lead</strong><span>SUBJECT</span><strong>Project Milestone Update</strong></div>
+    <p class="email-prompt" id="email-prompt">Choose the strongest, most professional version of this message.</p>
+    <div class="email-options" id="email-options"></div>
+    <p class="email-feedback" id="email-feedback" aria-live="polite"></p>
+    <button class="text-button" id="email-next" type="button">Try another draft <span aria-hidden="true">↻</span></button>
+  </div>
+</section>
+
+<!-- SECTION 15: SOUND STUDIO -->
+<section class="pronunciation-section section-shell" id="sound-studio" data-feature="pronunciation">
+  <div class="section-head">
+    <div><p class="eyebrow">15 / SOUND STUDIO</p><h2>Make the sounds<br>work for you.</h2></div>
+    <p class="section-summary">Interactive mouth-placement guide focusing on high-impact English phonemes for intelligible global delivery.</p>
+  </div>
+  <div class="pronunciation-layout">
+    <div class="sound-picker" id="sound-buttons" role="group" aria-label="Choose a sound practice">
+      <button class="sound-option active" type="button" data-sound="th"><span>/θ/</span><strong>TH</strong><small>think · three</small></button>
+      <button class="sound-option" type="button" data-sound="vw"><span>/v/ · /w/</span><strong>V / W</strong><small>vest · west</small></button>
+      <button class="sound-option" type="button" data-sound="iy"><span>/ɪ/ · /iː/</span><strong>I / EE</strong><small>ship · sheep</small></button>
+      <button class="sound-option" type="button" data-sound="rl"><span>/r/ · /l/</span><strong>R / L</strong><small>right · light</small></button>
+    </div>
+    <article class="sound-detail-card">
+      <div class="sound-visual">
+        <span class="mini-tag">MOUTH PLACEMENT</span>
+        <div class="mouth-diagram" id="mouth-diagram" data-mouth="th" role="img" aria-label="Illustrative mouth diagram"><div class="mouth-opening"><div class="mouth-teeth"></div><div class="mouth-tongue"></div></div></div>
+        <span class="sound-visual-caption">Phonetic placement visual guide</span>
+      </div>
+      <div class="sound-detail-copy">
+        <p class="sound-phoneme" id="sound-phoneme">/θ/</p>
+        <h3 id="sound-title">TH as in think</h3>
+        <p id="sound-placement">Place the tip of the tongue gently between your incisors and release a soft breath. Do not voice the vocal cords.</p>
+        <div class="sound-example-list" id="sound-examples"><span>think</span><span>three</span><span>thought</span><span>healthy</span></div>
+        <div class="sound-actions">
+          <button class="button button-dark" type="button" id="hear-sound">Hear pronunciation <span aria-hidden="true">▶</span></button>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- SECTION 16: DEBATE ROOM -->
+<section class="debate-section section-shell" id="debate-room" data-feature="debate">
+  <div class="section-head">
+    <div><p class="eyebrow">16 / THE DEBATE ROOM</p><h2>Make a case.<br>Address the rebuttal.</h2></div>
+    <p class="section-summary">Structure persuasive English arguments using Claim, Evidence, and Rebuttal.</p>
+  </div>
+  <div class="debate-layout">
+    <form class="debate-builder" id="debate-form">
+      <div class="debate-form-top"><span class="mini-tag">ARGUMENT BUILDER</span><span class="debate-time-chip">CLAIM · REASON · REBUTTAL</span></div>
+      <label for="debate-topic">Choose a motion</label>
+      <select id="debate-topic">
+        <option>Stories are more influential than raw statistics in leadership</option>
+        <option>AI will elevate human creative writing rather than replace it</option>
+        <option>Practical internships should carry equal academic weight as final exams</option>
+        <option>Public speaking mastery should be mandatory in high school</option>
+      </select>
+      <fieldset class="debate-side-picker">
+        <legend>Your stance</legend>
+        <label><input type="radio" name="debate-side" value="support" checked><span>Support motion</span></label>
+        <label><input type="radio" name="debate-side" value="challenge"><span>Challenge motion</span></label>
+      </fieldset>
+      <label for="debate-claim">Your primary claim</label>
+      <textarea id="debate-claim" rows="2" maxlength="700" placeholder="State your core proposition…"></textarea>
+      <label for="debate-evidence">Concrete evidence or reasoning</label>
+      <textarea id="debate-evidence" rows="3" maxlength="1200" placeholder="Provide a verified fact, study, or logical illustration…"></textarea>
+      <label for="debate-counter">Counterargument &amp; your rebuttal</label>
+      <textarea id="debate-counter" rows="3" maxlength="1200" placeholder="Anticipate the opposing view and dismantle it…"></textarea>
+      <button class="button button-accent" type="submit">Compile formal argument <span aria-hidden="true">↗</span></button>
+    </form>
+    <div class="debate-review-panel">
+      <div class="debate-review-heading"><span class="mini-tag">YOUR ARGUMENT</span><span class="debate-mark">Aa</span></div>
+      <div class="debate-output" id="debate-output" aria-live="polite">
+        <div class="debate-empty"><span>01</span><h3>Your structured case starts here.</h3><p>Fill out the builder on the left to synthesize a formal debate argument with coach notes.</p></div>
+      </div>
+      <div class="debate-review-actions">
+        <button class="button button-dark" id="copy-debate" type="button" disabled>Copy argument</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 17: FEEDBACK -->
+<section class="feedback-section section-shell" id="feedback-support" data-feature="feedback">
+  <div class="section-head">
+    <div><p class="eyebrow">17 / FEEDBACK &amp; SUPPORT</p><h2>Make the lab<br>better together.</h2></div>
+    <p class="section-summary">Report an issue, propose a game idea, or request assistance from the tech team.</p>
+  </div>
+  <div class="feedback-layout">
+    <form class="feedback-form" id="feedback-form">
+      <div class="feedback-form-head"><span class="mini-tag">YOUR NOTE</span><span>Every note helps improve the fair.</span></div>
+      <label for="feedback-type">Category</label>
+      <select id="feedback-type" required><option value="feedback">General feedback</option><option value="bug">Report a problem</option><option value="support">Support request</option><option value="feature">New feature idea</option></select>
+      <label>Rating</label>
+      <div class="rating-picker" id="feedback-rating-picker" role="group">
+        <button type="button" data-rating="1">1</button><button type="button" data-rating="2">2</button><button type="button" data-rating="3">3</button><button type="button" data-rating="4">4</button><button type="button" data-rating="5" class="active">5</button>
+      </div>
+      <input id="feedback-rating" type="hidden" value="5">
+      <label for="feedback-message">Details</label>
+      <textarea id="feedback-message" rows="4" maxlength="2500" required placeholder="Tell us what you experienced or what we can add…"></textarea>
+      <label for="feedback-contact">Optional contact email</label>
+      <input id="feedback-contact" type="email" maxlength="180" placeholder="Optional for follow-up">
+      <label class="consent-line"><input id="feedback-consent" type="checkbox" required><span>I consent to submitting this note for the student tech team to review.</span></label>
+      <button class="button button-accent" id="send-feedback" type="submit">Submit feedback <span aria-hidden="true">↗</span></button>
+      <p class="form-message" id="feedback-message-status" role="status" aria-live="polite"></p>
+    </form>
+    <aside class="feedback-support-card">
+      <div class="support-symbol" aria-hidden="true">?</div>
+      <p class="eyebrow">ON-SITE ASSISTANCE</p>
+      <h3>Real-time support at the booth.</h3>
+      <p>Need help with audio permissions or leaderboard sync? Contact our student organizers at Station 4.</p>
+    </aside>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- NEW GAME 1: VELOCITY RSVP SPEED READER -->
+<!-- ============================================================== -->
+<section class="velocity-section section-shell" id="velocity-game" data-feature="velocityGame">
+  <div class="section-head">
+    <div><p class="eyebrow">18 / VELOCITY RSVP</p><h2>Read at lightspeed.<br>Test your recall.</h2></div>
+    <p class="section-summary">Rapid Serial Visual Presentation (RSVP). Words stream through a fixed focal crosshair. Read career briefings at 150–650 WPM, then take an instant comprehension quiz.</p>
+  </div>
+  <div class="velocity-workbench">
+    <div class="velocity-controls-card" id="velocity-controls">
+      <div class="velocity-config-row">
+        <label for="velocity-category">Briefing topic</label>
+        <select id="velocity-category">
+          <option value="aviation">Aviation: Emergency Oceanic Clearance (Pilot)</option>
+          <option value="surgical">Surgery: Trauma OR Triage Protocol (Surgeon)</option>
+          <option value="legal">Corporate Law: Cross-Border Acquisition (Attorney)</option>
+          <option value="ai">AI Research: Deep Reasoning Systems (Tech Lead)</option>
+          <option value="diplomacy">Diplomacy: Bilateral Carbon Treaty (Ambassador)</option>
+        </select>
+      </div>
+      <div class="velocity-speed-row">
+        <div class="speed-header">
+          <label for="velocity-wpm">Reading Pace: <strong id="velocity-wpm-val">300</strong> WPM</label>
+          <span class="speed-pill" id="velocity-speed-tier">Fluent</span>
+        </div>
+        <input type="range" id="velocity-wpm" min="150" max="650" step="25" value="300">
+        <div class="speed-presets">
+          <button type="button" class="preset-btn" data-wpm="200">200 Starter</button>
+          <button type="button" class="preset-btn active" data-wpm="300">300 Standard</button>
+          <button type="button" class="preset-btn" data-wpm="450">450 Fast</button>
+          <button type="button" class="preset-btn" data-wpm="600">600 Olympian</button>
+        </div>
+      </div>
+      <button class="button button-accent" id="velocity-start-btn" type="button">Initiate RSVP stream <span aria-hidden="true">▶</span></button>
+    </div>
+
+    <!-- RSVP Active Display -->
+    <div class="velocity-display-card" id="velocity-display" hidden>
+      <div class="velocity-display-top">
+        <span class="mini-tag" id="velocity-active-tag">AVIATION DISPATCH</span>
+        <span class="velocity-timer" id="velocity-progress-pct">0%</span>
+      </div>
+      <div class="velocity-viewfinder">
+        <div class="viewfinder-crosshair"></div>
+        <div class="viewfinder-reticle">
+          <span class="reticle-prefix" id="velocity-prefix">Ready to</span>
+          <span class="reticle-focal" id="velocity-focal">F</span>
+          <span class="reticle-suffix" id="velocity-suffix">ocus</span>
+        </div>
+      </div>
+      <div class="velocity-progress-bar"><div class="velocity-progress-fill" id="velocity-progress-fill"></div></div>
+    </div>
+
+    <!-- Comprehension Quiz -->
+    <div class="velocity-quiz-card" id="velocity-quiz" hidden>
+      <div class="quiz-topline">
+        <span class="mini-tag">COMPREHENSION CHECK</span>
+        <span class="quiz-time-bonus">Pace Multiplier: <strong id="velocity-multiplier-badge">1.5×</strong></span>
+      </div>
+      <h3 id="velocity-quiz-headline">What did you comprehend?</h3>
+      <div id="velocity-questions-container" class="velocity-questions-list"></div>
+      <button class="button button-accent" id="velocity-submit-quiz" type="button">Score my comprehension ↗</button>
+      <div class="velocity-score-card" id="velocity-results" hidden></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- NEW GAME 2: CAREER GUESSER / ELEVATOR PITCH -->
+<!-- ============================================================== -->
+<section class="guesser-section section-shell" id="career-guesser" data-feature="careerGuesser">
+  <div class="section-head">
+    <div><p class="eyebrow">19 / CAREER GUESSER</p><h2>Describe the role.<br>The elevator is listening.</h2></div>
+    <p class="section-summary">A secret career flashes for 2 seconds. Describe it in up to 6 words without using the banned words. Watch AI confidence bars shift live. Reach the Penthouse!</p>
+  </div>
+  <div class="guesser-tower-layout">
+    <!-- Skyscraper Shaft -->
+    <div class="tower-shaft-col">
+      <div class="tower-shaft" id="guesser-shaft">
+        <div class="elevator-car" id="guesser-car">
+          <div class="elevator-door left-door"></div>
+          <div class="elevator-door right-door"></div>
+          <div class="elevator-badge" id="elevator-car-label">Floor 1 · Intern</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gameplay Console -->
+    <div class="guesser-console-col">
+      <div class="guesser-hud">
+        <span>Current: <strong id="hud-floor-title">Floor 1 · Intern</strong></span>
+        <span>Score: <strong id="hud-guesser-score">0</strong></span>
+        <div class="guesser-strikes" id="guesser-strikes" aria-label="Strikes"><span class="strike-dot"></span><span class="strike-dot"></span><span class="strike-dot"></span></div>
+      </div>
+
+      <div class="guesser-start-panel" id="guesser-start-panel">
+        <h3>Ground Floor Lobby</h3>
+        <p>You have 15 seconds per floor to pitch a career in six words or fewer. Every word updates the AI classifier in real time. Can you reach CEO?</p>
+        <button class="button button-accent" id="guesser-start-btn" type="button">Call the elevator <span aria-hidden="true">↗</span></button>
+      </div>
+
+      <div class="guesser-play-panel" id="guesser-play-panel" hidden>
+        <div class="guesser-target-box">
+          <div class="target-flash" id="guesser-flash-screen">
+            <span class="target-emoji" id="guesser-target-emoji">🧑‍✈️</span>
+            <strong class="target-title" id="guesser-target-title">Pilot</strong>
+          </div>
+          <div class="target-banned-row">
+            <span>BANNED WORDS:</span>
+            <strong id="guesser-banned-words">plane, fly, airport</strong>
+          </div>
+        </div>
+        <div class="guesser-timer-bar"><div class="guesser-timer-fill" id="guesser-timer-fill"></div></div>
+        
+        <!-- Word Slots -->
+        <div class="guesser-word-slots" id="guesser-word-slots"></div>
+
+        <!-- Clue Input -->
+        <form class="guesser-input-row" id="guesser-input-form">
+          <input type="text" id="guesser-word-input" placeholder="Type a single clue word, then press Enter…" maxlength="30" autocomplete="off">
+          <button class="button button-dark" type="submit">Add word ↗</button>
+        </form>
+
+        <!-- Quick Clue Suggestions -->
+        <div class="guesser-quick-chips" id="guesser-quick-chips"></div>
+
+        <!-- AI Real-Time Guess Bars -->
+        <div class="guesser-bars-container" id="guesser-bars">
+          <p class="muted-small">AI classifier listening for clues…</p>
+        </div>
+
+        <div class="guesser-round-feedback" id="guesser-feedback"></div>
+      </div>
+
+      <!-- End Game Share Card -->
+      <div class="guesser-end-panel" id="guesser-end-panel" hidden>
+        <h3 id="guesser-end-title">Elevator stopped.</h3>
+        <p id="guesser-end-summary"></p>
+        <div class="career-compass-card" id="guesser-compass-card"></div>
+        <div class="guesser-actions-row">
+          <button class="button button-accent" id="guesser-replay-btn" type="button">Ride again ↻</button>
+          <button class="button button-outline" id="guesser-copy-btn" type="button">Copy Career Compass</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- ============================================================== -->
+<!-- NEW GAME 3: JOBTRIS (Semantris Matching & Arcade Engine) -->
+<!-- ============================================================== -->
+<section class="jobtris-section section-shell" id="jobtris" data-feature="jobtris">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">20 / JOBTRIS · SEMANTRIS MATCHING ENGINE</p>
+      <h2>Clear the stack.<br>Expand your lexicon.</h2>
+    </div>
+    <p class="section-summary">An authentic homage to Google Research Semantris powered by career vocabulary. Type semantic clues to re-rank the stack or trigger color-cluster flood-fill combos.</p>
+  </div>
+
+  <!-- Semantris Official Links & Mode Selectors -->
+  <div class="semantris-nav-shelf">
+    <div class="semantris-sources-row">
+      <a class="semantris-link-badge primary" href="https://research.google.com/semantris/" target="_blank" rel="noopener">
+        <span class="live-pulse"></span> Google Semantris Official ↗
+      </a>
+      <a class="semantris-link-badge" href="https://research.google.com/semanticexperiences/" target="_blank" rel="noopener">
+        🔬 Google Semantic Experiences ↗
+      </a>
+    </div>
+    <div class="semantris-mode-bar" role="tablist">
+      <button class="semantris-mode-tab active" id="mode-tab-blocks" type="button" data-mode="blocks">
+        🧩 Semantris Blocks (Color Match Grid)
+      </button>
+      <button class="semantris-mode-tab" id="mode-tab-arcade" type="button" data-mode="arcade">
+        ⚡ Semantris Arcade (Blast Zone Stack)
+      </button>
+      <button class="semantris-mode-tab" id="mode-tab-portal" type="button" data-mode="portal">
+        🖥️ Embedded Google Semantris Portal
+      </button>
+    </div>
+  </div>
+
+  <div class="jobtris-workbench">
+    <!-- Career Lane Selector -->
+    <div class="jobtris-lane-picker" id="jobtris-lanes-bar">
+      <span class="mini-tag">VOCABULARY DOMAIN:</span>
+      <div class="lane-chips" id="jobtris-lanes">
+        <button type="button" class="lane-chip active" data-lane="doctor">🩺 Medical Doctor</button>
+        <button type="button" class="lane-chip" data-lane="pilot">✈️ Commercial Pilot</button>
+        <button type="button" class="lane-chip" data-lane="journalist">🗞️ Journalist</button>
+        <button type="button" class="lane-chip" data-lane="chef">🧑‍🍳 Executive Chef</button>
+        <button type="button" class="lane-chip" data-lane="lawyer">⚖️ Corporate Lawyer</button>
+        <button type="button" class="lane-chip" data-lane="tech">💻 Software Architect</button>
+      </div>
+    </div>
+
+    <!-- MODE 1: AUTHENTIC SEMANTRIS BLOCKS (COLOR MATCH GRID & FLOOD FILL) -->
+    <div class="semantris-blocks-stage" id="stage-blocks">
+      <div class="jobtris-hud">
+        <div class="hud-item">Score: <strong id="blocks-score">0</strong></div>
+        <div class="hud-item">Combo: <strong id="blocks-combo">1×</strong></div>
+        <div class="hud-item">Vocabulary Band: <strong id="blocks-cefr" class="cefr-badge">B2</strong></div>
+        <div class="hud-item">Blasted Words: <strong id="blocks-cleared-count">0</strong></div>
+      </div>
+
+      <div class="semantris-blocks-layout">
+        <div class="semantris-grid-wrapper">
+          <div class="semantris-grid-header">
+            <span class="grid-sub-tag">CONNECT ADJACENT COLORS FOR COMBOS</span>
+            <span class="grid-rules">THINK OF A CLUE FOR ANY VISIBLE WORD</span>
+          </div>
+          <div class="semantris-color-grid" id="semantris-color-grid" aria-label="Semantris Color Block Grid">
+            <!-- Dynamic 4x6 / 5x6 Colored Word Blocks -->
+          </div>
+        </div>
+
+        <div class="semantris-sidebar">
+          <div class="semantris-instruction-card">
+            <span class="mini-tag">HOW TO PLAY BLOCKS</span>
+            <h4>THINK OF A CLUE FOR ONE OF THE WORDS</h4>
+            <p>Type a clue associated with any word on the board. The AI highlights the closest semantic match. If that block touches neighbors of the <strong>same color</strong>, all connected blocks dissolve in a combo burst!</p>
+          </div>
+
+          <form class="semantris-clue-form" id="semantris-blocks-form">
+            <label for="semantris-blocks-input">Type a semantic association:</label>
+            <div class="semantris-input-box">
+              <input type="text" id="semantris-blocks-input" placeholder="e.g. surgical knife, weather coordinates, deadline…" autocomplete="off" required>
+              <button class="button button-accent" type="submit">Match Clue ↗</button>
+            </div>
+          </form>
+
+          <div class="semantris-feedback-box" id="blocks-feedback">Ready for your first clue. Type above and press Enter.</div>
+
+          <div class="jobtris-word-bank">
+            <span class="mini-tag">CLEARED VOCABULARY BANK (<span id="blocks-bank-total">0</span>)</span>
+            <div class="word-bank-chips" id="blocks-bank-chips"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODE 2: SEMANTRIS ARCADE (FALLING BLAST ZONE STACK) -->
+    <div class="semantris-arcade-stage" id="stage-arcade" hidden>
+      <div class="jobtris-hud">
+        <div class="hud-item">Score: <strong id="arcade-score">0</strong></div>
+        <div class="hud-item">Vocabulary Band: <strong id="arcade-cefr" class="cefr-badge">B2</strong></div>
+        <div class="hud-item">Combo: <strong id="arcade-combo">0×</strong></div>
+      </div>
+
+      <div class="jobtris-board-layout">
+        <div class="jobtris-stack-wrapper">
+          <div class="blast-zone-marker"><span>BLAST ZONE (BOTTOM THRESHOLD)</span></div>
+          <div class="jobtris-stack-container" id="jobtris-stack"></div>
+        </div>
+        <div class="jobtris-input-wrapper">
+          <div class="jobtris-target-card">
+            <span class="mini-tag">CURRENT TARGET</span>
+            <h4 id="jobtris-target-word">Diagnosis</h4>
+            <p id="jobtris-target-def">Identification of the nature and cause of a condition.</p>
+          </div>
+          <form class="jobtris-form" id="jobtris-form">
+            <label for="jobtris-clue-input">Type a semantic association to sink target into blast zone:</label>
+            <input type="text" id="jobtris-clue-input" placeholder="e.g. medical symptoms, illness, blood test…" autocomplete="off">
+            <button class="button button-accent" type="submit">Blast target ↗</button>
+          </form>
+          <div class="jobtris-word-bank">
+            <span class="mini-tag">ARCADE CLEARED WORDS</span>
+            <div class="word-bank-chips" id="jobtris-bank-chips"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODE 3: EMBEDDED OFFICIAL SEMANTRIS PORTAL -->
+    <div class="semantris-embed-stage" id="stage-portal" hidden>
+      <div class="embed-stage-banner">
+        <div>
+          <h4>Google Semantris Interactive Web Portal</h4>
+          <p class="muted-small">Official Google Research word-association game powered by machine-learned semantic models.</p>
+        </div>
+        <a class="button button-accent" href="https://research.google.com/semantris/" target="_blank" rel="noopener">Open in Dedicated Window ↗</a>
+      </div>
+      <div class="embed-iframe-holder">
+        <iframe src="https://research.google.com/semantris/" title="Google Semantris Portal" loading="lazy" allow="autoplay; fullscreen"></iframe>
+      </div>
+      <p class="muted-small" style="text-align:center;margin-top:12px;">If your network or browser security prevents iframe loading from research.google.com, use the button above to launch directly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- NEW GAME 4: THE WORD ORACLE (English Akinator) (English Akinator) -->
+<!-- ============================================================== -->
+<section class="oracle-section section-shell" id="word-oracle" data-feature="wordOracle">
+  <div class="section-head">
+    <div><p class="eyebrow">21 / THE WORD ORACLE</p><h2>The English Akinator.<br>20 questions of deduction.</h2></div>
+    <p class="section-summary">Think of any career or English concept. The Oracle asks dynamic Yes/No questions and deduces your secret in under 15 turns with semantic intelligence.</p>
+  </div>
+  <div class="oracle-chamber">
+    <div class="oracle-avatar-row">
+      <div class="oracle-orb">
+        <div class="oracle-iris"></div>
+        <span class="oracle-glyph">👁</span>
+      </div>
+      <div class="oracle-dialogue">
+        <div class="oracle-intellect-header"><span class="mini-tag">ORACLE INTELLECT</span><span class="oracle-suspects-badge" id="oracle-suspects-badge">52 Suspect Careers</span></div>
+        <h3 id="oracle-question-text">Think of a career or profession in your head. Ready?</h3>
+        <p id="oracle-sub-hint">The Oracle will analyze equipment, licensing, work environment, and impact.</p>
+      </div>
+    </div>
+
+    <!-- Mode Selector & Controls -->
+    <div class="oracle-controls-row" id="oracle-controls">
+      <button class="button button-accent" id="oracle-start-game-btn" type="button">I have my secret role. Start! ↗</button>
+      <button class="button button-outline" id="oracle-suggest-secret-btn" type="button">Give me a secret idea</button>
+    </div>
+
+    <!-- Active Question Card -->
+    <div class="oracle-active-card" id="oracle-active-card" hidden>
+      <div class="oracle-progress-meter">
+        <span>Question <strong id="oracle-q-num">1</strong> / 15</span>
+        <div class="oracle-certainty-track"><div class="oracle-certainty-fill" id="oracle-certainty-fill"></div></div>
+        <span id="oracle-certainty-text">Certainty: 15%</span>
+      </div>
+      <div class="oracle-answers-grid">
+        <button type="button" class="oracle-ans-btn" data-answer="yes">Yes, definitely</button>
+        <button type="button" class="oracle-ans-btn" data-answer="probably">Probably / Mostly</button>
+        <button type="button" class="oracle-ans-btn" data-answer="unsure">Don't know / Irrelevant</button>
+        <button type="button" class="oracle-ans-btn" data-answer="probably-not">Probably not</button>
+        <button type="button" class="oracle-ans-btn" data-answer="no">No, never</button>
+      </div>
+    </div>
+
+    <!-- Oracle Prediction Result -->
+    <div class="oracle-revelation-card" id="oracle-revelation" hidden>
+      <span class="mini-tag">ORACLE VERDICT</span>
+      <h3 id="oracle-guess-title">Are you thinking of...</h3>
+      <div class="oracle-guess-card" id="oracle-guess-details"></div>
+      <div class="oracle-verdict-actions">
+        <button class="button button-accent" id="oracle-guess-correct" type="button">Spot on! You nailed it 🎯</button>
+        <button class="button button-outline" id="oracle-guess-wrong" type="button">Not quite! Keep guessing ↻</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- NEW GAME 5: OBJECT ORACLE (Witblox Vision Blox / Real-World Lens) -->
+<!-- ============================================================== -->
+<section class="vision-section section-shell" id="object-oracle" data-feature="objectOracle">
+  <div class="section-head">
+    <div><p class="eyebrow">22 / OBJECT ORACLE</p><h2>Point your camera.<br>Discover the career.</h2></div>
+    <p class="section-summary">Inspired by Witblox AI Vision Blox. Point your camera at real-world objects (or tap an interactive blox). Learn which professions use them and why English is their multiplier.</p>
+  </div>
+  <div class="vision-grid">
+    <div class="vision-camera-panel">
+      <div class="camera-viewfinder" id="vision-viewfinder">
+        <video id="vision-video" playsinline muted autoplay hidden></video>
+        <div class="viewfinder-ar-bracket tl"></div><div class="viewfinder-ar-bracket tr"></div>
+        <div class="viewfinder-ar-bracket bl"></div><div class="viewfinder-ar-bracket br"></div>
+        <div class="viewfinder-status" id="vision-status">TensorFlow.js MobileNet Standby</div>
+        <div class="vision-confidence-tag" id="vision-confidence-tag" hidden>94% Match</div>
+      </div>
+      <div class="camera-actions">
+        <button class="button button-accent" id="vision-camera-toggle" type="button">Start webcam vision 📷</button>
+        <span class="muted-small">Privacy guarantee: video is processed purely on-device via TensorFlow.js.</span>
+      </div>
+    </div>
+
+    <!-- Tactile Blox Simulator & Results -->
+    <div class="vision-results-panel">
+      <span class="mini-tag">INTERACTIVE VISION BLOX</span>
+      <p class="muted-small">No camera? Tap an everyday object below to test the classifier:</p>
+      <div class="blox-item-grid">
+        <button type="button" class="blox-btn active" data-obj="laptop">💻 Laptop</button>
+        <button type="button" class="blox-btn" data-obj="microphone">🎤 Microphone</button>
+        <button type="button" class="blox-btn" data-obj="stethoscope">🩺 Stethoscope</button>
+        <button type="button" class="blox-btn" data-obj="tie">👔 Silk Tie</button>
+        <button type="button" class="blox-btn" data-obj="camera">📷 DSLR Camera</button>
+        <button type="button" class="blox-btn" data-obj="airplane">✈️ Model Airplane</button>
+        <button type="button" class="blox-btn" data-obj="pen">✒️ Fountain Pen</button>
+        <button type="button" class="blox-btn" data-obj="book">📚 Law Textbook</button>
+      </div>
+
+      <div class="vision-analysis-box" id="vision-analysis-card">
+        <h4 id="vision-detected-name">💻 Laptop / Computing Terminal</h4>
+        <p class="vision-career-badge">Career: <strong id="vision-detected-role">Software Architect &amp; Engineering Lead</strong></p>
+        <div class="vision-why-english" id="vision-detected-reason">
+          Writing clear Technical Design Docs, submitting RFCs, and communicating architecture with distributed teams across Europe, the US, and Asia.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- NEW GAME 6: SEMANTIC COMPASS -->
+<!-- ============================================================== -->
+<section class="compass-section section-shell" id="semantic-compass" data-feature="semanticCompass">
+  <div class="section-head">
+    <div><p class="eyebrow">23 / SEMANTIC COMPASS</p><h2>Describe the goal.<br>AI grades the resonance.</h2></div>
+    <p class="section-summary">Write a 2–3 sentence career pitch. Our semantic embedding model evaluates conceptual similarity and vocabulary richness.</p>
+  </div>
+  <div class="compass-workbench">
+    <div class="compass-prompt-card">
+      <span class="mini-tag">CHALLENGE PROMPT</span>
+      <h3 id="compass-target-heading">Describe what an International Commercial Arbitrator does.</h3>
+      <p id="compass-target-criteria">Include their role in resolving multi-million dollar trade conflicts, maintaining absolute impartiality, and applying global jurisprudence.</p>
+    </div>
+    <form class="compass-form" id="compass-form">
+      <label for="compass-input">Your pitch (2–4 sentences):</label>
+      <textarea id="compass-input" rows="4" maxlength="600" placeholder="An international arbitrator mediates high-stakes commercial disputes between multinational corporations..."></textarea>
+      <div class="compass-actions-row">
+        <span class="muted-small">Scored against semantic vectors and CEFR clarity standards.</span>
+        <button class="button button-accent" type="submit">Evaluate semantic resonance ↗</button>
+      </div>
+    </form>
+    <div class="compass-score-results" id="compass-results" hidden></div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 24: GAMES ARCADE (Includes Wordless / Wordle clone) -->
+<!-- ============================================================== -->
+<section class="games-section section-shell" id="games-arcade" data-feature="games">
+  <div class="section-head">
+    <div><p class="eyebrow">24 / GAMES ARCADE</p><h2>Play with words.<br>Keep the points.</h2></div>
+    <p class="section-summary">Fast vocabulary games for every level. Play Wordless (the 5-letter deduction game), Vocabulary Matching, and Sentence Clarity.</p>
+  </div>
+  <div class="games-level-row">
+    <label for="games-level">Difficulty tier</label>
+    <select id="games-level">
+      <option value="starter">Starter · everyday words</option>
+      <option value="growing" selected>Growing · academic &amp; career</option>
+      <option value="advanced">Advanced · executive precision</option>
+    </select>
+    <span id="game-level-note">Challenges calibrated for your chosen difficulty.</span>
+  </div>
+  <div class="games-tabs" role="tablist">
+    <button type="button" class="game-tab active" data-game-tab="wordle" role="tab" aria-selected="true">Wordless (Wordle)</button>
+    <button type="button" class="game-tab" data-game-tab="matching" role="tab" aria-selected="false">Match the Meaning</button>
+    <button type="button" class="game-tab" data-game-tab="sentence" role="tab" aria-selected="false">Strongest Sentence</button>
+  </div>
+
+  <!-- Wordless / Wordle Stage -->
+  <div class="game-stage" id="game-wordle" data-game-panel="wordle">
+    <div class="game-stage-heading">
+      <div>
+        <span class="mini-tag">WORDLESS · 5-LETTER DEDUCTION</span>
+        <h3>Guess the secret career word.</h3>
+        <p>Green indicates correct letter and position. Amber indicates letter exists in different position.</p>
+      </div>
+      <span class="game-round-pill" id="wordle-round">6 tries left</span>
+    </div>
+    <div class="wordle-board" id="wordle-board" aria-label="Wordle guess board"></div>
+    <form class="wordle-entry" id="wordle-form">
+      <label class="visually-hidden" for="wordle-guess">Your five-letter guess</label>
+      <input id="wordle-guess" maxlength="5" minlength="5" autocomplete="off" autocapitalize="characters" pattern="[A-Za-z]{5}" required placeholder="GUESS">
+      <button class="button button-dark" type="submit">Submit guess</button>
+      <button class="button button-outline" id="wordle-new" type="button">New word ↻</button>
+    </form>
+    <p class="game-feedback" id="wordle-feedback" aria-live="polite">Your first five-letter guess starts the round.</p>
+    <div class="game-score-line">
+      <span>Wordless score</span><output id="wordle-score">0</output>
+    </div>
+  </div>
+
+  <!-- Matching Stage -->
+  <div class="game-stage" id="game-matching" data-game-panel="matching" hidden>
+    <div class="game-stage-heading">
+      <div>
+        <span class="mini-tag">VOCABULARY PAIRS</span>
+        <h3>Match career terms with definitions.</h3>
+      </div>
+      <span class="game-round-pill" id="match-round">0 / 4 pairs</span>
+    </div>
+    <div class="matching-layout">
+      <div class="matching-column"><h4>Terms</h4><div class="matching-options" id="matching-words"></div></div>
+      <div class="matching-column"><h4>Definitions</h4><div class="matching-options" id="matching-meanings"></div></div>
+    </div>
+    <p class="game-feedback" id="matching-feedback" aria-live="polite">Click a word then select its matching definition.</p>
+    <div class="game-score-line"><span>Matching score</span><output id="matching-score">0</output></div>
+    <button class="button button-dark" id="matching-new" type="button">Next pair set ↻</button>
+  </div>
+
+  <!-- Sentence Stage -->
+  <div class="game-stage" id="game-sentence" data-game-panel="sentence" hidden>
+    <div class="game-stage-heading">
+      <div>
+        <span class="mini-tag">SENTENCE CLARITY</span>
+        <h3>Select the most professional sentence.</h3>
+      </div>
+      <span class="game-round-pill" id="sentence-round">Round 1</span>
+    </div>
+    <p class="sentence-question" id="sentence-question">Which phrasing is most effective?</p>
+    <div class="sentence-options" id="sentence-options"></div>
+    <p class="game-feedback" id="sentence-feedback" aria-live="polite"></p>
+    <div class="game-score-line"><span>Sentence score</span><output id="sentence-score">0</output></div>
+    <button class="button button-dark" id="sentence-next" type="button">Next question ↗</button>
+  </div>
+</section>
+
+<!-- SECTION 25: CLOSING -->
+<section class="closing-section section-shell" id="closing" data-feature="closing">
+  <div class="closing-top"><span class="closing-logo">OM</span><span class="eyebrow">YOUR WORDS CAN TAKE YOU PLACES</span></div>
+  <h2>Make yourself<br><span>understood.</span></h2>
+  <p>The goal is not accentless conformity. The goal is the most articulate, confident version of your own ideas.</p>
+  <a class="button button-light" href="#top">Return to top <span aria-hidden="true">↑</span></a>
+  <div class="closing-stamp" aria-hidden="true">OPEN<br>MIC<br>v18</div>
+</section>
+
+<!-- SECTION 26: PRIVACY & ETHICS -->
+<section class="privacy-section section-shell" id="privacy-policy">
+  <div class="section-head">
+    <div><p class="eyebrow">STUDENT PRIVACY FIRST</p><h2>Practice should<br>feel safe.</h2></div>
+    <p class="section-summary">Read our school guidelines. No student faces or voices are shared without explicit parental and participant consent.</p>
+  </div>
+  <div class="privacy-grid">
+    <article><span class="privacy-number">01</span><h3>Zero Face/Voice Harvest</h3><p>Camera and microphone processing run directly inside browser memory via WebAssembly/TensorFlow. Nothing is uploaded unless specifically authorized.</p></article>
+    <article><span class="privacy-number">02</span><h3>Nickname-Only Boards</h3><p>The leaderboard displays chosen nicknames only. No personal phone numbers, emails, or surnames are ever public.</p></article>
+    <article><span class="privacy-number">03</span><h3>Accessible &amp; Offline</h3><p>Every single game degrades gracefully to keyboard and offline mode when school Wi-Fi is crowded.</p></article>
+    <article><span class="privacy-number">04</span><h3>No Judgment Signal</h3><p>Scores are gamified feedback to inspire curious practice, not an academic ranking or intelligence exam.</p></article>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div>
+    <a href="#top" class="footer-brand">open mic <span>v18</span></a>
+    <p id="school-credit">Kanakia International School Mira Road · English Career Fair 2026</p>
+  </div>
+  <div class="footer-meta">
+    <a href="#privacy-policy">Privacy &amp; Guidelines</a>
+    <span>© 2026 Open Mic Career Lab</span>
+    <button id="admin-trigger-btn" type="button" class="admin-link-btn" title="Admin Portal">Admin Console ⚙</button>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ============================================================== -->
+<!-- ADMIN PANEL (NO GREEN BUTTONS! ROLE GATED: admin, streaming, techteam, moderator) -->
+<!-- ============================================================== -->
+<section class="admin-panel" id="admin-panel" hidden aria-labelledby="admin-title">
+  <div class="admin-wrap">
+    <div class="admin-header">
+      <div>
+        <p class="eyebrow">FAIR CONTROL ROOM</p>
+        <h2 id="admin-title">Admin Console</h2>
+        <p id="admin-user-badge" class="admin-user-pill">Signed out</p>
+      </div>
+      <button class="button button-outline" id="admin-exit" type="button">Back to site ×</button>
+    </div>
+
+    <!-- Login Card -->
+    <div id="admin-login-screen" class="admin-login-card">
+      <div class="admin-lock">⌑</div>
+      <h3>Fair Staff Sign In</h3>
+      <p>Log in with your assigned role credentials or Cloudflare One Zero Trust.</p>
+      
+      <!-- Cloudflare One Fast Login -->
+      <div class="cf-one-box" id="cf-one-box">
+        <button class="button button-indigo" id="cf-one-login-btn" type="button">
+          Sign in via Cloudflare One / Access 🛡️
+        </button>
+        <span class="or-divider">OR USE CREDENTIALS</span>
+      </div>
+
+      <form id="admin-login-form">
+        <label for="admin-user">User ID</label>
+        <input id="admin-user" required autocomplete="username" placeholder="e.g. admin or streaming_lead">
+        <label for="admin-password">Password</label>
+        <input id="admin-password" type="password" required autocomplete="current-password" placeholder="Password">
+        <button class="button button-accent" type="submit">Authorize Staff Session ↗</button>
+        <p id="admin-login-message" class="form-message" aria-live="polite"></p>
+      </form>
+      <p class="demo-credential-note" id="demo-credential-note">
+        Default role credentials (toggleable in Settings):<br>
+        • Admin: <code>admin</code> / <code>careers2026</code><br>
+        • Streaming: <code>streaming_lead</code> / <code>stream2026</code><br>
+        • Tech: <code>tech_support</code> / <code>tech2026</code><br>
+        • Mod: <code>moderator_one</code> / <code>mod2026</code>
+      </p>
+    </div>
+
+    <!-- Workspace (Role-gated tab visibility) -->
+    <div id="admin-workspace" hidden>
+      <div class="admin-tabs" id="admin-tabs-bar">
+        <button class="admin-tab active" data-admin-tab="features" data-roles="admin" type="button">Features</button>
+        <button class="admin-tab" data-admin-tab="streaming" data-roles="admin,streaming" type="button">Live Stream</button>
+        <button class="admin-tab" data-admin-tab="ai" data-roles="admin,techteam" type="button">AI Router</button>
+        <button class="admin-tab" data-admin-tab="branding" data-roles="admin" type="button">Branding &amp; Auth</button>
+        <button class="admin-tab" data-admin-tab="users" data-roles="admin" type="button">Staff &amp; Roles</button>
+        <button class="admin-tab" data-admin-tab="requests" data-roles="admin,techteam" type="button">System Logs</button>
+        <button class="admin-tab" data-admin-tab="leaderboard" data-roles="admin,moderator" type="button">Leaderboard</button>
+        <button class="admin-tab" data-admin-tab="feedback" data-roles="admin,moderator" type="button">Feedback &amp; Files</button>
+      </div>
+      <div class="admin-content" id="admin-content"></div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

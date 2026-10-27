@@ -42,6 +42,8 @@
 
 <link rel="stylesheet" href="v18-styles.css">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js" defer></script>
 <script src="v18-app.js" defer></script>
 </head>
 <body>
@@ -793,46 +795,111 @@
 </section>
 
 <!-- ============================================================== -->
-<!-- NEW GAME 3: JOBTRIS (Semantris-style career stack) -->
+<!-- ============================================================== -->
+<!-- NEW GAME 3: JOBTRIS (Semantris Matching & Arcade Engine) -->
 <!-- ============================================================== -->
 <section class="jobtris-section section-shell" id="jobtris" data-feature="jobtris">
   <div class="section-head">
-    <div><p class="eyebrow">20 / JOBTRIS</p><h2>Clear the stack.<br>Expand your lexicon.</h2></div>
-    <p class="section-summary">Semantris powered by career vocabulary. Type semantic clues to re-rank the stack. Clear words into the blast zone before the tower overflows.</p>
+    <div>
+      <p class="eyebrow">20 / JOBTRIS · SEMANTRIS MATCHING ENGINE</p>
+      <h2>Clear the stack.<br>Expand your lexicon.</h2>
+    </div>
+    <p class="section-summary">An authentic homage to Google Research Semantris powered by career vocabulary. Type semantic clues to re-rank the stack or trigger color-cluster flood-fill combos.</p>
   </div>
+
+  <!-- Semantris Official Links & Mode Selectors -->
+  <div class="semantris-nav-shelf">
+    <div class="semantris-sources-row">
+      <a class="semantris-link-badge primary" href="https://research.google.com/semantris/" target="_blank" rel="noopener">
+        <span class="live-pulse"></span> Google Semantris Official ↗
+      </a>
+      <a class="semantris-link-badge" href="https://research.google.com/semanticexperiences/" target="_blank" rel="noopener">
+        🔬 Google Semantic Experiences ↗
+      </a>
+    </div>
+    <div class="semantris-mode-bar" role="tablist">
+      <button class="semantris-mode-tab active" id="mode-tab-blocks" type="button" data-mode="blocks">
+        🧩 Semantris Blocks (Color Match Grid)
+      </button>
+      <button class="semantris-mode-tab" id="mode-tab-arcade" type="button" data-mode="arcade">
+        ⚡ Semantris Arcade (Blast Zone Stack)
+      </button>
+      <button class="semantris-mode-tab" id="mode-tab-portal" type="button" data-mode="portal">
+        🖥️ Embedded Google Semantris Portal
+      </button>
+    </div>
+  </div>
+
   <div class="jobtris-workbench">
-    <div class="jobtris-config-panel" id="jobtris-config">
-      <div class="config-group">
-        <span class="mini-tag">CHOOSE CAREER LANE</span>
-        <div class="lane-chips" id="jobtris-lanes">
-          <button type="button" class="lane-chip active" data-lane="doctor">🩺 Medical Doctor</button>
-          <button type="button" class="lane-chip" data-lane="pilot">✈️ Commercial Pilot</button>
-          <button type="button" class="lane-chip" data-lane="journalist">🗞️ Journalist</button>
-          <button type="button" class="lane-chip" data-lane="chef">🧑‍🍳 Executive Chef</button>
-          <button type="button" class="lane-chip" data-lane="lawyer">⚖️ Corporate Lawyer</button>
-          <button type="button" class="lane-chip" data-lane="tech">💻 Software Architect</button>
-        </div>
+    <!-- Career Lane Selector -->
+    <div class="jobtris-lane-picker" id="jobtris-lanes-bar">
+      <span class="mini-tag">VOCABULARY DOMAIN:</span>
+      <div class="lane-chips" id="jobtris-lanes">
+        <button type="button" class="lane-chip active" data-lane="doctor">🩺 Medical Doctor</button>
+        <button type="button" class="lane-chip" data-lane="pilot">✈️ Commercial Pilot</button>
+        <button type="button" class="lane-chip" data-lane="journalist">🗞️ Journalist</button>
+        <button type="button" class="lane-chip" data-lane="chef">🧑‍🍳 Executive Chef</button>
+        <button type="button" class="lane-chip" data-lane="lawyer">⚖️ Corporate Lawyer</button>
+        <button type="button" class="lane-chip" data-lane="tech">💻 Software Architect</button>
       </div>
-      <div class="config-group">
-        <span class="mini-tag">GAME MODE</span>
-        <div class="mode-chips">
-          <button type="button" class="mode-chip active" data-mode="arcade">Arcade (Fast stack pressure)</button>
-          <button type="button" class="mode-chip" data-mode="blocks">Blocks (Relaxed color combos)</button>
-        </div>
-      </div>
-      <button class="button button-accent" id="jobtris-start-btn" type="button">Launch Jobtris ↗</button>
     </div>
 
-    <!-- Active Game Grid -->
-    <div class="jobtris-game-stage" id="jobtris-stage" hidden>
+    <!-- MODE 1: AUTHENTIC SEMANTRIS BLOCKS (COLOR MATCH GRID & FLOOD FILL) -->
+    <div class="semantris-blocks-stage" id="stage-blocks">
       <div class="jobtris-hud">
-        <div>Score: <strong id="jobtris-score">0</strong></div>
-        <div>Vocabulary Band: <strong id="jobtris-cefr" class="cefr-badge">B2</strong></div>
-        <div>Combo: <strong id="jobtris-combo">0×</strong></div>
+        <div class="hud-item">Score: <strong id="blocks-score">0</strong></div>
+        <div class="hud-item">Combo: <strong id="blocks-combo">1×</strong></div>
+        <div class="hud-item">Vocabulary Band: <strong id="blocks-cefr" class="cefr-badge">B2</strong></div>
+        <div class="hud-item">Blasted Words: <strong id="blocks-cleared-count">0</strong></div>
       </div>
+
+      <div class="semantris-blocks-layout">
+        <div class="semantris-grid-wrapper">
+          <div class="semantris-grid-header">
+            <span class="grid-sub-tag">CONNECT ADJACENT COLORS FOR COMBOS</span>
+            <span class="grid-rules">THINK OF A CLUE FOR ANY VISIBLE WORD</span>
+          </div>
+          <div class="semantris-color-grid" id="semantris-color-grid" aria-label="Semantris Color Block Grid">
+            <!-- Dynamic 4x6 / 5x6 Colored Word Blocks -->
+          </div>
+        </div>
+
+        <div class="semantris-sidebar">
+          <div class="semantris-instruction-card">
+            <span class="mini-tag">HOW TO PLAY BLOCKS</span>
+            <h4>THINK OF A CLUE FOR ONE OF THE WORDS</h4>
+            <p>Type a clue associated with any word on the board. The AI highlights the closest semantic match. If that block touches neighbors of the <strong>same color</strong>, all connected blocks dissolve in a combo burst!</p>
+          </div>
+
+          <form class="semantris-clue-form" id="semantris-blocks-form">
+            <label for="semantris-blocks-input">Type a semantic association:</label>
+            <div class="semantris-input-box">
+              <input type="text" id="semantris-blocks-input" placeholder="e.g. surgical knife, weather coordinates, deadline…" autocomplete="off" required>
+              <button class="button button-accent" type="submit">Match Clue ↗</button>
+            </div>
+          </form>
+
+          <div class="semantris-feedback-box" id="blocks-feedback">Ready for your first clue. Type above and press Enter.</div>
+
+          <div class="jobtris-word-bank">
+            <span class="mini-tag">CLEARED VOCABULARY BANK (<span id="blocks-bank-total">0</span>)</span>
+            <div class="word-bank-chips" id="blocks-bank-chips"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODE 2: SEMANTRIS ARCADE (FALLING BLAST ZONE STACK) -->
+    <div class="semantris-arcade-stage" id="stage-arcade" hidden>
+      <div class="jobtris-hud">
+        <div class="hud-item">Score: <strong id="arcade-score">0</strong></div>
+        <div class="hud-item">Vocabulary Band: <strong id="arcade-cefr" class="cefr-badge">B2</strong></div>
+        <div class="hud-item">Combo: <strong id="arcade-combo">0×</strong></div>
+      </div>
+
       <div class="jobtris-board-layout">
         <div class="jobtris-stack-wrapper">
-          <div class="blast-zone-marker"><span>BLAST ZONE</span></div>
+          <div class="blast-zone-marker"><span>BLAST ZONE (BOTTOM THRESHOLD)</span></div>
           <div class="jobtris-stack-container" id="jobtris-stack"></div>
         </div>
         <div class="jobtris-input-wrapper">
@@ -842,22 +909,37 @@
             <p id="jobtris-target-def">Identification of the nature and cause of a condition.</p>
           </div>
           <form class="jobtris-form" id="jobtris-form">
-            <label for="jobtris-clue-input">Type a semantic association:</label>
+            <label for="jobtris-clue-input">Type a semantic association to sink target into blast zone:</label>
             <input type="text" id="jobtris-clue-input" placeholder="e.g. medical symptoms, illness, blood test…" autocomplete="off">
             <button class="button button-accent" type="submit">Blast target ↗</button>
           </form>
           <div class="jobtris-word-bank">
-            <span class="mini-tag">CLEARED VOCABULARY BANK</span>
+            <span class="mini-tag">ARCADE CLEARED WORDS</span>
             <div class="word-bank-chips" id="jobtris-bank-chips"></div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- MODE 3: EMBEDDED OFFICIAL SEMANTRIS PORTAL -->
+    <div class="semantris-embed-stage" id="stage-portal" hidden>
+      <div class="embed-stage-banner">
+        <div>
+          <h4>Google Semantris Interactive Web Portal</h4>
+          <p class="muted-small">Official Google Research word-association game powered by machine-learned semantic models.</p>
+        </div>
+        <a class="button button-accent" href="https://research.google.com/semantris/" target="_blank" rel="noopener">Open in Dedicated Window ↗</a>
+      </div>
+      <div class="embed-iframe-holder">
+        <iframe src="https://research.google.com/semantris/" title="Google Semantris Portal" loading="lazy" allow="autoplay; fullscreen"></iframe>
+      </div>
+      <p class="muted-small" style="text-align:center;margin-top:12px;">If your network or browser security prevents iframe loading from research.google.com, use the button above to launch directly.</p>
+    </div>
   </div>
 </section>
 
 <!-- ============================================================== -->
-<!-- NEW GAME 4: THE WORD ORACLE (English Akinator) -->
+<!-- NEW GAME 4: THE WORD ORACLE (English Akinator) (English Akinator) -->
 <!-- ============================================================== -->
 <section class="oracle-section section-shell" id="word-oracle" data-feature="wordOracle">
   <div class="section-head">
@@ -871,7 +953,7 @@
         <span class="oracle-glyph">👁</span>
       </div>
       <div class="oracle-dialogue">
-        <span class="mini-tag">ORACLE INTELLECT</span>
+        <div class="oracle-intellect-header"><span class="mini-tag">ORACLE INTELLECT</span><span class="oracle-suspects-badge" id="oracle-suspects-badge">52 Suspect Careers</span></div>
         <h3 id="oracle-question-text">Think of a career or profession in your head. Ready?</h3>
         <p id="oracle-sub-hint">The Oracle will analyze equipment, licensing, work environment, and impact.</p>
       </div>
@@ -926,7 +1008,8 @@
         <video id="vision-video" playsinline muted autoplay hidden></video>
         <div class="viewfinder-ar-bracket tl"></div><div class="viewfinder-ar-bracket tr"></div>
         <div class="viewfinder-ar-bracket bl"></div><div class="viewfinder-ar-bracket br"></div>
-        <div class="viewfinder-status" id="vision-status">Camera ready for scan</div>
+        <div class="viewfinder-status" id="vision-status">TensorFlow.js MobileNet Standby</div>
+        <div class="vision-confidence-tag" id="vision-confidence-tag" hidden>94% Match</div>
       </div>
       <div class="camera-actions">
         <button class="button button-accent" id="vision-camera-toggle" type="button">Start webcam vision 📷</button>
