@@ -113,7 +113,7 @@ export async function saveAdminSettings(env,body) {
 }
 export async function providerStatus(env) {
   const secrets=await getProviderSecrets(env);
-  return {cloudflareConfigured:!!env.AI,geminiCount:secrets.geminiKeys.length,elevenlabsConfigured:!!secrets.elevenlabsKey,freeConfigured:!!(secrets.freeUrl&&secrets.freeKey&&secrets.freeModel),laptopConfigured:!!secrets.laptopUrl,laptopHasToken:!!secrets.laptopToken,cartesiaConfigured:!!(secrets.cartesiaKey&&(env.CARTESIA_VOICE_ID||secrets.cartesiaVoiceId)),openaiTtsConfigured:!!secrets.openaiTtsKey,deepgramConfigured:!!secrets.deepgramKey,kokoroConfigured:!!secrets.kokoroUrl,elevenlabsConfigured:!!secrets.elevenlabsKey,telegramConfigured:!!(secrets.telegramBotToken&&secrets.telegramChatId),githubVaultConfigured:!!(secrets.githubVaultToken&&secrets.githubVaultRepo)};
+  return {cloudflareConfigured:!!env.AI,geminiCount:secrets.geminiKeys.length,elevenlabsConfigured:!!secrets.elevenlabsKey,freeConfigured:!!(secrets.freeUrl&&secrets.freeKey&&secrets.freeModel),laptopConfigured:!!secrets.laptopUrl,laptopHasToken:!!secrets.laptopToken,cartesiaConfigured:!!(secrets.cartesiaKey&&(env.CARTESIA_VOICE_ID||secrets.cartesiaVoiceId)),openaiTtsConfigured:!!secrets.openaiTtsKey,deepgramConfigured:!!secrets.deepgramKey,kokoroConfigured:!!secrets.kokoroUrl,telegramConfigured:!!(secrets.telegramBotToken&&secrets.telegramChatId),githubVaultConfigured:!!(secrets.githubVaultToken&&secrets.githubVaultRepo)};
 }
 
 export async function notifyTelegram(env,message) {
