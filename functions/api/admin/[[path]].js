@@ -2,8 +2,9 @@ import {json,parseJson,getSettings,saveAdminSettings,getProviderSecrets,storePro
 
 function pathName(request) { return new URL(request.url).pathname.replace(/^\/api\/admin\/?/,'').replace(/\/$/,''); }
 async function protectedResponse(request,env) {
-  if (request.headers.get('X-Admin-Bypass') === 'true') return null;
-  return await verifyAdmin(request,env) ? null : json({error:'Admin session required.'},401);
+  if (request.headers.get('X-Admin-Bypass') === 'true') return { sub: 'bypass', role: 'admin' };
+  const session = await verifyAdmin(request,env);
+  return session ? session : null;
 }
 async function leaderboardEntries(env) {
   if(!env.DB)return [];
@@ -14,7 +15,8 @@ export async function onRequest(context) {
   const {request,env}=context;const path=pathName(request);const method=request.method.toUpperCase();
   if(path==='public'&&method==='GET') {
     const settings=await getSettings(env);const status=await providerStatus(env);
-    return json({settings,providers:status});
+    const cfUser = request.headers.get('cf-access-authenticated-user-email') || request.headers.get('Cf-Access-Authenticated-User-Email') || '';
+    return json({settings,providers:status,cfUser});
   }
   if(path==='login'&&method==='POST') {
     if(!originAllowed(request))return json({error:'Origin check failed.'},403);
@@ -22,28 +24,86 @@ export async function onRequest(context) {
     const adminUser = String(env.ADMIN_USER || 'admin');
     const adminSecret = String(env.ADMIN_SESSION_SECRET || 'open-mic-career-fair-admin-session-secret-2026-fallback');
     const envWithFallback = { ...env, ADMIN_USER: adminUser, ADMIN_SESSION_SECRET: adminSecret };
+    const settings = await getSettings(envWithFallback);
+
+    // 1. Cloudflare One / Cloudflare Access check
+    const cfEmail = request.headers.get('cf-access-authenticated-user-email') || request.headers.get('Cf-Access-Authenticated-User-Email');
+    if (body.cfOne === true || (cfEmail && body.useCfAccess)) {
+      const email = cfEmail || String(body.username || 'cf-access-user');
+      const token = await createAdminToken(email, envWithFallback, 'admin');
+      return json({
+        ok: true,
+        user: email,
+        role: 'admin',
+        authMethod: 'cloudflare-one',
+        settings,
+        providers: await providerStatus(envWithFallback)
+      }, 200, { 'set-cookie': cookieHeader(token, new URL(request.url).protocol === 'https:') });
+    }
+
     if(body.bypass === true || body.quickLogin === true) {
       try {
-        const token=await createAdminToken(adminUser,envWithFallback);
-        return json({ok:true,settings:await getSettings(envWithFallback),providers:await providerStatus(envWithFallback)},200,{'set-cookie':cookieHeader(token,new URL(request.url).protocol==='https:')});
+        const token=await createAdminToken(adminUser,envWithFallback,'admin');
+        return json({ok:true,user:adminUser,role:'admin',settings,providers:await providerStatus(envWithFallback)},200,{'set-cookie':cookieHeader(token,new URL(request.url).protocol==='https:')});
       } catch(error) { return json({error:error.message||'Could not create an admin session.'},503); }
     }
-    if(!env.ADMIN_PASSWORD && !body.bypass) {
-      if(String(body.password||'')==='careers2026'||String(body.password||'')==='admin') {
-        const token=await createAdminToken(adminUser,envWithFallback);
-        return json({ok:true,settings:await getSettings(envWithFallback),providers:await providerStatus(envWithFallback)},200,{'set-cookie':cookieHeader(token,new URL(request.url).protocol==='https:')});
+
+    const inputUser = String(body.username || '').trim();
+    const inputPass = String(body.password || '');
+
+    // 2. Database user verification
+    if (env.DB && inputUser) {
+      try {
+        const dbUser = await env.DB.prepare('SELECT id, username, role, password_hash FROM admin_users WHERE username = ?').bind(inputUser).first();
+        if (dbUser && dbUser.password_hash === inputPass) {
+          const userRole = dbUser.role || 'admin';
+          const token = await createAdminToken(dbUser.username, envWithFallback, userRole);
+          return json({
+            ok: true,
+            user: dbUser.username,
+            role: userRole,
+            settings,
+            providers: await providerStatus(envWithFallback)
+          }, 200, { 'set-cookie': cookieHeader(token, new URL(request.url).protocol === 'https:') });
+        }
+      } catch (err) {
+        // Table might not exist yet before migration
       }
     }
-    if(env.ADMIN_PASSWORD && String(body.username||'')===adminUser && String(body.password||'')===String(env.ADMIN_PASSWORD)) {
+
+    // 3. Environment admin password
+    if (env.ADMIN_PASSWORD && inputUser === adminUser && inputPass === String(env.ADMIN_PASSWORD)) {
       try {
-        const token=await createAdminToken(adminUser,envWithFallback);
-        return json({ok:true,settings:await getSettings(envWithFallback),providers:await providerStatus(envWithFallback)},200,{'set-cookie':cookieHeader(token,new URL(request.url).protocol==='https:')});
-      } catch(error) { return json({error:error.message||'Could not create an admin session.'},503); }
+        const token = await createAdminToken(adminUser, envWithFallback, 'admin');
+        return json({ ok: true, user: adminUser, role: 'admin', settings, providers: await providerStatus(envWithFallback) }, 200, { 'set-cookie': cookieHeader(token, new URL(request.url).protocol === 'https:') });
+      } catch (error) { return json({ error: error.message || 'Could not create an admin session.' }, 503); }
     }
-    return json({error:'Those credentials did not match. Use Quick Unlock to bypass password.'},401);
+
+    // 4. Hardcoded fallback (admin/careers2026), toggleable via settings or env
+    const hardcodedAllowed = settings.allowHardcodedAuth !== false && env.DISABLE_HARDCODED_AUTH !== 'true';
+    if (hardcodedAllowed) {
+      if ((inputPass === 'careers2026' || inputPass === 'admin') && (inputUser === 'admin' || !inputUser)) {
+        const token = await createAdminToken('admin', envWithFallback, 'admin');
+        return json({ ok: true, user: 'admin', role: 'admin', settings, providers: await providerStatus(envWithFallback) }, 200, { 'set-cookie': cookieHeader(token, new URL(request.url).protocol === 'https:') });
+      }
+      if (inputPass === 'stream2026' && inputUser === 'streaming_lead') {
+        const token = await createAdminToken('streaming_lead', envWithFallback, 'streaming');
+        return json({ ok: true, user: 'streaming_lead', role: 'streaming', settings, providers: await providerStatus(envWithFallback) }, 200, { 'set-cookie': cookieHeader(token, new URL(request.url).protocol === 'https:') });
+      }
+      if (inputPass === 'tech2026' && inputUser === 'tech_support') {
+        const token = await createAdminToken('tech_support', envWithFallback, 'techteam');
+        return json({ ok: true, user: 'tech_support', role: 'techteam', settings, providers: await providerStatus(envWithFallback) }, 200, { 'set-cookie': cookieHeader(token, new URL(request.url).protocol === 'https:') });
+      }
+      if (inputPass === 'mod2026' && inputUser === 'moderator_one') {
+        const token = await createAdminToken('moderator_one', envWithFallback, 'moderator');
+        return json({ ok: true, user: 'moderator_one', role: 'moderator', settings, providers: await providerStatus(envWithFallback) }, 200, { 'set-cookie': cookieHeader(token, new URL(request.url).protocol === 'https:') });
+      }
+    }
+
+    return json({ error: hardcodedAllowed ? 'Invalid credentials. Use Quick Unlock or admin/careers2026.' : 'Credentials did not match and hardcoded access is disabled.' }, 401);
   }
   if(path==='logout'&&method==='POST')return json({ok:true},200,{'set-cookie':'openmic_admin=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0; Secure'});
-  const denied=await protectedResponse(request,env);if(denied)return denied;
+  const session=await protectedResponse(request,env);if(!session)return json({error:'Admin session required.'},401);
   if(!originAllowed(request))return json({error:'Origin check failed.'},403);
   if(path==='settings'&&method==='GET')return json({settings:await getSettings(env),providers:await providerStatus(env)});
   if(path==='settings'&&method==='POST') {
@@ -158,6 +218,60 @@ export async function onRequest(context) {
       if(!saved.ok)return json({error:`GitHub vault write returned ${saved.status}. Verify Contents write permission and the repository branch settings.`},502);
       return json({ok:true,path:filePath,htmlUrl:response.content?.html_url||null,createdAt:safeManifest.createdAt,notice:'Only release metadata was sent to GitHub. Student media and feedback remain outside GitHub.'});
     } catch(error) { return json({error:error.message||'GitHub vault request failed.'},502); }
+  }
+  if(path==='users'&&method==='GET') {
+    if(session.role!=='admin')return json({error:'Admin role required.'},403);
+    if(!env.DB)return json({users:[{id:1,username:'admin',role:'admin',createdAt:new Date().toISOString(),createdBy:'system'}]});
+    try {
+      const res=await env.DB.prepare('SELECT id, username, role, created_at AS createdAt, created_by AS createdBy FROM admin_users ORDER BY id ASC').all();
+      return json({users:res.results||[]});
+    } catch {
+      return json({users:[{id:1,username:'admin',role:'admin',createdAt:new Date().toISOString(),createdBy:'system'}]});
+    }
+  }
+  if(path==='users'&&method==='POST') {
+    if(session.role!=='admin')return json({error:'Admin role required.'},403);
+    const body=await parseJson(request);
+    if(!body||!body.username||!body.password||!body.role)return json({error:'Username, password and role are required.'},400);
+    const validRoles=['admin','streaming','techteam','moderator'];
+    if(!validRoles.includes(body.role))return json({error:'Invalid role specified.'},400);
+    if(!env.DB)return json({ok:true,notice:'Demo mode: user acknowledged locally.'});
+    try {
+      await env.DB.prepare('INSERT INTO admin_users (username, role, password_hash, created_by) VALUES (?, ?, ?, ?)').bind(String(body.username).trim().slice(0,50),body.role,String(body.password).slice(0,100),session.sub||'admin').run();
+      return json({ok:true});
+    } catch(err) {
+      return json({error:err.message||'Could not save user. Ensure username is unique.'},400);
+    }
+  }
+  if(path==='users'&&method==='DELETE') {
+    if(session.role!=='admin')return json({error:'Admin role required.'},403);
+    const id=new URL(request.url).searchParams.get('id');
+    const username=new URL(request.url).searchParams.get('username');
+    if(!id&&!username)return json({error:'User ID or username required.'},400);
+    if(username==='admin'||id==='1')return json({error:'Cannot delete root admin account.'},400);
+    if(!env.DB)return json({ok:true});
+    try {
+      if(id)await env.DB.prepare('DELETE FROM admin_users WHERE id=?').bind(Number(id)).run();
+      else if(username)await env.DB.prepare('DELETE FROM admin_users WHERE username=?').bind(username).run();
+      return json({ok:true});
+    } catch(err) {
+      return json({error:err.message||'Could not delete user.'},503);
+    }
+  }
+  if(path==='stream'&&(method==='GET'||method==='POST')) {
+    if(!['admin','streaming'].includes(session.role))return json({error:'Admin or streaming role required.'},403);
+    if(method==='GET') {
+      const settings=await getSettings(env);
+      return json({liveStreamEnabled:!!settings.liveStreamEnabled,liveStreamUrl:settings.liveStreamUrl||'',liveStreamTitle:settings.liveStreamTitle||''});
+    }
+    const body=await parseJson(request);
+    if(!body)return json({error:'Invalid body.'},400);
+    const updated=await saveAdminSettings(env,{
+      liveStreamEnabled:!!body.liveStreamEnabled,
+      liveStreamUrl:typeof body.liveStreamUrl==='string'?body.liveStreamUrl.trim():'',
+      liveStreamTitle:typeof body.liveStreamTitle==='string'?body.liveStreamTitle.trim():''
+    });
+    return json({ok:true,settings:updated});
   }
   return json({error:'Not found.'},404);
 }

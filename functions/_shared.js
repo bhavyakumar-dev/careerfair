@@ -1,6 +1,6 @@
-export const FEATURE_KEYS = ['hero','whyEnglish','careers','quiz','plan','careerChat','speechLab','mockInterview','roleplay','anchor','compare','speakers','leaderboard','wordOfDay','emailGame','pronunciation','debate','feedback','games','closing','liveStage','testimonials','versionLibrary'];
+export const FEATURE_KEYS = ['hero','whyEnglish','careers','quiz','plan','careerChat','speechLab','mockInterview','roleplay','anchor','compare','speakers','leaderboard','wordOfDay','emailGame','pronunciation','debate','feedback','games','closing','liveStage','testimonials','versionLibrary','velocityGame','careerGuesser','jobtris','wordOracle','objectOracle','semanticCompass','liveStream'];
 export const DEFAULTS = {
-  theme:'mix',language:'en',showSchoolName:true,schoolName:'Kanakia International School Mira Road',automaticFallback:true,preferredProvider:'gemini',speechProvider:'auto',qualityMode:'balanced',providerOrder:['gemini','cloudflare','free','laptop'],providerEnabled:{cloudflare:true,gemini:true,free:true,laptop:false},ttsAutomaticFallback:true,ttsPreferredProvider:'browser',ttsProviderOrder:['cartesia','openai','deepgram','kokoro','elevenlabs'],ttsProviderEnabled:{cartesia:true,openai:true,deepgram:true,kokoro:true,elevenlabs:true},liveStageEnabled:false,liveStageUrl:'',horizontalSections:false,features:Object.fromEntries(FEATURE_KEYS.map(key=>[key,true]))
+  theme:'mix',language:'en',showSchoolName:true,schoolName:'Kanakia International School Mira Road',automaticFallback:true,preferredProvider:'gemini',speechProvider:'auto',qualityMode:'balanced',providerOrder:['gemini','cloudflare','free','laptop'],providerEnabled:{cloudflare:true,gemini:true,free:true,laptop:false},ttsAutomaticFallback:true,ttsPreferredProvider:'browser',ttsProviderOrder:['cartesia','openai','deepgram','kokoro','elevenlabs'],ttsProviderEnabled:{cartesia:true,openai:true,deepgram:true,kokoro:true,elevenlabs:true},liveStageEnabled:false,liveStageUrl:'',horizontalSections:false,allowHardcodedAuth:true,liveStreamEnabled:false,liveStreamUrl:'',liveStreamTitle:'Open Mic Career Fair — Live Session',features:Object.fromEntries(FEATURE_KEYS.map(key=>[key,true]))
 };
 export function json(data,status=200,headers={}) { return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store',...headers}}); }
 export async function parseJson(request) { try { return await request.json(); } catch { return null; } }
@@ -67,9 +67,9 @@ async function hmacToken(payload,secret) {
   const signature=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(payload));
   return `${payload}.${base64Url(new Uint8Array(signature))}`;
 }
-export async function createAdminToken(user,env) {
+export async function createAdminToken(user,env,role='admin') {
   if(!env.ADMIN_SESSION_SECRET||String(env.ADMIN_SESSION_SECRET).length<32)throw new Error('ADMIN_SESSION_SECRET must contain at least 32 characters.');
-  const payload=base64Url(new TextEncoder().encode(JSON.stringify({sub:user,exp:Date.now()+8*60*60*1000,nonce:base64Url(crypto.getRandomValues(new Uint8Array(8)))})));
+  const payload=base64Url(new TextEncoder().encode(JSON.stringify({sub:user,role:role||'admin',exp:Date.now()+8*60*60*1000,nonce:base64Url(crypto.getRandomValues(new Uint8Array(8)))})));
   return hmacToken(payload,env.ADMIN_SESSION_SECRET);
 }
 export async function verifyAdmin(request,env) {
@@ -78,7 +78,11 @@ export async function verifyAdmin(request,env) {
   const token=match[1];const separator=token.lastIndexOf('.');if(separator<1)return false;
   const payload=token.slice(0,separator);const signature=token.slice(separator+1);const expected=await hmacToken(payload,env.ADMIN_SESSION_SECRET);
   if(!constantTimeEqual(expected.slice(expected.lastIndexOf('.')+1),signature))return false;
-  try {const value=JSON.parse(new TextDecoder().decode(fromBase64Url(payload)));return value.sub===env.ADMIN_USER&&value.exp>Date.now();}catch{return false;}
+  try {
+    const value=JSON.parse(new TextDecoder().decode(fromBase64Url(payload)));
+    if(!value||value.exp<=Date.now())return false;
+    return {sub:value.sub,role:value.role||'admin',exp:value.exp};
+  }catch{return false;}
 }
 export function cookieHeader(token,secure=true) { return `openmic_admin=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800${secure?'; Secure':''}`; }
 export function sessionRequired(request,env) { return verifyAdmin(request,env); }
@@ -92,6 +96,10 @@ export async function saveAdminSettings(env,body) {
   next.theme=['mix','dark','vibrant','clean','orange'].includes(next.theme)?next.theme:'mix';
   next.liveStageEnabled=next.liveStageEnabled===true;
   if(typeof next.liveStageUrl==='string'&&next.liveStageUrl.trim()){try{const liveUrl=new URL(next.liveStageUrl);next.liveStageUrl=['https:','http:'].includes(liveUrl.protocol)?liveUrl.href.slice(0,1000):'';}catch{next.liveStageUrl='';}}else next.liveStageUrl='';
+  next.allowHardcodedAuth=body.allowHardcodedAuth!==undefined?!!body.allowHardcodedAuth:(current.allowHardcodedAuth!==false);
+  next.liveStreamEnabled=body.liveStreamEnabled!==undefined?!!body.liveStreamEnabled:!!current.liveStreamEnabled;
+  next.liveStreamUrl=typeof body.liveStreamUrl==='string'?body.liveStreamUrl.trim().slice(0,500):(current.liveStreamUrl||'');
+  next.liveStreamTitle=typeof body.liveStreamTitle==='string'?body.liveStreamTitle.trim().slice(0,200):(current.liveStreamTitle||'Open Mic Career Fair — Live Session');
   next.horizontalSections=next.horizontalSections===true;
   next.language=['en','hi'].includes(next.language)?next.language:'en';
   next.schoolName=safeString(next.schoolName||'Kanakia International School Mira Road',90);
