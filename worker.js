@@ -8,6 +8,9 @@ import { onRequestGet as handleOpenMicDebateGet, onRequestPost as handleOpenMicD
 import { onRequestPost as handleOpenMicTtsPost } from "./functions/api/tts.js";
 import { onRequestPost as handleOpenMicTelegramPost } from "./functions/api/telegram.js";
 import { onRequestPost as handleOpenMicGithubVaultPost } from "./functions/api/github-vault.js";
+import { onRequestGet as handleOpenMicTestimonialsGet, onRequestPost as handleOpenMicTestimonialsPost } from "./functions/api/testimonials.js";
+import { onRequestPost as handleOpenMicSafetyPost } from "./functions/api/safety.js";
+import { onRequest as handleOpenMicMediaUpload } from "./functions/api/media-upload.js";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -621,6 +624,35 @@ export default {
         }
       }
 
+      if (pathname === "/api/testimonials") {
+        try {
+          if (request.method === "GET") {
+            return await handleOpenMicTestimonialsGet({ request, env, ctx });
+          }
+          if (request.method === "POST") {
+            return await handleOpenMicTestimonialsPost({ request, env, ctx });
+          }
+        } catch (e) {
+          return jsonResponse({ error: e.message }, 500);
+        }
+      }
+
+      if (pathname === "/api/safety" && request.method === "POST") {
+        try {
+          return await handleOpenMicSafetyPost({ request, env, ctx });
+        } catch (e) {
+          return jsonResponse({ error: e.message }, 500);
+        }
+      }
+
+      if (pathname === "/api/media-upload") {
+        try {
+          return await handleOpenMicMediaUpload({ request, env, ctx });
+        } catch (e) {
+          return jsonResponse({ error: e.message }, 500);
+        }
+      }
+
 
       const geminiKeyHeader = request.headers.get("X-Gemini-Key");
       const freeLlmUrlHeader = request.headers.get("X-Free-LLM-URL");
@@ -841,6 +873,15 @@ export default {
       }
       if (pathname === "/v14" || pathname === "/v14/" || pathname === "/v14.html") {
         return env.ASSETS.fetch(new Request(new URL("/v14.html", request.url), request));
+      }
+      if (pathname === "/v15" || pathname === "/v15/" || pathname === "/v15.html") {
+        return env.ASSETS.fetch(new Request(new URL("/v15.html", request.url), request));
+      }
+      if (pathname === "/v16" || pathname === "/v16/" || pathname === "/v16.html") {
+        return env.ASSETS.fetch(new Request(new URL("/v16.html", request.url), request));
+      }
+      if (pathname === "/versions" || pathname === "/versions/" || pathname === "/versions/index.html") {
+        return env.ASSETS.fetch(new Request(new URL("/versions/index.html", request.url), request));
       }
       return env.ASSETS.fetch(request);
     }

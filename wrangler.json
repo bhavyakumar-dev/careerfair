@@ -11,6 +11,9 @@
   "ai": {
     "binding": "AI"
   },
+  "vars": {
+    "ADMIN_USER": "admin"
+  },
   "d1_databases": [
     {
       "binding": "DB",

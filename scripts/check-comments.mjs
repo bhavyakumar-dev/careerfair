@@ -121,7 +121,23 @@ const files = [
   "public/v14-app.js",
   "public/v14/index.html",
   "public/v14/styles.css",
-  "public/v14/app.js"
+  "public/v14/app.js",
+  "v15.html",
+  "v15-styles.css",
+  "v15-app.js",
+  "v15/index.html",
+  "v15/styles.css",
+  "v15/app.js",
+  "public/v15.html",
+  "public/v15-styles.css",
+  "public/v15-app.js",
+  "public/v15/index.html",
+  "public/v15/styles.css",
+  "public/v15/app.js",
+  "functions/api/testimonials.js",
+  "functions/api/safety.js",
+  "functions/api/media-upload.js",
+  "migrations/0004_v15.sql"
 ];
 
 let totalIssues = 0;

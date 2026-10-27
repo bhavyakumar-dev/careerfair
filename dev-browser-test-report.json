@@ -1,0 +1,230 @@
+[
+  {
+    "url": "https://careerswithenglish.bhavyakumar.workers.dev",
+    "status": "ok",
+    "pages": {
+      "root": {
+        "httpStatus": 200,
+        "title": "Every Career Speaks English — Kanakia International School Career Fair & Speech Lab",
+        "loaded": true
+      },
+      "v9": {
+        "httpStatus": 200,
+        "title": "Open Mic v9 — English for the work you want",
+        "tests": {
+          "speakerImages": [
+            {
+              "src": "https://upload.wikimedia.org/wikipedia/commons/a/a4/David_At",
+              "width": 283,
+              "height": 190,
+              "naturalWidth": 0,
+              "naturalHeight": 0,
+              "objectFit": "cover",
+              "imageOrientation": "from-image",
+              "isOriented": true
+            },
+            {
+              "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Emma_Wat",
+              "width": 283,
+              "height": 190,
+              "naturalWidth": 0,
+              "naturalHeight": 0,
+              "objectFit": "cover",
+              "imageOrientation": "from-image",
+              "isOriented": true
+            },
+            {
+              "src": "https://upload.wikimedia.org/wikipedia/commons/d/d6/Stephen_",
+              "width": 283,
+              "height": 190,
+              "naturalWidth": 0,
+              "naturalHeight": 0,
+              "objectFit": "cover",
+              "imageOrientation": "from-image",
+              "isOriented": true
+            },
+            {
+              "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e9/Off",
+              "width": 283,
+              "height": 190,
+              "naturalWidth": 0,
+              "naturalHeight": 0,
+              "objectFit": "cover",
+              "imageOrientation": "from-image",
+              "isOriented": true
+            }
+          ],
+          "newsroomOverlay": {
+            "hasHeadlineInput": true,
+            "headlineValue": "Young voices, big ideas",
+            "hasSubheadlineInput": true,
+            "subheadlineValue": "Open Mic · Student newsroom",
+            "hasConsentCheckbox": true,
+            "hasSaveButton": true,
+            "saveDisabledInitially": true,
+            "hasRecordButton": true,
+            "hasTeleprompter": true
+          },
+          "leaderboardDropdown": {
+            "found": true,
+            "selectColor": "rgb(255, 255, 255)",
+            "selectBackground": "rgb(37, 42, 52)",
+            "optionsCount": 6,
+            "options": [
+              {
+                "text": "Class 8 and below",
+                "color": "rgb(255, 255, 255)",
+                "backgroundColor": "rgb(37, 42, 52)"
+              },
+              {
+                "text": "Class 8",
+                "color": "rgb(255, 255, 255)",
+                "backgroundColor": "rgb(37, 42, 52)"
+              },
+              {
+                "text": "Class 9",
+                "color": "rgb(255, 255, 255)",
+                "backgroundColor": "rgb(37, 42, 52)"
+              },
+              {
+                "text": "Class 10",
+                "color": "rgb(255, 255, 255)",
+                "backgroundColor": "rgb(37, 42, 52)"
+              },
+              {
+                "text": "Class 11",
+                "color": "rgb(255, 255, 255)",
+                "backgroundColor": "rgb(37, 42, 52)"
+              },
+              {
+                "text": "Class 12",
+                "color": "rgb(255, 255, 255)",
+                "backgroundColor": "rgb(37, 42, 52)"
+              }
+            ],
+            "contrastOk": true
+          },
+          "leaderboardForm": {
+            "formReady": true,
+            "nickSet": "DevTester",
+            "gradeSet": "Class 8",
+            "consentSet": true
+          }
+        }
+      },
+      "v14": {
+        "httpStatus": 200,
+        "title": "Open Mic v14 — English for the work you want",
+        "tests": {
+          "vault": {
+            "hasTestVideoBtn": true,
+            "testVideoBtnText": "Push Test Video in Labelled Chunks to Git Repo",
+            "hasPrefixInput": true,
+            "prefixDefault": "openmic_test",
+            "hasDurationSelect": true,
+            "durationDefault": "3500",
+            "hasUploaderBtn": true,
+            "hasGeneratorFunction": true,
+            "activeVersionChip": "v14"
+          }
+        }
+      }
+    }
+  },
+  {
+    "url": "https://careerfair.bhavyakumar.workers.dev",
+    "status": "ok",
+    "pages": {
+      "root": {
+        "httpStatus": 200,
+        "title": "ROBOVERSE — Build a mind. Build a machine.",
+        "loaded": true
+      },
+      "v9": {
+        "httpStatus": 404,
+        "title": "404 — Signal Lost | ROBOVERSE",
+        "tests": {
+          "speakerImages": [],
+          "newsroomOverlay": {
+            "hasHeadlineInput": false,
+            "headlineValue": null,
+            "hasSubheadlineInput": false,
+            "subheadlineValue": null,
+            "hasConsentCheckbox": false,
+            "hasSaveButton": false,
+            "saveDisabledInitially": null,
+            "hasRecordButton": false,
+            "hasTeleprompter": false
+          },
+          "leaderboardDropdown": {
+            "found": false
+          },
+          "leaderboardForm": {
+            "formReady": false
+          }
+        }
+      },
+      "v14": {
+        "httpStatus": 404,
+        "title": "404 — Signal Lost | ROBOVERSE",
+        "tests": {
+          "vault": {
+            "hasTestVideoBtn": false,
+            "hasPrefixInput": false,
+            "hasDurationSelect": false,
+            "hasUploaderBtn": false,
+            "hasGeneratorFunction": false
+          }
+        }
+      }
+    }
+  },
+  {
+    "url": "https://rai.bhavyakumar.workers.dev",
+    "status": "ok",
+    "pages": {
+      "root": {
+        "httpStatus": 200,
+        "title": "ROBOVERSE — Build a mind. Build a machine.",
+        "loaded": true
+      },
+      "v9": {
+        "httpStatus": 404,
+        "title": "404 — Signal Lost | ROBOVERSE",
+        "tests": {
+          "speakerImages": [],
+          "newsroomOverlay": {
+            "hasHeadlineInput": false,
+            "headlineValue": null,
+            "hasSubheadlineInput": false,
+            "subheadlineValue": null,
+            "hasConsentCheckbox": false,
+            "hasSaveButton": false,
+            "saveDisabledInitially": null,
+            "hasRecordButton": false,
+            "hasTeleprompter": false
+          },
+          "leaderboardDropdown": {
+            "found": false
+          },
+          "leaderboardForm": {
+            "formReady": false
+          }
+        }
+      },
+      "v14": {
+        "httpStatus": 404,
+        "title": "404 — Signal Lost | ROBOVERSE",
+        "tests": {
+          "vault": {
+            "hasTestVideoBtn": false,
+            "hasPrefixInput": false,
+            "hasDurationSelect": false,
+            "hasUploaderBtn": false,
+            "hasGeneratorFunction": false
+          }
+        }
+      }
+    }
+  }
+]

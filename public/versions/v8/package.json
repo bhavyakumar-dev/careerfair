@@ -1,0 +1,14 @@
+{
+  "name": "open-mic-career-lab",
+  "version": "8.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev .",
+    "deploy": "wrangler pages deploy .",
+    "test": "node scripts/verify.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.45.0"
+  }
+}

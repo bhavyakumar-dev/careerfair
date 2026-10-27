@@ -1,4 +1,4 @@
-import {json,parseJson,safeString,getSettings,getProviderSecrets,logRequest,isIpBanned} from '../_shared.js';
+import {json,parseJson,safeString,getSettings,getProviderSecrets,logRequest} from '../_shared.js';
 
 function buildSystem(task) {
   const common='You are an encouraging English communication coach for school students. Focus on clear meaning, structure, tone and practical next steps. Do not shame accents, dialects, grammar mistakes, or fluency. Do not make claims about intelligence, social status, or job suitability. Keep feedback age-appropriate and specific. Never claim you heard audio when only text is supplied.';
@@ -109,8 +109,6 @@ async function runProvider(provider,env,secrets,system,user) {
 }
 export async function onRequestPost({request,env}) {
   const started=Date.now();
-  const clientIp=request.headers.get('cf-connecting-ip')||request.headers.get('x-real-ip')||request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()||'';
-  if(await isIpBanned(request,env))return json({error:'Your IP address is restricted.'},403);
   if(request.headers.get('content-length')&&Number(request.headers.get('content-length'))>300000)return json({error:'Request is too large. Reduce the number or size of video frames.'},413);
   const body=await parseJson(request);if(!body)return json({error:'Invalid request.'},400);
   const allowedTasks=['speech-feedback','mock-interview','roleplay-feedback','compare-communication','career-chat','newsroom-video-review','general'];
@@ -118,21 +116,21 @@ export async function onRequestPost({request,env}) {
   const text=buildUserText(task,body);if(text.length>26000)return json({error:'Request is too large.'},413);
   const settings=await getSettings(env);const secrets=await getProviderSecrets(env);
   const automatic=settings.automaticFallback!==false;
-  let order=automatic?(settings.providerOrder||['gemini','cloudflare','free','laptop']):[settings.preferredProvider||'gemini'];
+  let order=automatic?(settings.providerOrder||['cloudflare','gemini','free','laptop']):[settings.preferredProvider||'cloudflare'];
   if(task==='newsroom-video-review'&&Array.isArray(body.frames)&&body.frames.length&&automatic)order=['gemini',...order.filter(key=>key!=='gemini')];
   if(settings.qualityMode==='saver'&&automatic&&task!=='newsroom-video-review')order=[...order.filter(key=>key==='laptop'||key==='free'),...order.filter(key=>key!=='laptop'&&key!=='free')];
   order=order.filter((provider,index,array)=>['cloudflare','gemini','free','laptop'].includes(provider)&&array.indexOf(provider)===index&&settings.providerEnabled?.[provider]!==false);
-  if(!order.length) {await logRequest(env,{task,provider:'none',outcome:'no_provider',latencyMs:Date.now()-started,mode:automatic?'auto':'manual',ip:clientIp});return json({error:'No AI provider is enabled. Use local scoring or enable a provider in admin.'},503);}
+  if(!order.length) {await logRequest(env,{task,provider:'none',outcome:'no_provider',latencyMs:Date.now()-started,mode:automatic?'auto':'manual'});return json({error:'No AI provider is enabled. Use local scoring or enable a provider in admin.'},503);}
   const attempts=[];
   for(const provider of order) {
     try {
       let raw='';let visualAnalysisAvailable=false;
       if(task==='newsroom-video-review'&&provider==='gemini'&&Array.isArray(body.frames)&&body.frames.length){raw=await geminiVisionRun(env,secrets,buildSystem(task),text,body.frames);visualAnalysisAvailable=true;}else{raw=await runProvider(provider,env,secrets,buildSystem(task),text);}
       const shaped=parseOutput(raw,task);const latencyMs=Date.now()-started;
-      await logRequest(env,{task,provider,outcome:'success',latencyMs,mode:automatic?'auto':'manual',ip:clientIp});
+      await logRequest(env,{task,provider,outcome:'success',latencyMs,mode:automatic?'auto':'manual'});
       return json({...shaped,provider,latencyMs,mode:automatic?'auto':'manual',...(task==='newsroom-video-review'?{visualAnalysisAvailable}: {})});
     } catch(error) {attempts.push({provider,error:safeString(error.message,160)});}
   }
-  await logRequest(env,{task,provider:attempts.map(item=>item.provider).join(','),outcome:'failed',latencyMs:Date.now()-started,mode:automatic?'auto':'manual',ip:clientIp});
+  await logRequest(env,{task,provider:attempts.map(item=>item.provider).join(','),outcome:'failed',latencyMs:Date.now()-started,mode:automatic?'auto':'manual'});
   return json({error:'Every enabled AI provider failed or was unavailable. The browser can continue with on-device scoring.',attempts:attempts.map(item=>({provider:item.provider,error:item.error}))},503);
 }
