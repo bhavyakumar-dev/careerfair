@@ -137,7 +137,19 @@ const files = [
   "functions/api/testimonials.js",
   "functions/api/safety.js",
   "functions/api/media-upload.js",
-  "migrations/0004_v15.sql"
+  "migrations/0004_v15.sql",
+  "v16.html",
+  "v16-styles.css",
+  "v16-app.js",
+  "v16/index.html",
+  "v16/styles.css",
+  "v16/app.js",
+  "public/v16.html",
+  "public/v16-styles.css",
+  "public/v16-app.js",
+  "public/v16/index.html",
+  "public/v16/styles.css",
+  "public/v16/app.js",
 ];
 
 let totalIssues = 0;

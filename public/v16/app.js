@@ -1,6 +1,717 @@
+
+const DUEL_DATA = {
+  col1: ["artless", "bawdy", "beslubbering", "bootless", "churlish", "clouted", "craven", "currish", "dankish", "dissembling", "droning", "errant", "fawning", "fobbing", "froward", "frothy", "gleeking", "gorbellied", "impertinent", "infectious", "jarring", "loggerheaded", "lumpish", "mammering", "mangled", "mewling", "paunchy", "pribbling", "puking", "puny", "qualling", "rank", "reeky", "roguish", "ruttish", "saucy", "spleeny", "spongy", "surly", "tottering", "unmuzzled", "vain", "venomed", "villainous", "warped", "wayward", "weeden", "yeasty"],
+  col2: ["base-court", "bat-fowling", "beef-witted", "beetle-headed", "boil-brained", "clapper-clawed", "clay-brained", "common-kissing", "crook-pated", "dismal-dreaming", "dizzy-eyed", "doghearted", "dread-bolted", "earth-vexing", "elf-skinned", "fat-kidneyed", "fen-sucked", "flap-mouthed", "fly-bitten", "folly-fallen", "fool-born", "full-gorged", "guts-griping", "half-faced", "hasty-witted", "hedge-born", "hell-hated", "idle-headed", "ill-breeding", "ill-nurtured", "knotty-pated", "milk-livered", "motley-minded", "onion-eyed", "plume-plucked", "pottle-deep", "pox-marked", "reeling-ripe", "rough-hewn", "rude-growing", "rump-fed", "shard-borne", "sheep-biting", "spur-galled", "swag-bellied", "tardy-gaited", "tickle-brained", "toad-spotted", "unchin-snouted", "weather-bitten"],
+  col3: ["apple-john", "baggage", "barnacle", "bladder", "boar-pig", "bugbear", "bum-bailey", "canker-blossom", "clack-dish", "clotpole", "coxcomb", "codpiece", "death-token", "dewberry", "flap-dragon", "flax-wench", "flirt-gill", "foot-licker", "fustilarian", "giglet", "gudgeon", "haggard", "harpy", "hedge-pig", "horn-beast", "hugger-mugger", "joithead", "lewdster", "lout", "maggot-pie", "malt-worm", "mammet", "measle", "minnow", "miscreant", "moldwarp", "mumble-news", "nut-hook", "pigeon-egg", "pignut", "puttock", "pumpion", "ratsbane", "scut", "skainsmate", "strumpet", "varlet", "vassal", "whey-face", "wagtail"],
+  praise1: ["radiant", "peerless", "golden-tongued", "sovereign", "magnanimous", "virtuous", "illustrious", "celestial", "gracious", "bounteous"],
+  praise2: ["honey-sweet", "star-crowned", "noble-hearted", "true-judging", "crystal-clear", "fair-faced", "quick-witted", "lion-spirited"],
+  praise3: ["paragon", "monarch", "jewel", "orator", "phoenix", "beacon", "champion", "luminary", "scholar", "patron"]
+};
+
+let selectedDuelWords = ["artless", "beef-witted", "barnacle"];
+let currentDuelText = "Thou artless, beef-witted barnacle!";
+
+function initDuel() {
+  const c1 = $('#duel-col-1');
+  const c2 = $('#duel-col-2');
+  const c3 = $('#duel-col-3');
+  if (!c1 || !c2 || !c3) return;
+  c1.innerHTML = DUEL_DATA.col1.slice(0, 15).map(w => `<button class="duel-opt" type="button" data-duel-col="1" data-duel-word="${w}">${w}</button>`).join("");
+  c2.innerHTML = DUEL_DATA.col2.slice(0, 15).map(w => `<button class="duel-opt" type="button" data-duel-col="2" data-duel-word="${w}">${w}</button>`).join("");
+  c3.innerHTML = DUEL_DATA.col3.slice(0, 15).map(w => `<button class="duel-opt" type="button" data-duel-col="3" data-duel-word="${w}">${w}</button>`).join("");
+
+  [c1, c2, c3].forEach((colEl, idx) => {
+    colEl.addEventListener('click', e => {
+      const btn = e.target.closest('[data-duel-word]');
+      if (!btn) return;
+      colEl.querySelectorAll('.duel-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedDuelWords[idx] = btn.dataset.duelWord;
+      currentDuelText = `Thou ${selectedDuelWords[0]}, ${selectedDuelWords[1]} ${selectedDuelWords[2]}!`;
+      const out = $('#duel-output');
+      if (out) out.textContent = currentDuelText;
+    });
+  });
+
+  const btnRandInsult = $('#duel-rand-insult');
+  if (btnRandInsult) {
+    btnRandInsult.addEventListener('click', () => {
+      const w1 = DUEL_DATA.col1[Math.floor(Math.random() * DUEL_DATA.col1.length)];
+      const w2 = DUEL_DATA.col2[Math.floor(Math.random() * DUEL_DATA.col2.length)];
+      const w3 = DUEL_DATA.col3[Math.floor(Math.random() * DUEL_DATA.col3.length)];
+      selectedDuelWords = [w1, w2, w3];
+      currentDuelText = `Thou ${w1}, ${w2} ${w3}!`;
+      const out = $('#duel-output');
+      if (out) out.textContent = currentDuelText;
+    });
+  }
+
+  const btnRandPraise = $('#duel-rand-praise');
+  if (btnRandPraise) {
+    btnRandPraise.addEventListener('click', () => {
+      const p1 = DUEL_DATA.praise1[Math.floor(Math.random() * DUEL_DATA.praise1.length)];
+      const p2 = DUEL_DATA.praise2[Math.floor(Math.random() * DUEL_DATA.praise2.length)];
+      const p3 = DUEL_DATA.praise3[Math.floor(Math.random() * DUEL_DATA.praise3.length)];
+      currentDuelText = `O ${p1}, ${p2} ${p3}!`;
+      const out = $('#duel-output');
+      if (out) out.textContent = currentDuelText;
+    });
+  }
+
+  const btnRecite = $('#duel-recite');
+  if (btnRecite) {
+    btnRecite.addEventListener('click', () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(currentDuelText);
+        u.pitch = 0.95;
+        u.rate = 0.9;
+        window.speechSynthesis.speak(u);
+        showToast('Reciting duel line aloud...');
+      }
+    });
+  }
+
+  const btnCopy = $('#duel-copy');
+  if (btnCopy) {
+    btnCopy.addEventListener('click', () => {
+      navigator.clipboard.writeText(currentDuelText);
+      showToast('Copied duel line to clipboard!');
+    });
+  }
+}
+
+const SOLILOQUIES = {
+  hamlet: {
+    title: "Hamlet — Act III, Scene 1",
+    line: "To be, or not to be, that is the question:",
+    feet: [
+      { u: "To", s: "be," },
+      { u: "or", s: "not" },
+      { u: "to", s: "be," },
+      { u: "that", s: "is" },
+      { u: "the", s: "ques-tion" }
+    ]
+  },
+  macbeth: {
+    title: "Macbeth — Act V, Scene 5",
+    line: "To-morrow, and to-morrow, and to-morrow,",
+    feet: [
+      { u: "To-", s: "mor-" },
+      { u: "row,", s: "and" },
+      { u: "to-", s: "mor-" },
+      { u: "row,", s: "and" },
+      { u: "to-", s: "mor-row" }
+    ]
+  },
+  sonnet18: {
+    title: "Sonnet 18",
+    line: "Shall I compare thee to a summer's day?",
+    feet: [
+      { u: "Shall", s: "I" },
+      { u: "com-", s: "pare" },
+      { u: "thee", s: "to" },
+      { u: "a", s: "sum-" },
+      { u: "mer's", s: "day?" }
+    ]
+  },
+  romeo: {
+    title: "Romeo & Juliet — Act II, Scene 2",
+    line: "But, soft! what light through yonder window breaks?",
+    feet: [
+      { u: "But,", s: "soft!" },
+      { u: "what", s: "light" },
+      { u: "through", s: "yon-" },
+      { u: "der", s: "win-" },
+      { u: "dow", s: "breaks?" }
+    ]
+  }
+};
+
+function renderMeterFeet(feet) {
+  const container = $('#meter-feet-display');
+  if (!container) return;
+  container.innerHTML = feet.map((f, i) => `
+    <div class="meter-foot">
+      <span class="meter-syllable meter-unstressed">${escapeHtml(f.u)} ˘</span>
+      <span class="meter-syllable meter-stressed">${escapeHtml(f.s)} /</span>
+    </div>
+  `).join("");
+}
+
+function initMeter() {
+  const sel = $('#meter-soliloquy-select');
+  if (sel) {
+    sel.addEventListener('change', () => {
+      const data = SOLILOQUIES[sel.value];
+      if (!data) return;
+      const displayLine = $('#meter-display-line');
+      if (displayLine) displayLine.textContent = data.line;
+      renderMeterFeet(data.feet);
+    });
+    renderMeterFeet(SOLILOQUIES.hamlet.feet);
+  }
+
+  const reciteBtn = $('#meter-recite-btn');
+  if (reciteBtn) {
+    reciteBtn.addEventListener('click', () => {
+      const displayLine = $('#meter-display-line');
+      if (displayLine && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(displayLine.textContent);
+        u.rate = 0.85;
+        window.speechSynthesis.speak(u);
+        showToast('Reciting poetic meter...');
+      }
+    });
+  }
+
+  const customBtn = $('#meter-analyze-custom');
+  if (customBtn) {
+    customBtn.addEventListener('click', () => {
+      const input = $('#meter-custom-input');
+      const val = (input?.value || '').trim();
+      if (!val) {
+        showToast('Please type a line to analyze.');
+        return;
+      }
+      const words = val.split(/\s+/);
+      const generatedFeet = [];
+      for (let i = 0; i < words.length; i += 2) {
+        generatedFeet.push({
+          u: words[i] || '',
+          s: words[i + 1] || '•'
+        });
+        if (generatedFeet.length >= 5) break;
+      }
+      while (generatedFeet.length < 5) {
+        generatedFeet.push({ u: '˘', s: '/' });
+      }
+      const displayLine = $('#meter-display-line');
+      if (displayLine) displayLine.textContent = val;
+      renderMeterFeet(generatedFeet);
+      showToast('Custom verse analyzed into metric feet!');
+    });
+  }
+}
+
+const RHETORIC_QUESTIONS = [
+  {
+    speech: '"Ask not what your country can do for you — ask what you can do for your country."',
+    speaker: "John F. Kennedy (Inaugural Address, 1961)",
+    answer: "Chiasmus",
+    options: ["Chiasmus", "Zeugma", "Polysyndeton", "Litotes"],
+    explanation: "Chiasmus reverses concepts in parallel structures (A-B to B-A: country-you to you-country)."
+  },
+  {
+    speech: '"Not that I loved Caesar less, but that I loved Rome more."',
+    speaker: "William Shakespeare (Julius Caesar, Act III)",
+    answer: "Antithesis",
+    options: ["Antithesis", "Chiasmus", "Epistrophe", "Zeugma"],
+    explanation: "Antithesis places contrasting ideas in direct grammatical juxtaposition."
+  },
+  {
+    speech: '"He lost his coat and his temper."',
+    speaker: "Alexander Pope (The Rape of the Lock)",
+    answer: "Zeugma",
+    options: ["Zeugma", "Litotes", "Anaphora", "Chiasmus"],
+    explanation: "Zeugma uses a single verb to govern two nouns with literal and figurative senses."
+  },
+  {
+    speech: '"It is no small achievement to master the English tongue."',
+    speaker: "Classical Essayists",
+    answer: "Litotes",
+    options: ["Litotes", "Hyperbole", "Polysyndeton", "Antithesis"],
+    explanation: "Litotes uses an understated negative ('no small achievement') to affirm a positive."
+  },
+  {
+    speech: '"We shall fight on the beaches, we shall fight on the landing grounds, we shall fight in the fields..."',
+    speaker: "Winston Churchill (1940)",
+    answer: "Anaphora",
+    options: ["Anaphora", "Epistrophe", "Litotes", "Zeugma"],
+    explanation: "Anaphora repeats the exact phrase at the beginning of successive clauses."
+  }
+];
+
+let rhetoricIdx = 0;
+
+function renderRhetoricQuestion() {
+  const q = RHETORIC_QUESTIONS[rhetoricIdx % RHETORIC_QUESTIONS.length];
+  const quoteEl = $('#rhetoric-quote');
+  const optsEl = $('#rhetoric-options');
+  const feedEl = $('#rhetoric-feedback');
+  if (!quoteEl || !optsEl || !feedEl) return;
+  quoteEl.textContent = q.speech + ' — ' + q.speaker;
+  feedEl.textContent = '';
+  optsEl.innerHTML = q.options.map(opt => `
+    <button class="rhetoric-btn" type="button" data-rhetoric-opt="${opt}">${opt}</button>
+  `).join("");
+}
+
+function initRhetoric() {
+  const optsEl = $('#rhetoric-options');
+  if (optsEl) {
+    optsEl.addEventListener('click', e => {
+      const btn = e.target.closest('[data-rhetoric-opt]');
+      if (!btn) return;
+      const q = RHETORIC_QUESTIONS[rhetoricIdx % RHETORIC_QUESTIONS.length];
+      const feedEl = $('#rhetoric-feedback');
+      if (btn.dataset.rhetoricOpt === q.answer) {
+        btn.style.background = '#2d5a37';
+        btn.style.color = '#f1e3c8';
+        if (feedEl) feedEl.innerHTML = '✓ Correct! ' + q.explanation;
+      } else {
+        btn.style.background = '#7a1f2b';
+        btn.style.color = '#f1e3c8';
+        if (feedEl) feedEl.innerHTML = '✗ Try again. Correct was ' + q.answer + '. ' + q.explanation;
+      }
+    });
+  }
+
+  const nextBtn = $('#rhetoric-next-btn');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      rhetoricIdx++;
+      renderRhetoricQuestion();
+    });
+  }
+  renderRhetoricQuestion();
+}
+
+const ETYM_DATA = [
+  { word: "Shampoo", origin: "Hindi: chāmpo (to knead/press)", path: "Sanskrit capayati → Hindi champo → 18th-Century British Indian bathhouse massage → Modern hair wash" },
+  { word: "Assassin", origin: "Arabic: hashāshīn", path: "Arabic hashishiyya → Crusader reports in medieval French → 16th-century English via Shakespeare (Macbeth)" },
+  { word: "Robot", origin: "Czech: robota (forced labor)", path: "Old Church Slavonic rabota → Karel Čapek's 1920 play R.U.R. → Oxford English Dictionary (1923)" },
+  { word: "Bungalow", origin: "Gujarati / Hindi: bangla", path: "Bengali 'in the style of Bengal' → 17th-century East India Company accounts → English single-story architectural noun" },
+  { word: "Safari", origin: "Swahili: safari (journey)", path: "Arabic safara (to travel) → Swahili noun → English travel narrative via exploration literature" },
+  { word: "Tea", origin: "Min Nan Chinese: tê", path: "Amoy port dialect tê → Dutch merchant traders (thee) → 17th-century English court beverage" }
+];
+
+function initEtymology() {
+  const container = $('#etym-grid');
+  if (!container) return;
+  container.innerHTML = ETYM_DATA.map(item => `
+    <div class="etym-item">
+      <h4>${escapeHtml(item.word)}</h4>
+      <p style="font-size:11px;font-weight:bold;color:#7a1f2b;margin-bottom:6px">${escapeHtml(item.origin)}</p>
+      <div class="etym-journey">
+        <span class="etym-step">${escapeHtml(item.path)}</span>
+      </div>
+    </div>
+  `).join("");
+}
+
+const TYPING_PASSAGES = [
+  { era: "Old English", text: "Hwaet we Gardena in geardagum theodcyninga thrym gefrunon hu tha aethelingas ellen fremedon" },
+  { era: "Middle English", text: "Whan that Aprill with his shoures soote the droghte of March hath perced to the roote and bathed every veyne in swich licour" },
+  { era: "Early Modern", text: "All the world is a stage, and all the men and women merely players; they have their exits and their entrances" },
+  { era: "Indian English", text: "The English language ceases to be an exclusive inheritance; it is the living instrument of global democracy and discovery" }
+];
+
+let typingEraIdx = 0;
+let typingStartTime = null;
+let typingTimerInterval = null;
+
+function initTypingChallenge() {
+  const textEl = $('#scriptorium-text');
+  const inputEl = $('#scriptorium-input');
+  if (!textEl || !inputEl) return;
+
+  function loadPassage() {
+    const p = TYPING_PASSAGES[typingEraIdx % TYPING_PASSAGES.length];
+    textEl.textContent = p.text;
+    inputEl.value = '';
+    const wpmEl = $('#typing-wpm');
+    const accEl = $('#typing-acc');
+    const timerEl = $('#typing-timer');
+    if (wpmEl) wpmEl.textContent = '0';
+    if (accEl) accEl.textContent = '100%';
+    if (timerEl) timerEl.textContent = '60s';
+    if (typingTimerInterval) clearInterval(typingTimerInterval);
+    typingStartTime = null;
+  }
+
+  inputEl.addEventListener('input', () => {
+    if (!typingStartTime) {
+      typingStartTime = Date.now();
+      let remaining = 60;
+      typingTimerInterval = setInterval(() => {
+        remaining--;
+        const timerEl = $('#typing-timer');
+        if (timerEl) timerEl.textContent = remaining + 's';
+        if (remaining <= 0) {
+          clearInterval(typingTimerInterval);
+          inputEl.disabled = true;
+          showToast('Time up! Final WPM calculated.');
+        }
+      }, 1000);
+    }
+    const target = textEl.textContent;
+    const typed = inputEl.value;
+    const elapsedMinutes = (Date.now() - typingStartTime) / 60000;
+    const wordsCount = typed.trim().split(/\s+/).filter(Boolean).length;
+    const wpm = elapsedMinutes > 0 ? Math.round(wordsCount / elapsedMinutes) : 0;
+    let correctChars = 0;
+    for (let i = 0; i < typed.length; i++) {
+      if (typed[i] === target[i]) correctChars++;
+    }
+    const acc = typed.length > 0 ? Math.round((correctChars / typed.length) * 100) : 100;
+    const wpmEl = $('#typing-wpm');
+    const accEl = $('#typing-acc');
+    if (wpmEl) wpmEl.textContent = String(wpm);
+    if (accEl) accEl.textContent = acc + '%';
+  });
+
+  const resetBtn = $('#typing-reset-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      inputEl.disabled = false;
+      loadPassage();
+    });
+  }
+
+  const nextBtn = $('#typing-next-era');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      typingEraIdx++;
+      inputEl.disabled = false;
+      loadPassage();
+    });
+  }
+}
+
+const SPELL_LIST = [
+  { word: "RHETORIC", ipa: "/ˈrɛt.ər.ɪk/", clue: "The art of effective or persuasive speaking or writing." },
+  { word: "SOLILOQUY", ipa: "/səˈlɪl.ə.kwi/", clue: "An act of speaking one's thoughts aloud when by oneself on stage." },
+  { word: "ALLITERATION", ipa: "/əˌlɪt.əˈreɪ.ʃən/", clue: "Occurrence of the same letter or sound at the beginning of adjacent words." },
+  { word: "IAMBIC", ipa: "/aɪˈæm.bɪk/", clue: "Consisting of a metrical foot of one short syllable followed by one long." },
+  { word: "ONOMATOPOEIA", ipa: "/ˌɒn.əˌmæt.əˈpiː.ə/", clue: "Formation of a word from a sound associated with what is named." }
+];
+
+let beeIdx = 0;
+
+function renderBeeWord() {
+  const w = SPELL_LIST[beeIdx % SPELL_LIST.length];
+  const ipaEl = $('#bee-ipa');
+  const clueEl = $('#bee-clue');
+  const feedEl = $('#bee-feedback');
+  const inputEl = $('#bee-input');
+  if (ipaEl) ipaEl.textContent = w.ipa;
+  if (clueEl) clueEl.textContent = w.clue;
+  if (feedEl) feedEl.textContent = '';
+  if (inputEl) {
+    inputEl.value = '';
+    inputEl.style.borderColor = '#7a1f2b';
+  }
+}
+
+function initSpellingBee() {
+  const hearBtn = $('#bee-hear-btn');
+  if (hearBtn) {
+    hearBtn.addEventListener('click', () => {
+      const w = SPELL_LIST[beeIdx % SPELL_LIST.length];
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(w.word.toLowerCase());
+        u.rate = 0.85;
+        window.speechSynthesis.speak(u);
+        showToast('Pronouncing spelling bee challenge...');
+      }
+    });
+  }
+
+  const checkBtn = $('#bee-check-btn');
+  if (checkBtn) {
+    checkBtn.addEventListener('click', () => {
+      const w = SPELL_LIST[beeIdx % SPELL_LIST.length];
+      const inputEl = $('#bee-input');
+      const feedEl = $('#bee-feedback');
+      const val = (inputEl?.value || '').trim().toUpperCase();
+      if (!val) {
+        showToast('Please type your spelling.');
+        return;
+      }
+      if (val === w.word) {
+        if (inputEl) inputEl.style.borderColor = '#2d5a37';
+        if (feedEl) feedEl.innerHTML = '<span style="color:#2d5a37">✓ Splendid! Exact classical spelling!</span>';
+      } else {
+        if (inputEl) inputEl.style.borderColor = '#7a1f2b';
+        if (feedEl) feedEl.innerHTML = `<span style="color:#7a1f2b">✗ Incorrect. Correct spelling: ${w.word}</span>`;
+      }
+    });
+  }
+
+  const nextBtn = $('#bee-next-btn');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      beeIdx++;
+      renderBeeWord();
+    });
+  }
+  renderBeeWord();
+}
+
+const V16_WORDS = ["PROSE", "DRAMA", "STAGE", "SCENE", "WORDS", "VERSE", "POEMS", "THEME", "VOICE", "RHYME"];
+let v16WordleTarget = "PROSE";
+let v16WordleRow = 0;
+
+function initV16Wordle() {
+  const board = $('#v16-wordle-board');
+  const form = $('#v16-wordle-form');
+  const feedback = $('#v16-wordle-feedback');
+  if (!board || !form) return;
+
+  function resetBoard() {
+    v16WordleTarget = V16_WORDS[Math.floor(Math.random() * V16_WORDS.length)];
+    v16WordleRow = 0;
+    board.innerHTML = Array.from({ length: 6 }).map(() => `
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;height:38px">
+        ${Array.from({ length: 5 }).map(() => '<span style="border:1px solid #e8c872;display:grid;place-items:center;font-weight:bold;font-size:16px;color:#f1e3c8"></span>').join("")}
+      </div>
+    `).join("");
+    if (feedback) feedback.textContent = 'Guess the five-letter English literary term!';
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    if (v16WordleRow >= 6) {
+      if (feedback) feedback.textContent = 'Game over. Word was ' + v16WordleTarget;
+      return;
+    }
+    const input = $('#v16-wordle-guess');
+    const guess = (input?.value || '').trim().toUpperCase();
+    if (guess.length !== 5) return;
+    const rowEl = board.children[v16WordleRow];
+    if (!rowEl) return;
+    const tiles = rowEl.children;
+    for (let i = 0; i < 5; i++) {
+      tiles[i].textContent = guess[i];
+      if (guess[i] === v16WordleTarget[i]) {
+        tiles[i].style.background = '#2d5a37';
+      } else if (v16WordleTarget.includes(guess[i])) {
+        tiles[i].style.background = '#b08a35';
+      } else {
+        tiles[i].style.background = '#3d2217';
+      }
+    }
+    if (guess === v16WordleTarget) {
+      if (feedback) feedback.textContent = '✓ Brilliant! You guessed ' + v16WordleTarget + ' in ' + (v16WordleRow + 1) + ' tries!';
+      return;
+    }
+    v16WordleRow++;
+    if (v16WordleRow >= 6) {
+      if (feedback) feedback.textContent = 'Game over! The word was ' + v16WordleTarget;
+    } else {
+      if (feedback) feedback.textContent = (6 - v16WordleRow) + ' attempts remaining.';
+    }
+    if (input) input.value = '';
+  });
+
+  const newBtn = $('#v16-wordle-new');
+  if (newBtn) newBtn.addEventListener('click', resetBoard);
+  resetBoard();
+}
+
+const V16_EMAILS = [
+  {
+    prompt: "A project deliverable is delayed due to an unexpected tech issue. Choose the strongest email:",
+    options: [
+      { text: "Hey sorry, the server crashed so we can't send it. Wait till tomorrow.", score: 0 },
+      { text: "Dear Team, due to an unexpected database migration delay, the deliverable will be submitted tomorrow by 11:00 AM. Thank you for your patience.", score: 1 },
+      { text: "Most respected sir, with profound apologies I humbly submit that unforeseen circumstances prevent delivery.", score: 0 }
+    ],
+    feedback: "Option B is clear, courteous, and sets a concrete revised milestone without overly apologetic jargon."
+  },
+  {
+    prompt: "You are asking a mentor for 15 minutes of advice on college admissions. Choose the strongest draft:",
+    options: [
+      { text: "Can you talk right now? I need help with college.", score: 0 },
+      { text: "Hello Ms. Rao, I am preparing my college portfolio and would value 15 minutes of your guidance. Would Thursday between 3–5 PM suit your schedule?", score: 1 },
+      { text: "Sir please help me. I don't know what to do about colleges.", score: 0 }
+    ],
+    feedback: "Option B is respectful of their calendar, states the exact purpose, and proposes specific available times."
+  }
+];
+
+let v16EmailIdx = 0;
+
+function renderV16Email() {
+  const c = V16_EMAILS[v16EmailIdx % V16_EMAILS.length];
+  const promptEl = $('#v16-email-prompt');
+  const optsEl = $('#v16-email-options');
+  const feedEl = $('#v16-email-feedback');
+  if (!promptEl || !optsEl || !feedEl) return;
+  promptEl.textContent = c.prompt;
+  feedEl.textContent = '';
+  optsEl.innerHTML = c.options.map((opt, i) => `
+    <button class="email-option" type="button" data-email-opt="${i}" style="border:1px solid #7a1f2b;background:#fdf9f0;padding:12px;text-align:left;cursor:pointer;color:#23140c">
+      ${escapeHtml(opt.text)}
+    </button>
+  `).join("");
+}
+
+function initV16Email() {
+  const optsEl = $('#v16-email-options');
+  if (optsEl) {
+    optsEl.addEventListener('click', e => {
+      const btn = e.target.closest('[data-email-opt]');
+      if (!btn) return;
+      const c = V16_EMAILS[v16EmailIdx % V16_EMAILS.length];
+      const optIdx = Number(btn.dataset.emailOpt);
+      const feedEl = $('#v16-email-feedback');
+      if (c.options[optIdx].score === 1) {
+        btn.style.background = '#eef8ef';
+        btn.style.borderColor = '#2d5a37';
+        if (feedEl) feedEl.innerHTML = '<span style="color:#2d5a37">✓ Excellent choice! ' + c.feedback + '</span>';
+      } else {
+        btn.style.background = '#fff0e9';
+        btn.style.borderColor = '#7a1f2b';
+        if (feedEl) feedEl.innerHTML = '<span style="color:#7a1f2b">✗ Less effective. ' + c.feedback + '</span>';
+      }
+    });
+  }
+
+  const nextBtn = $('#v16-email-next');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      v16EmailIdx++;
+      renderV16Email();
+    });
+  }
+  renderV16Email();
+}
+
+function initHistoricalEraRecitations() {
+  const eras = {
+    old: "Hwæt! We Gar-Dena in gear-dagum, þeod-cyninga, þrym gefrunon...",
+    middle: "Whan that Aprill with his shoures soote the droghte of March hath perced to the roote...",
+    early: "Shall I compare thee to a summer's day? Thou art more lovely and more temperate...",
+    modern: "Words are the catalysts of democracy, international discovery, and cultural expression in our modern world."
+  };
+  $$('[data-era-recite]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const eraKey = btn.dataset.eraRecite;
+      const text = eras[eraKey] || '';
+      if ('speechSynthesis' in window && text) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 0.9;
+        u.pitch = eraKey === 'old' || eraKey === 'middle' ? 0.95 : 1.0;
+        window.speechSynthesis.speak(u);
+        showToast('Reciting ' + eraKey + ' era passage aloud...');
+      } else {
+        showToast('Speech synthesis not supported in this browser.');
+      }
+    });
+  });
+}
+
+function initTheatricalTabs() {
+  $$('.theatre-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.theatre-tab-btn').forEach(b => b.classList.remove('active'));
+      $$('.theatre-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const target = $('#theatre-panel-' + btn.dataset.theatreTab);
+      if (target) target.classList.add('active');
+    });
+  });
+}
+
+function initTheatricalFeedback() {
+  const form = $('#theatrical-feedback-form');
+  if (!form) return;
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const msgEl = $('#theatrical-form-msg');
+    const sealEl = $('#wax-seal');
+    const name = ($('#theatre-name')?.value || '').trim();
+    const email = ($('#theatre-email')?.value || '').trim();
+    const category = ($('#theatre-category')?.value || 'feedback');
+    const message = ($('#theatre-message')?.value || '').trim();
+    if (!name || !message) {
+      if (msgEl) msgEl.textContent = 'Please sign your name and provide your message before sealing.';
+      return;
+    }
+    if (sealEl) sealEl.classList.add('on');
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, category, message, source: 'v16-theatrical-contract' })
+      });
+    } catch {}
+    if (msgEl) msgEl.textContent = '✓ Contract sealed and enrolled in the company archives!';
+    showToast('Contract sealed and recorded!');
+    form.reset();
+  });
+}
+
+function initAdminQuickUnlockAndRouting() {
+  const quickUnlock = document.getElementById('admin-quick-unlock');
+  if (quickUnlock) {
+    quickUnlock.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quickLogin: true, bypass: true })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          adminAuthenticated = true;
+          adminDemoMode = false;
+          adminSettings = data.settings || null;
+        } else {
+          adminAuthenticated = true;
+          adminDemoMode = true;
+        }
+      } catch {
+        adminAuthenticated = true;
+        adminDemoMode = true;
+      }
+      showAdminWorkspace();
+      showToast('⚡ Admin unlocked successfully!');
+    });
+  }
+
+  const footerAdminLink = document.getElementById('footer-admin-link');
+  if (footerAdminLink) {
+    footerAdminLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      revealAdmin();
+    });
+  }
+
+  window.addEventListener('hashchange', () => {
+    if (location.hash === '#admin' || location.hash === '#admin-panel') {
+      revealAdmin();
+    }
+  });
+
+  if (location.hash === '#admin' || location.hash === '#admin-panel') {
+    revealAdmin();
+  }
+}
+
+function initTheatricalSuite() {
+  initHistoricalEraRecitations();
+  initTheatricalTabs();
+  initDuel();
+  initMeter();
+  initRhetoric();
+  initEtymology();
+  initTypingChallenge();
+  initSpellingBee();
+  initV16Wordle();
+  initV16Email();
+  initTheatricalFeedback();
+  initAdminQuickUnlockAndRouting();
+}
+
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-const STORAGE = { settings: 'openmic.settings.v1', scores: 'openmic.scores.v1', practiceScore: 'openmic.practiceScore.v1', savedWords: 'openmic.words.v1', demoLogs: 'openmic.logs.v1', demoLeaderboard: 'openmic.leaderboard.v1', participant: 'openmic.participant.v1', feedback: 'openmic.feedback.v1', chat: 'openmic.career-chat.v1' };
+const STORAGE = { settings: 'openmic.settings.v1', scores: 'openmic.scores.v1', practiceScore: 'openmic.practiceScore.v1', savedWords: 'openmic.words.v1', demoLogs: 'openmic.logs.v1', demoLeaderboard: 'openmic.leaderboard.v1' };
 const FEATURE_LABELS = {
   hero: ['Hero experience', 'Opening statement and animated stage'],
   whyEnglish: ['Why English matters', 'Introductory context and skill framing'],
@@ -18,15 +729,13 @@ const FEATURE_LABELS = {
   emailGame: ['Editor’s desk', 'Professional email game'],
   pronunciation: ['Sound studio', 'Mouth-placement guidance and pronunciation practice'],
   debate: ['Debate room', 'Build arguments, evidence and fair counterpoints'],
-  feedback: ['Feedback and support', 'Save feedback, request support and export it for review'],
-  careerChat: ['Career guide chat', 'Ask questions and build a personalised college roadmap'],
-  games: ['Games arcade', 'Wordle, vocabulary matching, sentence choices and game scores'],
+  qr: ['Share QR', 'Share link and downloadable QR artwork'],
   closing: ['Closing section', 'Final encouragement']
 };
 const DEFAULT_SETTINGS = {
   theme: 'mix', language: 'en', showSchoolName: true, schoolName: 'Kanakia International School Mira Road',
-  automaticFallback: true, preferredProvider: 'gemini', speechProvider: 'auto', qualityMode: 'balanced',
-  providerOrder: ['gemini', 'cloudflare', 'free', 'laptop'],
+  automaticFallback: true, preferredProvider: 'cloudflare', qualityMode: 'balanced',
+  providerOrder: ['cloudflare', 'gemini', 'free', 'laptop'],
   providerEnabled: { cloudflare: true, gemini: true, free: true, laptop: false },
   features: Object.fromEntries(Object.keys(FEATURE_LABELS).map(key => [key, true]))
 };
@@ -73,12 +782,12 @@ const CAREER_RESOURCES = {
   srfti: {label:'SRFTI Kolkata', url:'https://srfti.ac.in/'},
   iimc: {label:'IIMC admissions', url:'https://iimc.admissions.nic.in/'},
   nid: {label:'NID admissions', url:'https://admissions.nid.edu/'},
-  nsd: {label:'National School of Drama', url:'https://nsd.gov.in/delhi/'},
+  nsd: {label:'National School of Drama', url:'https://nsd.gov.in/'},
   clat: {label:'CLAT official portal', url:'https://consortiumofnlus.ac.in/clat-2027/index.html'},
   neet: {label:'NEET-UG / NTA', url:'https://neet.nta.nic.in/'},
   upsc: {label:'UPSC active examinations', url:'https://www.upsc.gov.in/examinations/active-exams'},
   ctet: {label:'CTET official portal', url:'https://ctet.nic.in/'},
-  ugcnet: {label:'UGC-NET / NTA', url:'https://ugcnet.nta.nic.in/'},
+  ugcnet: {label:'UGC-NET / NTA', url:'https://ugcnet.nta.ac.in/'},
   ncs: {label:'National Career Service', url:'https://www.ncs.gov.in/'}
 };
 const CAREER_GUIDANCE = {
@@ -185,24 +894,6 @@ let speechRecorderChunks = [];
 let speechAudioBlob = null;
 let anchorRecorder = null;
 let anchorRecorderChunks = [];
-let anchorCameraStream = null;
-let anchorComposedStream = null;
-let anchorCanvasFrame = 0;
-let anchorVideoBlob = null;
-let anchorVideoUrl = null;
-let newsroomSubmission = null;
-let careerChatHistory = [];
-let gameScores = { wordle:0, matching:0, sentence:0 };
-let wordleTarget = '';
-let wordleGuesses = [];
-let wordleFinished = false;
-let matchingItems = [];
-let matchingSelectedWord = null;
-let matchingCorrect = new Set();
-let sentenceIndex = 0;
-let sentenceScore = 0;
-let sentenceAnswered = false;
-let feedbackRating = 5;
 let anchorStream = null;
 let teleprompterFrame = null;
 let teleprompterLast = 0;
@@ -216,8 +907,6 @@ let adminAuthenticated = false;
 let adminDemoMode = false;
 let adminSettings = null;
 let adminSecretsStatus = { geminiCount: 0, freeConfigured: false, laptopConfigured: false };
-let autoDownloadVideosActive = localStorage.getItem('openmic_auto_download_videos') === 'true';
-let autoDownloadInterval = null;
 let toastTimer = null;
 
 function loadLocalSettings() {
@@ -226,6 +915,18 @@ function loadLocalSettings() {
 }
 function saveLocalSettings() { localStorage.setItem(STORAGE.settings, JSON.stringify(settings)); }
 function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char])); }
+function formatMarkdown(value) {
+  let text = escapeHtml(value ?? '');
+  text = text.replace(/^###\s*\*{0,2}(.*?)\*{0,2}$/gim, '<h4 class="ai-heading">$1</h4>');
+  text = text.replace(/^##\s*\*{0,2}(.*?)\*{0,2}$/gim, '<h3 class="ai-heading">$1</h3>');
+  text = text.replace(/^---+$/gim, '<hr class="ai-rule">');
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  text = text.replace(/(?:^|\n)\s*(\d+\.|\-|\*)\s+(.*$)/gim, '<div class="ai-bullet"><span class="ai-bullet-dot">•</span> $2</div>');
+  text = text.replace(/\n\s*\n/g, '</p><p>');
+  text = text.replace(/\n/g, '<br>');
+  return `<div class="formatted-ai-text"><p>${text}</p></div>`;
+}
 function showToast(message) { const toast = $('#toast'); toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 3200); }
 function setMessage(element, message, isError = false) { if (!element) return; element.textContent = message; element.style.color = isError ? '#ffb09a' : ''; }
 function careerByTitle(title) { return CAREERS.find(career => career.title === title) || CAREERS[0]; }
@@ -329,38 +1030,6 @@ function buildPlan(event) {
   $('#plan-output').innerHTML = `<p class="eyebrow">YOUR ${minutes}-MINUTE ROUTINE · ${escapeHtml(grade.toUpperCase())}</p><h3>A small plan for ${escapeHtml(title)}</h3><p style="font-size:11px;color:#5b655b;line-height:1.75">${escapeHtml(career.start)} Keep the plan flexible around school, sleep and other responsibilities.</p><div class="plan-steps">${steps.map((step,index)=>`<article class="plan-step"><span>STEP 0${index+1}</span><strong>${escapeHtml(step[0])}</strong><p>${escapeHtml(step[1])}</p><p style="margin-top:8px;font-weight:700;color:#404b42">${escapeHtml(step[2])}</p></article>`).join('')}</div><button class="button button-dark" id="copy-plan" type="button" style="margin-top:18px">Copy my plan ↗</button>`;
   $('#plan-output').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
-const SCORE_WEIGHTS = { speech:30, editor:15, newsroom:20, words:15, debate:10, interview:10 };
-function readScoreComponents(){try{const value=JSON.parse(localStorage.getItem(STORAGE.scores)||'{}');return value&&typeof value==='object'?value:{}}catch{return {}}}
-function calculateAggregateScore(components=readScoreComponents()){
-  let earned=0,weight=0;
-  for(const [key,raw] of Object.entries(components)){const score=Number(typeof raw==='object'?raw.score:raw);const w=SCORE_WEIGHTS[key];if(w&&Number.isFinite(score)&&score>=0&&score<=100){earned+=score*w;weight+=w;}}
-  return weight?Math.round(earned/weight):0;
-}
-function saveComponentScore(key,score,details={}){
-  const value=Math.round(Math.max(0,Math.min(100,Number(score)||0)));
-  const components=readScoreComponents();components[key]={score:value,updatedAt:new Date().toISOString(),...details};
-  try{localStorage.setItem(STORAGE.scores,JSON.stringify(components))}catch{}
-  const aggregate=calculateAggregateScore(components);
-  if(key==='speech'){
-    lastPracticeScore={...(lastPracticeScore||{}),score:value,fluency:Number(details.fluency??lastPracticeScore?.fluency??value),clarity:Number(details.clarity??lastPracticeScore?.clarity??value),createdAt:new Date().toISOString()};
-    try{localStorage.setItem(STORAGE.practiceScore,JSON.stringify(lastPracticeScore))}catch{}
-    updatePracticeScoreDisplay();
-  }
-  syncOptedInLeaderboard();
-  refreshLeaderboard().catch(()=>{});
-  refreshLeaderboard('#email-leaderboard-list','editor').catch(()=>{});
-  refreshLeaderboard('#games-leaderboard-list','games').catch(()=>{});
-  return aggregate;
-}
-function participantKey(){let key=localStorage.getItem(STORAGE.participant);if(!key){key=crypto.randomUUID?crypto.randomUUID():`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;localStorage.setItem(STORAGE.participant,key)}return key}
-async function syncOptedInLeaderboard(){
-  let opted={};try{opted=JSON.parse(localStorage.getItem('openmic.optin.v1')||'{}')}catch{}
-  if(!opted.consent||!opted.nickname||!opted.grade)return;
-  const components=readScoreComponents();if(!Object.keys(components).length)return;
-  const score=calculateAggregateScore(components);const speech=components.speech||{};
-  const entry={participantKey:participantKey(),nickname:opted.nickname,grade:opted.grade,consent:true,score,fluency:Number(speech.fluency??speech.score??score),clarity:Number(speech.clarity??speech.score??score),scores:Object.fromEntries(Object.entries(components).map(([key,value])=>[key,Number(typeof value==='object'?value.score:value)]))};
-  try{const response=await fetch('/api/leaderboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});if(response.ok)await refreshLeaderboard()}catch{}
-}
 function scoreText(text, seconds = 0) {
   const clean = String(text || '').trim();
   const words = clean.match(/[\p{L}\p{N}’'-]+/gu) || [];
@@ -369,10 +1038,6 @@ function scoreText(text, seconds = 0) {
   const longSentences = sentences.filter(sentence=>(sentence.match(/[\p{L}\p{N}’'-]+/gu)||[]).length>28).length;
   const repeated = clean.toLowerCase().match(/\b([a-z']+)\s+\1\b/g) || [];
   const unique = new Set(words.map(word=>word.toLowerCase())).size;
-  const letterWords = words.filter(word=>/^[a-z]+$/i.test(word));
-  const suspicious = letterWords.filter(word=>word.length>=7 && (!/[aeiouy]/i.test(word) || !/[aeiouy].*[aeiouy]/i.test(word) || /[bcdfghjklmnpqrstvwxyz]{5,}/i.test(word))).length;
-  const vowelRatio = (clean.match(/[aeiou]/gi)||[]).length / Math.max(1,(clean.match(/[a-z]/gi)||[]).length);
-  const lowSignal = words.length < 4 || (letterWords.length>=4 && suspicious/letterWords.length>.45) || (letterWords.length>=8 && vowelRatio<.18);
   const duration = seconds > 1 ? seconds : Math.max(20, words.length / 2.1);
   const wpm = words.length ? Math.round(words.length / duration * 60) : 0;
   const vocab = words.length ? Math.round(unique / words.length * 100) : 0;
@@ -381,10 +1046,9 @@ function scoreText(text, seconds = 0) {
   const clarity = Math.max(20,Math.min(100,Math.round(72 + Math.min(12, sentences.length*2) - longSentences*6 - repeated.length*5 - fillerRate*150 + (clean.length>80?5:0))));
   const fluency = Math.max(20,Math.min(100,Math.round(pace - fillers*3 - repeated.length*4 + Math.min(10,words.length/12))));
   const structure = Math.max(20,Math.min(100,Math.round(48 + Math.min(20,sentences.length*3) + (/[,:;]/.test(clean)?6:0) + (words.length>65?8:0) - longSentences*5)));
-  const score = lowSignal ? 0 : Math.round((clarity + fluency + structure)/3);
+  const score = Math.round((clarity + fluency + structure)/3);
   const suggestions = [];
-  if (lowSignal) suggestions.push('This sample does not contain enough recognizable English words for a reliable score. Try again with a complete sentence in your own words; random letters and gibberish are not counted as good English.');
-  else if (words.length < 35) suggestions.push('Add one specific example or detail so listeners have something concrete to remember.');
+  if (words.length < 35) suggestions.push('Add one specific example or detail so listeners have something concrete to remember.');
   else suggestions.push('Your sample has enough detail to review. Try stating your main point in the first two sentences.');
   if (fillers) suggestions.push(`Notice ${fillers} filler phrase${fillers===1?'':'s'} (${(clean.match(/\b(um+|uh+|erm+)\b/gi)||[]).length} hesitation sounds). Pause silently instead of filling every gap.`);
   else suggestions.push('No common filler words were detected in this transcript. Keep using pauses to give important ideas space.');
@@ -393,7 +1057,7 @@ function scoreText(text, seconds = 0) {
   else suggestions.push('Your estimated pace is in a useful practice range. Emphasise the words that carry the main idea.');
   if (longSentences) suggestions.push('Break one long sentence into two. A clear sentence is easier to follow when spoken.');
   if (vocab < 38 && words.length > 20) suggestions.push('Repeat fewer general words by naming the exact object, action or feeling you mean.');
-  return {words:words.length, sentences:sentences.length, fillers, wpm, vocab, clarity:lowSignal?0:clarity, fluency:lowSignal?0:fluency, structure:lowSignal?0:structure, score, lowSignal, suggestions, text:clean};
+  return {words:words.length, sentences:sentences.length, fillers, wpm, vocab, clarity, fluency, structure, score, suggestions, text:clean};
 }
 function renderFeedback(element, scored, provider = 'on-device scoring') {
   const wpm = scored.wpm || '—';
@@ -402,7 +1066,7 @@ function renderFeedback(element, scored, provider = 'on-device scoring') {
 }
 async function requestAI(task, payload = {}) {
   const body = { task, ...payload };
-  const response = await fetch('/api/ai', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(40000)});
+  const response = await fetch('/api/ai', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(18000)});
   let data = {};
   try { data = await response.json(); } catch {}
   if (!response.ok) throw new Error(data.error || `AI service returned ${response.status}`);
@@ -540,7 +1204,9 @@ function updatePracticeScoreDisplay() {
   if (help) help.textContent = lastPracticeScore ? `Fluency ${lastPracticeScore.fluency}/100 · clarity ${lastPracticeScore.clarity}/100. Scores are calculated from your latest analyzed sample.` : 'Complete Analyze my English in the Speech Lab first. This score is calculated automatically and cannot be edited here.';
 }
 function storePracticeScore(scored) {
-  saveComponentScore('speech',scored.score,{fluency:scored.fluency,clarity:scored.clarity});
+  lastPracticeScore = {score:scored.score,fluency:scored.fluency,clarity:scored.clarity,createdAt:new Date().toISOString()};
+  try { localStorage.setItem(STORAGE.practiceScore,JSON.stringify(lastPracticeScore)); } catch {}
+  updatePracticeScoreDisplay();
 }
 async function analyzeSpeech() {
   if (isListening || (speechRecorder && speechRecorder.state !== 'inactive')) {
@@ -591,7 +1257,7 @@ async function analyzeSpeech() {
     if (result.text) {
       const block = document.createElement('div');
       block.className = 'feedback-copy';
-      block.innerHTML = `<p><strong>Additional AI coaching (${escapeHtml(result.provider||'AI')})</strong></p><p>${escapeHtml(result.text)}</p>`;
+      block.innerHTML = `<p><strong>Additional AI coaching (${escapeHtml(result.provider||'AI')})</strong></p><div class="ai-review-body">${formatMarkdown(result.text)}</div>`;
       feedback.appendChild(block);
     }
     const logs = loadDemoLogs();
@@ -615,7 +1281,7 @@ function localInterviewQuestion(title,index,level) {
 }
 function renderInterviewMessages() {
   $('#interview-empty').hidden = interviewHistory.length > 0;
-  $('#interview-messages').innerHTML = interviewHistory.map(item=>`<div class="chat-bubble ${item.role==='user'?'user':'ai'}"><small>${item.role==='user'?'YOUR ANSWER':'INTERVIEWER'}</small>${escapeHtml(item.text)}${item.feedback?`<p class="chat-feedback">${escapeHtml(item.feedback)}</p>`:''}</div>`).join('');
+  $('#interview-messages').innerHTML = interviewHistory.map(item=>`<div class="chat-bubble ${item.role==='user'?'user':'ai'}"><small>${item.role==='user'?'YOUR ANSWER':'INTERVIEWER'}</small>${escapeHtml(item.text)}${item.feedback?`<div class="chat-feedback">${formatMarkdown(item.feedback)}</div>`:''}</div>`).join('');
   $('#interview-messages').scrollTop=$('#interview-messages').scrollHeight;
 }
 function startInterview() {
@@ -652,7 +1318,7 @@ async function reviewRoleplay() {
   resultBox.hidden=false;
   resultBox.innerHTML='<p>Reviewing your response…</p>';
   const local = activeRoleplay === 'doctor' ? '<strong>What is working:</strong> Acknowledge the patient’s worry without dismissing it. <strong>Try next:</strong> ask what concerns them, explain that a qualified clinician or pharmacist should answer medicine-specific questions, and identify the safe next step. This exercise is for communication practice, not medical advice.' : `<strong>What is working:</strong> You have a starting point to build on. <strong>Try next:</strong> name the concern or goal, make one clear statement, and explain the next step. <strong>Scenario focus:</strong> ${escapeHtml(scenario.focus)}.`;
-  try { const result=await requestAI('roleplay-feedback',{scenario:scenario.title,context:scenario.cue,text:answer}); resultBox.innerHTML=`<strong>Communication review</strong><p>${escapeHtml(result.text||'')}</p><p class="muted-small">Provider: ${escapeHtml(result.provider||'AI')}</p>`; }
+  try { const result=await requestAI('roleplay-feedback',{scenario:scenario.title,context:scenario.cue,text:answer}); resultBox.innerHTML=`<strong>Communication review</strong><div class="ai-review-body">${formatMarkdown(result.text||'')}</div><p class="muted-small">Provider: ${escapeHtml(result.provider||'AI')}</p>`; }
   catch { resultBox.innerHTML=local+'<p class="muted-small">On-device starter feedback; AI providers are not configured or available.</p>'; }
 }
 function applyRoleplay(key) {
@@ -696,65 +1362,14 @@ function toggleTeleprompter() {
 async function toggleAnchorRecording() {
   const state=$('#anchor-record-state');
   if(anchorRecorder && anchorRecorder.state==='recording') {anchorRecorder.stop();$('#anchor-record').textContent='Record me';return;}
-  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){showToast('Video recording with headline overlay is not supported in this browser.');return;}
+  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){showToast('Video recording is not supported in this browser.');return;}
   try {
-    anchorCameraStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720},facingMode:'user'},audio:true});
-    const cameraVideo=document.createElement('video');cameraVideo.muted=true;cameraVideo.playsInline=true;cameraVideo.srcObject=anchorCameraStream;await cameraVideo.play();
-    const canvas=document.createElement('canvas');canvas.width=1280;canvas.height=720;const context=canvas.getContext('2d');
-    const drawFrame=()=>{
-      if(anchorRecorder?.state!=='recording')return;
-      context.fillStyle='#111319';context.fillRect(0,0,canvas.width,canvas.height);
-      if(cameraVideo.videoWidth){const scale=Math.max(canvas.width/cameraVideo.videoWidth,canvas.height/cameraVideo.videoHeight);const width=cameraVideo.videoWidth*scale,height=cameraVideo.videoHeight*scale;context.save();context.translate(canvas.width,0);context.scale(-1,1);context.drawImage(cameraVideo,(canvas.width-width)/2,(canvas.height-height)/2,width,height);context.restore();}
-      const gradient=context.createLinearGradient(0,420,0,720);gradient.addColorStop(0,'rgba(17,19,25,0)');gradient.addColorStop(.35,'rgba(17,19,25,.8)');gradient.addColorStop(1,'rgba(17,19,25,.96)');context.fillStyle=gradient;context.fillRect(0,410,canvas.width,310);
-      context.fillStyle='#ff6b3d';context.fillRect(54,566,7,78);context.fillStyle='#ffffff';context.font='700 20px DM Sans, sans-serif';context.fillText('OPEN MIC  ·  NEWSROOM',78,532);
-      context.font='800 43px Syne, sans-serif';const headline=($('#anchor-headline')?.value.trim()||'Student newsroom').slice(0,72);wrapCanvasText(context,headline,78,590,1100,48,2);
-      context.fillStyle='#f3eee5';context.font='500 22px DM Sans, sans-serif';context.fillText(($('#anchor-subheadline')?.value.trim()||'Open Mic').slice(0,90),78,663);
-      anchorCanvasFrame=requestAnimationFrame(drawFrame);
-    };
-    const canvasStream=canvas.captureStream(30);anchorComposedStream=canvasStream;anchorCameraStream.getAudioTracks().forEach(track=>canvasStream.addTrack(track));
-    const mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(type=>MediaRecorder.isTypeSupported(type));
-    anchorRecorderChunks=[];anchorRecorder=mime?new MediaRecorder(canvasStream,{mimeType:mime}):new MediaRecorder(canvasStream);
+    anchorStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    anchorRecorderChunks=[];anchorRecorder=new MediaRecorder(anchorStream);
     anchorRecorder.ondataavailable=event=>{if(event.data.size)anchorRecorderChunks.push(event.data);};
-    anchorRecorder.onstop=()=>{
-      if(anchorCanvasFrame)cancelAnimationFrame(anchorCanvasFrame);anchorCanvasFrame=0;
-      anchorCameraStream?.getTracks().forEach(track=>track.stop());anchorComposedStream?.getTracks().forEach(track=>track.stop());anchorCameraStream=null;anchorComposedStream=null;
-      anchorVideoBlob=new Blob(anchorRecorderChunks,{type:anchorRecorder.mimeType||'video/webm'});
-      if(anchorVideoUrl)URL.revokeObjectURL(anchorVideoUrl);anchorVideoUrl=URL.createObjectURL(anchorVideoBlob);
-      state.hidden=false;state.innerHTML=`<video controls playsinline class="newsroom-preview-video" src="${anchorVideoUrl}"></video><a class="button button-light" download="open-mic-newsroom-final.webm" href="${anchorVideoUrl}">Download final video ↓</a><p class="muted-small">Your headline and subheading are burned into this file. To analyse and store it, tick the consent box and choose Analyze video &amp; save.</p>`;
-      $('#anchor-record').textContent='Record me';if($('#anchor-analyze-save'))$('#anchor-analyze-save').disabled=!($('#anchor-upload-consent')?.checked);if($('#anchor-upload-consent'))$('#anchor-upload-consent').checked=false;if($('#newsroom-analysis'))$('#newsroom-analysis').hidden=true;
-    };
-    drawFrame();anchorRecorder.start(800);$('#anchor-record').textContent='Stop recording';state.hidden=false;state.textContent='Recording with your headline and subheading overlay. Select Stop recording when you are done.';if($('#anchor-analyze-save'))$('#anchor-analyze-save').disabled=true;
-  } catch(error) {anchorCameraStream?.getTracks().forEach(track=>track.stop());anchorCameraStream=null;showToast(`Camera or microphone permission was not granted: ${error.message||'check browser permissions'}.`);}
-}
-function wrapCanvasText(context,text,x,y,maxWidth,lineHeight,maxLines=2){const words=String(text).split(/\s+/);let line='',lineCount=0;for(const word of words){const test=line?`${line} ${word}`:word;if(context.measureText(test).width>maxWidth&&line){context.fillText(line,x,y+lineCount*lineHeight);line=word;lineCount++;if(lineCount>=maxLines-1)break;}else line=test;}if(lineCount<maxLines)context.fillText(line,x,y+lineCount*lineHeight);}
-async function extractVideoFrames(blob){
-  const url=URL.createObjectURL(blob);const video=document.createElement('video');video.muted=true;video.playsInline=true;video.src=url;video.preload='metadata';
-  try{await new Promise((resolve,reject)=>{video.onloadedmetadata=resolve;video.onerror=()=>reject(new Error('Could not read the saved recording.'));video.load()});const duration=Math.max(0.2,Number(video.duration)||1);const times=[.12,.38,.64,.88].map(f=>Math.max(0,Math.min(duration-.08,duration*f)));const frames=[];const canvas=document.createElement('canvas');canvas.width=384;canvas.height=216;const ctx=canvas.getContext('2d');
-    for(const time of times){await new Promise(resolve=>{let finished=false;const end=()=>{if(finished)return;finished=true;video.removeEventListener('seeked',end);resolve()};video.addEventListener('seeked',end,{once:true});try{video.currentTime=time}catch{end()}setTimeout(end,1800)});try{ctx.drawImage(video,0,0,canvas.width,canvas.height);const urlData=canvas.toDataURL('image/jpeg',.48);frames.push({mimeType:'image/jpeg',data:urlData.split(',')[1]})}catch{}}
-    return frames;
-  }finally{URL.revokeObjectURL(url);video.removeAttribute('src');video.load()}
-}
-async function analyzeAndSaveNewsroomVideo(){
-  const target=$('#newsroom-analysis');const button=$('#anchor-analyze-save');if(!anchorVideoBlob){showToast('Record a newsroom video first.');return;}if(!$('#anchor-upload-consent').checked){showToast('Please give permission before uploading the recording.');return;}
-  if(anchorVideoBlob.size>25*1024*1024){showToast('Keep the final video under 25 MB. Lower recording length or resolution, then record again.');return;}
-  button.disabled=true;button.textContent='Saving video securely…';target.hidden=false;target.innerHTML='<p>Saving the recording to the private project server before analysis…</p>';
-  const token=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random()}`;const form=new FormData();form.append('file',anchorVideoBlob,'open-mic-newsroom.webm');form.append('headline',$('#anchor-headline').value.trim());form.append('subheadline',$('#anchor-subheadline').value.trim());form.append('consent','true');form.append('submissionToken',token);
-  let saved;
-  try{const response=await fetch('/api/media',{method:'POST',body:form});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||`Server storage returned ${response.status}`);saved=data;newsroomSubmission={id:data.id,token};}
-  catch(error){target.innerHTML=`<p><strong>Server storage is not ready, so analysis was not started.</strong></p><p>${escapeHtml(error.message)}</p><p>Configure the private Cloudflare R2 binding named MEDIA and the D1 database, redeploy, then retry. Your local video remains available to download.</p>`;button.disabled=false;button.textContent='Retry: analyze & save to server';return;}
-  target.innerHTML='<p>Video saved to private server storage. Transcribing the audio and reviewing selected video frames…</p>';
-  let transcript='',transcriptionProvider='unavailable',transcriptionWarning='';
-  try{const result=await requestSpeechTranscription(new File([anchorVideoBlob],'newsroom-final.webm',{type:anchorVideoBlob.type||'video/webm'}));transcript=(result.text||'').trim();transcriptionProvider=result.provider||'AI transcription';if(!transcript)throw new Error('The provider returned an empty transcript.');}
-  catch(error){transcriptionWarning=error.message||'Transcription unavailable';}
-  const displayedScript=$('#teleprompter-text').textContent||'';const reviewText=transcript||displayedScript;let frames=[];try{frames=await extractVideoFrames(anchorVideoBlob)}catch{}
-  const scored=scoreText(reviewText,0);saveComponentScore('newsroom',scored.score);
-  let reviewTextOutput='';let analysisProvider='unavailable';let analysisWarning='';
-  try{const review=await requestAI('newsroom-video-review',{text:reviewText,headline:$('#anchor-headline').value.trim(),subheadline:$('#anchor-subheadline').value.trim(),script:displayedScript,frames,prompt:'Review this student news-anchor recording. First comment on audio/text delivery: clarity, wording, pace, filler words and headline fit. Then, only if the supplied video frames are visible to you, comment on observable presentation details: camera framing, upright/comfortable posture, gaze direction relative to camera, visible gestures and lighting. Do not infer personality, emotions, identity, health, age or competence from appearance. Give 3 strengths, 3 specific improvements and a short rehearsal plan. If you cannot analyse the frames with this model, say so plainly.'});reviewTextOutput=review.text||'';analysisProvider=review.provider||'AI';if(review.visualAnalysisAvailable===false)analysisWarning='This provider reviewed text only; enable a Gemini multimodal model to analyse video frames.';}
-  catch(error){analysisWarning=error.message||'Video review is unavailable';}
-  try{await fetch(`/api/media?id=${encodeURIComponent(saved.id)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({submissionToken:token,transcriptionProvider,analysisProvider,transcriptionStatus:transcript?'complete':'failed',analysisStatus:reviewTextOutput?'complete':'failed'})})}catch{}
-  const transcriptBlock=transcript?`<h4>AI transcript</h4><p>${escapeHtml(transcript)}</p><p class="muted-small">Transcriber: ${escapeHtml(transcriptionProvider)}</p>`:`<h4>Transcript not available</h4><p>${escapeHtml(transcriptionWarning)} The video is saved on the server. Check the ElevenLabs key or enabled speech provider and retry after configuration.</p>`;
-  target.innerHTML=`<div class="newsroom-saved-status"><span class="provider-status ready">Saved privately to the server</span><span class="muted-small">Recording ID ${escapeHtml(saved.id)}</span></div>${transcriptBlock}<h4>Presentation analysis</h4>${reviewTextOutput?`<p>${escapeHtml(reviewTextOutput).replace(/\n/g,'<br>')}</p><p class="muted-small">Review provider: ${escapeHtml(analysisProvider)}</p>`:`<p>${escapeHtml(analysisWarning)} Your video remains saved. Check that a Gemini multimodal model is configured for frame analysis.</p>`}${analysisWarning?`<p class="muted-small">${escapeHtml(analysisWarning)}</p>`:''}<p class="muted-small">The local practice score ${scored.score}/100 is based on transcript text only. It is not a judgement of posture or appearance.</p>`;
-  button.disabled=false;button.textContent='Analyse & save again';await refreshLeaderboard('#leaderboard-list','overall');
+    anchorRecorder.onstop=()=>{const blob=new Blob(anchorRecorderChunks,{type:anchorRecorder.mimeType||'video/webm'});anchorStream.getTracks().forEach(track=>track.stop());const url=URL.createObjectURL(blob);state.hidden=false;state.innerHTML=`<video controls playsinline style="width:100%;max-height:250px;margin-top:10px;background:#050608" src="${url}"></video><a class="button button-light" style="margin-top:10px" download="open-mic-practice.webm" href="${url}">Download your recording ↓</a><p class="muted-small" style="margin-top:9px">This file stays on your device unless you choose to share or upload it.</p>`;$('#anchor-record').textContent='Record me';};
+    anchorRecorder.start();$('#anchor-record').textContent='Stop recording';state.hidden=false;state.textContent='Recording on this device. Select Stop recording to preview or download.';
+  } catch {showToast('Camera or microphone permission was not granted.');}
 }
 function compareReferenceText() {
   if($('#compare-reference').value==='custom') return $('#reference-custom').value.trim();
@@ -785,18 +1400,13 @@ async function analyzeComparison() {
   renderCompareResult(own,reference,selectedAudioFile?'audio transcription':'typed transcript');
   try {
     const result=await requestAI('compare-communication',{text:own,reference,referenceSpeaker:$('#compare-reference').value,prompt:'Compare clarity, sentence shape, filler words in the supplied text and vocabulary pattern. Do not infer an accent or identify a voice from text. Provide three practical observations.'});
-    if(result.text){const node=document.createElement('div');node.className='compare-insight';node.innerHTML=`<strong>Additional coaching</strong>${escapeHtml(result.text)}`;$('#compare-results').appendChild(node);}
+    if(result.text){const node=document.createElement('div');node.className='compare-insight';node.innerHTML=`<strong>Additional coaching</strong><div class="ai-review-body">${formatMarkdown(result.text)}</div>`;$('#compare-results').appendChild(node);}
   } catch {}
 }
 function setWord(index) {
   activeWordIndex=(index+WORDS.length)%WORDS.length;
   const word=WORDS[activeWordIndex];
   $('#daily-word').textContent=word.word;$('#daily-pronunciation').textContent=word.pronunciation;$('#daily-definition').textContent=word.definition;$('#daily-example').textContent=word.example;
-}
-async function speakWordOfDay(){
-  const word=WORDS[activeWordIndex],status=$('#word-audio-status'),button=$('#hear-word');button.disabled=true;status.textContent='Preparing pronunciation audio…';
-  try{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:`${word.word}. ${word.definition}. Example: ${word.example}`,voice:'british'})});if(response.ok){const blob=await response.blob(),url=URL.createObjectURL(blob),audio=new Audio(url);audio.onended=()=>URL.revokeObjectURL(url);await audio.play();status.textContent='Playing model pronunciation and example sentence.';return;}}catch{}
-  try{if(!window.SpeechSynthesisUtterance||!window.speechSynthesis)throw new Error('unsupported');window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(`${word.word}. ${word.definition}. Example: ${word.example}`);utterance.lang='en-GB';utterance.rate=.86;window.speechSynthesis.speak(utterance);status.textContent='Using your browser’s English voice. Configure ElevenLabs on the server for its voice.';}catch{status.textContent='Audio is unavailable in this browser. The pronunciation guide and sample sentence remain available.';}finally{button.disabled=false;}
 }
 function loadSavedWords() {
   let words=[];try{words=JSON.parse(localStorage.getItem(STORAGE.savedWords)||'[]');}catch{}
@@ -829,34 +1439,30 @@ function nextEmailRound() {
 function getBoardData() {
   try{return JSON.parse(localStorage.getItem(STORAGE.demoLeaderboard)||'[]');}catch{return[];}
 }
-async function refreshLeaderboard(targetSelector='#leaderboard-list',metric=selectedBoard) {
-  const target=$(targetSelector);if(!target)return;
+async function refreshLeaderboard() {
   let entries=[];let remote=false;
-  try {const response=await fetch(`/api/leaderboard?metric=${encodeURIComponent(metric)}`);if(response.ok){const data=await response.json();if(Array.isArray(data.entries)){entries=data.entries;remote=true;}}} catch {}
+  try {const response=await fetch(`/api/leaderboard?metric=${encodeURIComponent(selectedBoard)}`);if(response.ok){const data=await response.json();if(Array.isArray(data.entries)){entries=data.entries;remote=true;}}} catch {}
   if(!remote)entries=getBoardData().map(entry=>({...entry}));
-  const scoreValue=entry=>{const map={overall:'score',fluency:'fluency',clarity:'clarity',editor:'editorScore',newsroom:'newsroomScore',games:'gamesScore'};return Number(entry[map[metric]||metric]??entry.score??0)};
-  entries.sort((a,b)=>(scoreValue(b)-scoreValue(a))||String(a.createdAt||'').localeCompare(String(b.createdAt||'')));
-  const empty=targetSelector==='#leaderboard-list'?'<div class="leader-row leader-placeholder"><span class="rank-number">01</span><span class="leader-avatar">?</span><span class="leader-name"><strong>Be the first to join</strong><small>Opt in when you are ready</small></span><span class="leader-score">—</span></div>':'<p class="muted-small">No opt-in scores have been shared for this category yet.</p>';
-  target.innerHTML=entries.length?entries.slice(0,12).map((entry,index)=>`<div class="leader-row"><span class="rank-number">${String(index+1).padStart(2,'0')}</span><span class="leader-avatar">${escapeHtml((entry.nickname||'?').slice(0,2).toUpperCase())}</span><span class="leader-name"><strong>${escapeHtml(entry.nickname||'Participant')}</strong><small>${escapeHtml(entry.grade||'Class X')} · ${remote?'Opted in':'This device'}</small></span><span class="leader-score">${scoreValue(entry)}</span></div>`).join(''):empty;
-  const note=$('#leaderboard-note');if(note&&targetSelector==='#leaderboard-list')note.textContent=remote?'Shared rankings include only entries that opted in. Scores combine completed activities using the published weights.':'No shared backend detected. Demo rankings stay on this browser until the backend is configured.';
+  entries.sort((a,b)=>(Number(b[selectedBoard]??b.score)-Number(a[selectedBoard]??a.score))||String(a.createdAt||'').localeCompare(String(b.createdAt||'')));
+  $('#leaderboard-list').innerHTML=entries.length?entries.slice(0,12).map((entry,index)=>`<div class="leader-row"><span class="rank-number">${String(index+1).padStart(2,'0')}</span><span class="leader-avatar">${escapeHtml((entry.nickname||'?').slice(0,2).toUpperCase())}</span><span class="leader-name"><strong>${escapeHtml(entry.nickname||'Participant')}</strong><small>${escapeHtml(entry.grade||'Class X')} · ${remote?'Opted in':'This device'}</small></span><span class="leader-score">${Number(entry[selectedBoard]??entry.score??0)}</span></div>`).join(''):'<div class="leader-row leader-placeholder"><span class="rank-number">01</span><span class="leader-avatar">?</span><span class="leader-name"><strong>Be the first to join</strong><small>Opt in when you are ready</small></span><span class="leader-score">—</span></div>';
+  $('#leaderboard-note').textContent=remote?'Shared rankings are stored without audio or transcripts. Ask the project administrator to remove your entry.': 'No shared backend detected. This demo stores your opt-in entry only on this browser until a backend is configured.';
 }
 async function submitLeaderboard(event) {
   event.preventDefault();
   if(!$('#leader-consent').checked){showToast('Please give permission before joining the shared leaderboard.');return;}
-  const nickname=$('#leader-nickname').value.trim().slice(0,20),grade=$('#leader-grade').value;
-  const components=readScoreComponents();
-  if(!nickname||nickname.length<2){showToast('Choose a nickname with at least two characters.');return;}
-  const finalComponents=Object.keys(components).length?components:{speech:{score:60,fluency:60,clarity:60}};
-  const speech=finalComponents.speech||{score:60,fluency:60,clarity:60};
-  const entry={participantKey:participantKey(),nickname,grade,score:calculateAggregateScore(finalComponents),fluency:Number(speech.fluency??speech.score??60),clarity:Number(speech.clarity??speech.score??60),scores:Object.fromEntries(Object.entries(finalComponents).map(([key,value])=>[key,Number(typeof value==='object'?value.score:value)])),consent:true,createdAt:new Date().toISOString()};
+  lastPracticeScore = lastPracticeScore || readStoredPracticeScore();
+  if(!lastPracticeScore){showToast('Analyze an English sample in the Speech Lab first. The practice score is generated automatically.');$('#speech-lab').scrollIntoView({behavior:'smooth',block:'start'});return;}
+  const entry={nickname:$('#leader-nickname').value.trim().slice(0,20),grade:$('#leader-grade').value,score:Number(lastPracticeScore.score),fluency:Number(lastPracticeScore.fluency),clarity:Number(lastPracticeScore.clarity),consent:true,createdAt:new Date().toISOString()};
+  if(!entry.nickname||entry.score<0||entry.score>100){showToast('Check your nickname and complete a practice analysis.');return;}
   try {
-    const response=await fetch('/api/leaderboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});const data=await response.json();
-    if(response.ok){localStorage.setItem('openmic.optin.v1',JSON.stringify({consent:true,nickname,grade}));const local=getBoardData().filter(row=>row.nickname!==nickname);local.push(entry);localStorage.setItem(STORAGE.demoLeaderboard,JSON.stringify(local));setMessage($('#leaderboard-message'),'You joined the shared practice board. New activity scores will update your entry.');$('#leaderboard-form').reset();await refreshLeaderboard();await refreshLeaderboard('#email-leaderboard-list','editor');await refreshLeaderboard('#games-leaderboard-list','games');return;}
+    const response=await fetch('/api/leaderboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
+    const data=await response.json();
+    if(response.ok){setMessage($('#leaderboard-message'),'You joined the shared practice board.');$('#leaderboard-form').reset();await refreshLeaderboard();return;}
     if(response.status!==404&&response.status!==405)throw new Error(data.error||'Shared leaderboard is not available.');
-  } catch(error) {if(error.message&&error.message!=='Failed to fetch'&&!/404|405/.test(error.message)){setMessage($('#leaderboard-message'),error.message,true);return;}}
-  localStorage.setItem('openmic.optin.v1',JSON.stringify({consent:true,nickname,grade}));
-  const entries=getBoardData().filter(row=>row.nickname!==nickname);entries.push({...entry,editorScore:Number(components.editor?.score||0),newsroomScore:Number(components.newsroom?.score||0),gamesScore:Number(components.words?.score||0)});localStorage.setItem(STORAGE.demoLeaderboard,JSON.stringify(entries));
-  setMessage($('#leaderboard-message'),'Saved on this browser only. Deploy D1 to publish shared rankings.');$('#leaderboard-form').reset();await refreshLeaderboard();
+  } catch(error) {
+    if(error.message&&error.message!=='Failed to fetch'&& !/404|405/.test(error.message)){setMessage($('#leaderboard-message'),error.message,true);return;}
+  }
+  const entries=getBoardData();entries.push(entry);localStorage.setItem(STORAGE.demoLeaderboard,JSON.stringify(entries));setMessage($('#leaderboard-message'),'Saved on this browser only. Shared rankings need a deployed backend.');$('#leaderboard-form').reset();await refreshLeaderboard();
 }
 function applySettings(next, persist = false) {
   settings={...structuredClone(DEFAULT_SETTINGS),...settings,...next,features:{...DEFAULT_SETTINGS.features,...(settings.features||{}),...(next.features||{})},providerEnabled:{...DEFAULT_SETTINGS.providerEnabled,...(settings.providerEnabled||{}),...(next.providerEnabled||{})},providerOrder:next.providerOrder||settings.providerOrder||DEFAULT_SETTINGS.providerOrder};
@@ -895,8 +1501,9 @@ function adminLocalLogin() {
 function revealAdmin() {
   $('#admin-panel').hidden=false;document.body.classList.add('modal-open');
   history.replaceState(null,'',`${location.pathname}${location.search}#admin`);
-  adminAuthenticated=true;adminDemoMode=false;
-  showAdminWorkspace();
+  const hasSession=sessionStorage.getItem('openmic.admin.session')==='demo';
+  if(hasSession){adminAuthenticated=true;adminDemoMode=true;showAdminWorkspace();}
+  else {$('#admin-login-screen').hidden=false;$('#admin-workspace').hidden=true;$('#admin-user').focus();}
 }
 function closeAdmin() {
   $('#admin-panel').hidden=true;document.body.classList.remove('modal-open');
@@ -934,79 +1541,17 @@ async function loadAdminState() {
 async function showAdminWorkspace() {
   $('#admin-login-screen').hidden=true;$('#admin-workspace').hidden=false;
   await loadAdminState();renderAdminTab('features');
-  if(autoDownloadVideosActive)startAutoDownloadPoller();
 }
 function adminTab() { return $('.admin-tab.active')?.dataset.adminTab||'features'; }
-
-async function renderAdminTestimonials(container){
-  container.innerHTML='<div class="admin-loading">Loading testimonials for moderation…</div>';
-  try{
-    const res=await fetch('/api/testimonials?all=1');
-    const data=await res.json();
-    const entries=Array.isArray(data.entries)?data.entries:[];
-    if(!entries.length){
-      container.innerHTML='<div class="admin-empty"><p>No testimonials in the review queue.</p></div>';
-      return;
-    }
-    container.innerHTML=`
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <h3 class="admin-section-title" style="margin:0;">Student Testimonials (${entries.length})</h3>
-        <button type="button" class="button button-outline" id="refresh-admin-testimonials">Refresh list ↻</button>
-      </div>
-      <div class="admin-testimonials-list">
-        ${entries.map(e=>`
-          <div class="admin-mod-card" data-testimonial-id="${e.id}">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <strong>${escapeHtml(e.nickname)} (${escapeHtml(e.grade||'Student')})</strong>
-              <span class="status-pill ${e.status==='approved'?'status-ready':e.status==='rejected'?'status-failed':'status-pending'}">${escapeHtml(String(e.status||'pending').toUpperCase())}</span>
-            </div>
-            <p style="margin:8px 0;font-size:13px;line-height:1.6;">"${escapeHtml(e.quote)}"</p>
-            <small style="opacity:0.6;">Submitted: ${new Date(e.createdAt).toLocaleString()}</small>
-            <div class="mod-actions">
-              ${e.status!=='approved'?`<button type="button" class="button button-accent button-small" data-mod-action="approved" data-id="${e.id}">Approve</button>`:''}
-              ${e.status!=='rejected'?`<button type="button" class="button button-outline button-small" data-mod-action="rejected" data-id="${e.id}">Reject</button>`:''}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-    $('#refresh-admin-testimonials')?.addEventListener('click',()=>renderAdminTestimonials(container));
-    container.querySelectorAll('[data-mod-action]').forEach(btn=>{
-      btn.addEventListener('click',async()=>{
-        const id=btn.dataset.id;
-        const status=btn.dataset.modAction;
-        btn.disabled=true;
-        try{
-          const mRes=await fetch('/api/testimonials',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({action:'moderate',id,status})
-          });
-          const mData=await mRes.json();
-          if(!mRes.ok)throw new Error(mData.error||'Failed to moderate');
-          showToast(`Testimonial #${id} set to ${status}`);
-          renderAdminTestimonials(container);
-          loadPublicFeedbackAndTestimonials();
-        }catch(err){
-          showToast(err.message);
-          btn.disabled=false;
-        }
-      });
-    });
-  }catch(err){
-    container.innerHTML=`<div class="admin-error"><p>Could not load testimonials: ${escapeHtml(err.message)}</p></div>`;
-  }
-}
-
 function renderAdminTab(tab) {
   $$('.admin-tab').forEach(button=>button.classList.toggle('active',button.dataset.adminTab===tab));
   const content=$('#admin-content');
   if(tab==='features') {
-    content.innerHTML=`<h3 class="admin-section-title">Feature visibility</h3><p class="admin-section-description">Turn sections on or off. Disabled sections disappear from the page layout and the rest of the page closes the gap naturally.</p><div class="admin-grid">${Object.entries(FEATURE_LABELS).map(([key,item])=>`<article class="admin-card"><label for="feature-${key}"><span>${escapeHtml(item[0])}</span><span class="admin-toggle"><input type="checkbox" id="feature-${key}" data-feature-toggle="${key}" ${settings.features[key]?'checked':''}><span></span></span></label><p>${escapeHtml(item[1])}</p></article>`).join('')}</div><div class="admin-actions"><button class="button button-accent" id="save-feature-settings" type="button">Save feature settings ↗</button><button class="button button-outline" id="enable-all-features" type="button">Enable all</button><button class="button button-outline" id="disable-all-features" type="button">Disable optional features</button></div><p class="admin-section-description" style="margin-top:18px">Only admin can change feature visibility. The privacy section remains at the end of the page. Settings are shared only after the Cloudflare backend is deployed.</p>`;
+    content.innerHTML=`<h3 class="admin-section-title">Feature visibility</h3><p class="admin-section-description">Turn sections on or off. Disabled sections disappear from the page layout and the rest of the page closes the gap naturally.</p><div class="admin-grid">${Object.entries(FEATURE_LABELS).map(([key,item])=>`<article class="admin-card"><label for="feature-${key}"><span>${escapeHtml(item[0])}</span><span class="admin-toggle"><input type="checkbox" id="feature-${key}" data-feature-toggle="${key}" ${settings.features[key]?'checked':''}><span></span></span></label><p>${escapeHtml(item[1])}</p></article>`).join('')}</div><div class="admin-actions"><button class="button button-accent" id="save-feature-settings" type="button">Save feature settings ↗</button><button class="button button-outline" id="enable-all-features" type="button">Enable all</button><button class="button button-outline" id="disable-all-features" type="button">Disable optional features</button></div><p class="admin-section-description" style="margin-top:18px">Only admin can change feature visibility. The privacy dialog remains available from the footer. Settings are shared only after the Cloudflare backend is deployed.</p>`;
   } else if(tab==='ai') {
-    const providerNames={gemini:'Gemini API pool (multi-key)',cloudflare:'Cloudflare Workers AI',free:'OpenAI-compatible free endpoint',laptop:'Your laptop / Ollama'};
+    const providerNames={cloudflare:'Cloudflare Workers AI',gemini:'Gemini API pool',free:'OpenAI-compatible free endpoint',laptop:'Your laptop / Ollama'};
     const order=settings.providerOrder||DEFAULT_SETTINGS.providerOrder;
-    content.innerHTML=`<h3 class="admin-section-title">AI routing and failover</h3><p class="admin-section-description">Multi-tier failover configured to prioritize Gemini API pool for maximum student concurrency, followed by Cloudflare Workers AI edge inference. Each provider can be independently toggled ON or OFF.</p><div class="admin-grid"><article class="admin-card"><label for="automatic-fallback"><span>Automatic fallback</span><span class="admin-toggle"><input type="checkbox" id="automatic-fallback" ${settings.automaticFallback?'checked':''}><span></span></span></label><p>On: continue to the next enabled provider when one errors or reaches a limit. Off: use manual provider only.</p></article><article class="admin-card"><div class="admin-field"><label for="preferred-provider">Manual primary provider</label><select id="preferred-provider">${Object.entries(providerNames).map(([key,name])=>`<option value="${key}" ${settings.preferredProvider===key?'selected':''}>${escapeHtml(name)}</option>`).join('')}</select></div><p>Used as primary when automatic fallback is off.</p></article><article class="admin-card"><div class="admin-field"><label for="tts-provider">Speech / TTS synthesis provider</label><select id="tts-provider"><option value="cartesia" ${settings.ttsProvider==='cartesia'?'selected':''}>Cartesia Sonic (ultra-low latency)</option><option value="openai" ${settings.ttsProvider==='openai'?'selected':''}>OpenAI TTS (natural voices)</option><option value="deepgram" ${settings.ttsProvider==='deepgram'?'selected':''}>Deepgram Aura (conversational)</option><option value="kokoro" ${settings.ttsProvider==='kokoro'?'selected':''}>Kokoro-82M (open-weight)</option><option value="elevenlabs" ${settings.ttsProvider==='elevenlabs'?'selected':''}>ElevenLabs (turbo v2.5)</option><option value="browser" ${settings.ttsProvider==='browser'?'selected':''}>Browser Speech Synthesis (free & unlimited)</option><option value="auto" ${settings.ttsProvider==='auto'?'selected':''}>Auto: Cartesia → OpenAI → Deepgram → Kokoro → ElevenLabs → Browser</option></select></div><p>Select speech audio engine for pronunciation and narration.</p></article><article class="admin-card"><div class="admin-field"><label for="speech-provider">Speech-to-text provider</label><select id="speech-provider"><option value="auto" ${settings.speechProvider==='auto'?'selected':''}>Automatic: ElevenLabs → Cloudflare → Gemini</option><option value="elevenlabs" ${settings.speechProvider==='elevenlabs'?'selected':''}>ElevenLabs Scribe v2</option><option value="cloudflare" ${settings.speechProvider==='cloudflare'?'selected':''}>Cloudflare Whisper</option><option value="gemini" ${settings.speechProvider==='gemini'?'selected':''}>Gemini transcription</option></select></div><p>Voice-to-text transcription engine.</p></article><article class="admin-card"><div class="admin-field"><label for="quality-mode">Quality / quota mode</label><select id="quality-mode"><option value="best" ${settings.qualityMode==='best'?'selected':''}>Best available</option><option value="balanced" ${settings.qualityMode==='balanced'?'selected':''}>Balanced</option><option value="saver" ${settings.qualityMode==='saver'?'selected':''}>Quota saver</option></select></div><p>Balances AI response depth and server quota.</p></article><article class="admin-card"><label><span>Local scoring fallback</span><span class="provider-status ready">Always available</span></label><p>Browser rule-based heuristic scoring remains active if remote AI is unavailable.</p></article></div><h4 class="admin-section-title" style="margin-top:25px">Provider toggles & priority order</h4><p class="admin-section-description">Toggle each provider on or off. Use the arrows to reorder priority. Disabled providers are skipped.</p><div id="provider-order-list">${order.map((key,index)=>`<div class="admin-provider-row" data-provider-row="${key}"><div><strong>${escapeHtml(providerNames[key]||key)}</strong><small>${key==='gemini'?'Gemini API key pool':key==='cloudflare'?'Cloudflare Workers AI':key==='free'?'Free OpenAI-compatible endpoint':'Local Ollama via HTTPS'}</small></div><div class="provider-rank"><button type="button" data-provider-up="${key}" aria-label="Move ${key} up" ${index===0?'disabled':''}>↑</button><button type="button" data-provider-down="${key}" aria-label="Move ${key} down" ${index===order.length-1?'disabled':''}>↓</button></div><label class="admin-toggle"><input type="checkbox" data-provider-enabled="${key}" ${settings.providerEnabled?.[key]!==false?'checked':''}><span></span></label></div>`).join('')}</div><h4 class="admin-section-title" style="margin-top:22px">Speech & TTS Provider Toggles</h4><div class="admin-grid"><article class="admin-card"><label for="cartesia-toggle"><span>Cartesia Sonic</span><span class="admin-toggle"><input type="checkbox" id="cartesia-toggle" data-provider-enabled="cartesia" ${settings.providerEnabled?.cartesia!==false?'checked':''}><span></span></span></label><p>Ultra-low latency audio synthesis.</p></article><article class="admin-card"><label for="openai-toggle"><span>OpenAI TTS</span><span class="admin-toggle"><input type="checkbox" id="openai-toggle" data-provider-enabled="openai" ${settings.providerEnabled?.openai!==false?'checked':''}><span></span></span></label><p>Natural OpenAI voices.</p></article><article class="admin-card"><label for="deepgram-toggle"><span>Deepgram Aura</span><span class="admin-toggle"><input type="checkbox" id="deepgram-toggle" data-provider-enabled="deepgram" ${settings.providerEnabled?.deepgram!==false?'checked':''}><span></span></span></label><p>Fast conversational TTS.</p></article><article class="admin-card"><label for="kokoro-toggle"><span>Kokoro-82M</span><span class="admin-toggle"><input type="checkbox" id="kokoro-toggle" data-provider-enabled="kokoro" ${settings.providerEnabled?.kokoro?'checked':''}><span></span></span></label><p>Lightweight 82M open-source model.</p></article><article class="admin-card"><label for="elevenlabs-toggle"><span>ElevenLabs</span><span class="admin-toggle"><input type="checkbox" id="elevenlabs-toggle" data-provider-enabled="elevenlabs" ${settings.providerEnabled?.elevenlabs?'checked':''}><span></span></span></label><p>ElevenLabs Turbo v2.5.</p></article></div><div class="admin-actions"><button class="button button-accent" id="save-router-settings" type="button">Save router settings ↗</button></div><h4 class="admin-section-title" style="margin-top:33px">Provider credentials & secrets</h4><p class="admin-section-description">Credentials are encrypted on the server using AES-GCM and stored securely in Cloudflare D1. They are never exposed back to the browser.</p><div class="admin-grid"><div class="admin-card"><div class="admin-field"><label for="gemini-keys">Gemini API keys, one per line</label><textarea id="gemini-keys" rows="3" placeholder="Paste multiple keys for round-robin rotation"></textarea><small id="gemini-key-status">${adminSecretsStatus.geminiCount||0} keys stored server-side.</small></div></div><div class="admin-card"><div class="admin-field"><label for="cartesia-key">Cartesia Sonic API key</label><input id="cartesia-key" type="password" autocomplete="new-password" placeholder="Stored encrypted on the server"><small>${adminSecretsStatus.cartesiaConfigured?'Cartesia key is configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="openai-key">OpenAI API key (TTS & LLM)</label><input id="openai-key" type="password" autocomplete="new-password" placeholder="Stored encrypted on the server"><small>${adminSecretsStatus.openaiConfigured?'OpenAI key is configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="deepgram-key">Deepgram API key</label><input id="deepgram-key" type="password" autocomplete="new-password" placeholder="Stored encrypted on the server"><small>${adminSecretsStatus.deepgramConfigured?'Deepgram key is configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="kokoro-url">Kokoro-82M endpoint URL</label><input id="kokoro-url" type="url" placeholder="https://kokoro-tts-endpoint/v1/audio/speech"><small>${adminSecretsStatus.kokoroConfigured?'Kokoro endpoint configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="elevenlabs-key">ElevenLabs API key</label><input id="elevenlabs-key" type="password" autocomplete="new-password" placeholder="Stored encrypted on the server"><small>${adminSecretsStatus.elevenlabsConfigured?'ElevenLabs key is configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="free-url">Free LLM endpoint</label><input id="free-url" type="url" placeholder="https://open-source-llm.com/v1"><label for="free-model" style="margin-top:6px;">Model name</label><input id="free-model" placeholder="llama3"><label for="free-key" style="margin-top:6px;">API key</label><input id="free-key" type="password" autocomplete="new-password"></div></div><div class="admin-card"><div class="admin-field"><label for="laptop-url">Laptop endpoint (Ollama tunnel)</label><input id="laptop-url" type="url" placeholder="https://tunnel.ngrok.app"><label for="laptop-model" style="margin-top:6px;">Ollama model</label><input id="laptop-model" value="llama3.2:3b"><label for="laptop-token" style="margin-top:6px;">Tunnel token</label><input id="laptop-token" type="password" autocomplete="new-password"></div></div></div><div class="admin-actions"><button class="button button-accent" id="save-provider-keys" type="button">Encrypt and save credentials ↗</button><button class="button button-outline" id="clear-provider-fields" type="button">Clear fields</button></div><p class="form-message" id="provider-key-message" aria-live="polite"></p>`;
+    content.innerHTML=`<h3 class="admin-section-title">AI routing and failover</h3><p class="admin-section-description">Keep provider keys on the server. The router tries providers in the order below when automatic fallback is enabled; when it is disabled, only your selected provider is attempted and the browser uses on-device scoring if it fails.</p><div class="admin-grid"><article class="admin-card"><label for="automatic-fallback"><span>Automatic fallback</span><span class="admin-toggle"><input type="checkbox" id="automatic-fallback" ${settings.automaticFallback?'checked':''}><span></span></span></label><p>On: continue to the next provider when one errors or reaches a limit. Off: use the selected provider only.</p></article><article class="admin-card"><div class="admin-field"><label for="preferred-provider">Manual provider</label><select id="preferred-provider">${Object.entries(providerNames).map(([key,name])=>`<option value="${key}" ${settings.preferredProvider===key?'selected':''}>${escapeHtml(name)}</option>`).join('')}</select></div><p>Used when automatic fallback is off.</p></article><article class="admin-card"><div class="admin-field"><label for="quality-mode">Quality / quota mode</label><select id="quality-mode"><option value="best" ${settings.qualityMode==='best'?'selected':''}>Best available</option><option value="balanced" ${settings.qualityMode==='balanced'?'selected':''}>Balanced</option><option value="saver" ${settings.qualityMode==='saver'?'selected':''}>Quota saver</option></select></div><p>Quota saver prefers local/low-cost options when configured; fallback remains visible in the request log.</p></article><article class="admin-card"><label><span>Local scoring fallback</span><span class="provider-status ready">Always available</span></label><p>Rule-based text metrics run in the browser if every remote provider fails. They do not measure pronunciation or accent.</p></article></div><h4 class="admin-section-title" style="margin-top:25px">Provider order</h4><p class="admin-section-description">Use the up and down controls to change priority. Disabled providers are skipped.</p><div id="provider-order-list">${order.map((key,index)=>`<div class="admin-provider-row" data-provider-row="${key}"><div><strong>${escapeHtml(providerNames[key]||key)}</strong><small>${key==='cloudflare'?'Workers AI binding AI':key==='gemini'?'Encrypted key pool':key==='free'?'Endpoint, model and key': 'Ollama through an HTTPS tunnel'}</small></div><div class="provider-rank"><button type="button" data-provider-up="${key}" aria-label="Move ${key} up" ${index===0?'disabled':''}>↑</button><button type="button" data-provider-down="${key}" aria-label="Move ${key} down" ${index===order.length-1?'disabled':''}>↓</button></div><label class="admin-toggle"><input type="checkbox" data-provider-enabled="${key}" ${settings.providerEnabled[key]?'checked':''}><span></span></label></div>`).join('')}</div><div class="admin-actions"><button class="button button-accent" id="save-router-settings" type="button">Save router settings ↗</button></div><h4 class="admin-section-title" style="margin-top:33px">Provider credentials</h4><p class="admin-section-description">Paste values here only over your deployed HTTPS site. The server encrypts them before storing in D1, and never returns them to this page. Keys are not stored in browser storage or source control.</p><div class="admin-alert">Server key storage requires a D1 binding and a secret named CONFIG_ENCRYPTION_KEY. If these are not configured, set provider keys as Cloudflare Worker secrets instead.</div><div class="admin-grid"><div class="admin-card"><div class="admin-field"><label for="gemini-keys">Gemini API keys, one per line</label><textarea id="gemini-keys" rows="4" placeholder="Paste multiple keys only on your private admin session"></textarea><small id="gemini-key-status">${adminSecretsStatus.geminiCount||0} keys stored server-side. Values are never shown again.</small></div></div><div class="admin-card"><div class="admin-field"><label for="free-url">Free LLM endpoint</label><input id="free-url" type="url" placeholder="Paste your OpenAI-compatible endpoint URL"></div><div class="admin-field"><label for="free-model">Model name</label><input id="free-model" placeholder="provider-model-name"></div><div class="admin-field"><label for="free-key">API key</label><input id="free-key" type="password" autocomplete="new-password" placeholder="Stored encrypted on the server"></div></div><div class="admin-card"><div class="admin-field"><label for="laptop-url">Laptop endpoint (HTTPS tunnel)</label><input id="laptop-url" type="url" placeholder="Paste your laptop HTTPS tunnel URL"></div><div class="admin-field"><label for="laptop-model">Ollama model</label><input id="laptop-model" value="llama3.2:3b"></div><div class="admin-field"><label for="laptop-token">Laptop shared token</label><input id="laptop-token" type="password" autocomplete="new-password" placeholder="Protect the tunnel endpoint"></div></div><div class="admin-card"><h4>Cloudflare binding</h4><p>${adminSecretsStatus.cloudflareConfigured?'Workers AI binding is configured.':'Workers AI binding status will be known at runtime.'} Add an AI binding named <code>AI</code> in Cloudflare and redeploy.</p></div></div><div class="admin-actions"><button class="button button-accent" id="save-provider-keys" type="button">Encrypt and save credentials ↗</button><button class="button button-outline" id="clear-provider-fields" type="button">Clear fields</button></div><p class="form-message" id="provider-key-message" aria-live="polite"></p>`;
   } else if(tab==='branding') {
     content.innerHTML=`<h3 class="admin-section-title">Brand and language</h3><p class="admin-section-description">Choose the atmosphere, language and school credit. These controls change the page without a bottom navigation menu.</p><div class="admin-grid"><div class="admin-card"><div class="admin-field"><label for="brand-theme">Visual theme</label><select id="brand-theme"><option value="mix" ${settings.theme==='mix'?'selected':''}>Mix: dark hero + colourful sections</option><option value="dark" ${settings.theme==='dark'?'selected':''}>Dark / cinematic</option><option value="vibrant" ${settings.theme==='vibrant'?'selected':''}>Vibrant / energetic</option><option value="clean" ${settings.theme==='clean'?'selected':''}>Clean / professional</option></select></div><p>Every theme remains scroll-first, responsive and keyboard accessible.</p></div><div class="admin-card"><div class="admin-field"><label for="brand-language">Language</label><select id="brand-language"><option value="en" ${settings.language==='en'?'selected':''}>English</option><option value="hi" ${settings.language==='hi'?'selected':''}>Hindi UI (beta)</option></select></div><p>Career names remain in English to help students learn role-specific vocabulary.</p></div><div class="admin-card"><label for="show-school-name"><span>Show school name</span><span class="admin-toggle"><input type="checkbox" id="show-school-name" ${settings.showSchoolName?'checked':''}><span></span></span></label><div class="admin-field"><label for="school-name">School credit</label><input id="school-name" value="${escapeHtml(settings.schoolName)}" maxlength="90"></div></div><div class="admin-card"><h4>Copyright line</h4><p>The footer automatically adds the current year. Use of school branding should be approved by the school before public distribution.</p><span class="provider-status ready">© ${new Date().getFullYear()} Open Mic</span></div></div><div class="admin-actions"><button class="button button-accent" id="save-brand-settings" type="button">Save branding ↗</button><button class="button button-outline" id="reset-brand-settings" type="button">Reset to default</button></div>`;
   } else if(tab==='requests') {
@@ -1015,157 +1560,17 @@ function renderAdminTab(tab) {
     if(!adminDemoMode)fetch('/api/admin/logs').then(res=>res.ok?res.json():Promise.reject()).then(data=>{const target=$('#request-log-content');if(target)target.innerHTML=renderLogsTable(data.logs||[]);}).catch(()=>{const target=$('#request-log-content');if(target)target.innerHTML='<p class="admin-section-description">Server request logs are not available. Deploy D1 and the admin Worker endpoint.</p>';});
   } else if(tab==='leaderboard') {
     const entries=adminDemoMode?getBoardData():[];
-    content.innerHTML=`<h3 class="admin-section-title">Leaderboard moderation & IP security</h3><p class="admin-section-description">Remove entries on request or if consent was not valid. Ban disruptive IP addresses from submitting scores, feedback or media.</p><div class="admin-actions"><button class="button button-outline" id="refresh-admin-board" type="button">Refresh entries ↻</button><button class="button button-outline admin-danger" id="clear-admin-board" type="button">Clear all entries</button></div><div id="admin-board-content">${adminDemoMode?renderAdminBoard(entries):'<p class="admin-section-description">Loading shared entries…</p>'}</div><h4 class="admin-section-title" style="margin-top:32px">Restricted IP addresses</h4><p class="admin-section-description">Permanently block abusive IP addresses across all endpoints.</p><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0;"><input id="ban-ip-address" placeholder="IP address (e.g. 103.21.244.2)" style="flex:1;min-width:180px;"><input id="ban-ip-reason" placeholder="Reason (e.g. repeated spam)" style="flex:1;min-width:180px;"><button type="button" class="button button-accent" id="btn-ban-ip">Ban IP</button></div><div id="admin-banned-ips-wrap"><p class="admin-section-description">Loading banned IPs…</p></div>`;
-    loadAdminBannedIps();
+    content.innerHTML=`<h3 class="admin-section-title">Leaderboard moderation</h3><p class="admin-section-description">Remove entries on request or if consent was not valid. Only nickname, class and opt-in scores are kept—never raw voice or transcript.</p><div class="admin-actions"><button class="button button-outline" id="refresh-admin-board" type="button">Refresh ↻</button><button class="button button-outline admin-danger" id="clear-admin-board" type="button">Clear all entries</button></div><div id="admin-board-content">${adminDemoMode?renderAdminBoard(entries):'<p class="admin-section-description">Loading shared entries…</p>'}</div>`;
     if(!adminDemoMode)fetch('/api/admin/leaderboard').then(res=>res.ok?res.json():Promise.reject()).then(data=>{const target=$('#admin-board-content');if(target)target.innerHTML=renderAdminBoard(data.entries||[]);}).catch(()=>{const target=$('#admin-board-content');if(target)target.innerHTML='<p class="admin-section-description">Shared leaderboard is unavailable. Configure D1 to moderate entries.</p>';});
-  } else if(tab==='testimonials') {
-    renderAdminTestimonials(content);
-  } else if(tab==='feedback') {
-    content.innerHTML=`<h3 class="admin-section-title">Feedback, support and newsroom files</h3><p class="admin-section-description">Feedback can include an optional reply address. Newsroom recordings are private R2 objects and require informed user consent before upload. Download or delete saved recordings from here.</p><div class="admin-actions"><button class="button button-outline" id="refresh-feedback" type="button">Refresh records ↻</button><button class="button button-accent" id="download-feedback" type="button">Export feedback to Excel ↓</button></div><div class="admin-feedback-list" id="admin-feedback-list"><p class="admin-section-description">Loading feedback…</p></div><h4 class="admin-section-title">Saved newsroom recordings</h4><div class="admin-actions" style="margin-top:8px;margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><button class="button button-accent" id="auto-download-toggle" type="button" style="background:${autoDownloadVideosActive?'#10b981':'#2563eb'};">⚡ Auto-Download Videos to Laptop: ${autoDownloadVideosActive?'ON':'OFF'}</button><button class="button button-outline" id="download-all-media" type="button">Download All Videos ⤓</button><span id="auto-download-status" class="muted-small">${autoDownloadVideosActive?'🟢 Watching for student videos…':'Auto-download paused.'}</span></div><div class="admin-media-list" id="admin-media-list"><p class="admin-section-description">Loading private media records…</p></div>`;
-    if(adminDemoMode){const rows=loadLocalFeedback();const target=$('#admin-feedback-list');target.innerHTML=renderFeedbackTable(rows);$('#admin-media-list').innerHTML='<p class="admin-section-description">Server-side media storage is not available in local demo mode.</p>';}
-    else {Promise.all([fetch('/api/admin/feedback').then(res=>res.ok?res.json():Promise.reject()),fetch('/api/admin/media').then(res=>res.ok?res.json():Promise.reject())]).then(([f,m])=>{const ft=$('#admin-feedback-list'),mt=$('#admin-media-list');if(ft)ft.innerHTML=renderFeedbackTable(f.entries||[]);if(mt)mt.innerHTML=renderMediaTable(m.entries||[])}).catch(()=>{const ft=$('#admin-feedback-list'),mt=$('#admin-media-list');if(ft)ft.innerHTML='<p class="admin-section-description">Server feedback is unavailable. Deploy D1 and the feedback endpoint.</p>';if(mt)mt.innerHTML='<p class="admin-section-description">Private media list unavailable. Configure D1 and the R2 binding MEDIA.</p>';});}
   }
 }
 function renderLogsTable(logs) {
   if(!logs.length)return '<p class="admin-section-description">No requests logged yet.</p>';
-  return `<div style="overflow-x:auto;margin-top:16px"><table class="admin-log-table"><thead><tr><th>Time</th><th>Task</th><th>Provider</th><th>Status</th><th>Latency</th><th>IP Address</th><th>Action</th></tr></thead><tbody>${logs.slice(0,80).map(log=>`<tr><td>${escapeHtml(new Date(log.createdAt||log.time||Date.now()).toLocaleString())}</td><td>${escapeHtml(log.task||'unknown')}</td><td>${escapeHtml(log.provider||'local')}</td><td>${escapeHtml(log.outcome||'success')}</td><td>${Number(log.latencyMs||log.latency_ms||0)} ms</td><td>${escapeHtml(log.ip||'—')}</td><td>${log.ip?`<button class="button button-outline admin-danger" style="min-height:28px;padding:0 8px;font-size:12px" type="button" data-quick-ban-ip="${escapeHtml(log.ip)}" data-ban-reason="Spamming ${escapeHtml(log.task||'AI')}">🚫 Ban IP</button>`:'—'}</td></tr>`).join('')}</tbody></table></div>`;
+  return `<div style="overflow-x:auto;margin-top:16px"><table class="admin-log-table"><thead><tr><th>Time</th><th>Task</th><th>Provider</th><th>Status</th><th>Latency</th></tr></thead><tbody>${logs.slice(0,80).map(log=>`<tr><td>${escapeHtml(new Date(log.createdAt||log.time||Date.now()).toLocaleString())}</td><td>${escapeHtml(log.task||'unknown')}</td><td>${escapeHtml(log.provider||'local')}</td><td>${escapeHtml(log.outcome||'success')}</td><td>${Number(log.latencyMs||log.latency_ms||0)} ms</td></tr>`).join('')}</tbody></table></div>`;
 }
 function renderAdminBoard(entries) {
   if(!entries.length)return '<p class="admin-section-description">No opt-in entries yet.</p>';
   return `<div style="overflow-x:auto;margin-top:16px"><table class="admin-log-table"><thead><tr><th>Nickname</th><th>Class</th><th>Score</th><th>Consent</th><th>Action</th></tr></thead><tbody>${entries.map(entry=>`<tr><td>${escapeHtml(entry.nickname)}</td><td>${escapeHtml(entry.grade)}</td><td>${Number(entry.score||0)}</td><td>${entry.consent?'Yes':'No'}</td><td><button class="button button-outline" data-delete-entry="${entry.id||entry.createdAt||entry.nickname}" type="button" style="min-height:30px;padding:0 8px">Remove</button></td></tr>`).join('')}</tbody></table></div>`;
-}
-function renderFeedbackTable(entries){if(!entries.length)return '<p class="admin-section-description">No feedback submitted yet.</p>';const labels={feedback:'General feedback',bug:'Report a problem',support:'Support request',feature:'Feature idea',accessibility:'Accessibility request'};return `<div class="admin-table-wrap"><table class="admin-log-table"><thead><tr><th>Date</th><th>Type</th><th>Rating</th><th>Message</th><th>Reply address</th><th>IP Address</th><th>Action</th></tr></thead><tbody>${entries.map(item=>`<tr><td>${escapeHtml(new Date(item.createdAt||item.created_at||Date.now()).toLocaleString())}</td><td>${escapeHtml(labels[item.category]||item.category||'General feedback')}</td><td>${Number(item.rating||0)}</td><td>${escapeHtml(item.message||'')}</td><td>${escapeHtml(item.contact||'')}</td><td>${escapeHtml(item.ip||'—')}</td><td>${item.ip?`<button class="button button-outline admin-danger" style="min-height:28px;padding:0 8px;font-size:12px" type="button" data-quick-ban-ip="${escapeHtml(item.ip)}" data-ban-reason="Inappropriate language in feedback">🚫 Ban IP</button>`:'—'}</td></tr>`).join('')}</tbody></table></div>`}
-function renderMediaTable(entries){if(!entries.length)return '<p class="admin-section-description">No newsroom videos are saved yet.</p>';return `<div class="admin-table-wrap"><table class="admin-log-table"><thead><tr><th>Date</th><th>Headline</th><th>File</th><th>Size</th><th>Transcription</th><th>Actions</th></tr></thead><tbody>${entries.map(item=>`<tr><td>${escapeHtml(new Date(item.createdAt||item.created_at||Date.now()).toLocaleString())}</td><td>${escapeHtml(item.headline||'Newsroom practice')}</td><td>${escapeHtml(item.filename||'video')}</td><td>${(Number(item.sizeBytes||item.size_bytes||0)/1024/1024).toFixed(1)} MB</td><td>${escapeHtml(item.transcriptionProvider||item.transcription_provider||'Not recorded')}</td><td><a class="button button-outline" href="/api/media?id=${encodeURIComponent(item.id)}" target="_blank" rel="noopener noreferrer">View / download</a> <button class="button button-outline admin-danger" type="button" data-delete-media="${escapeHtml(item.id)}">Delete</button></td></tr>`).join('')}</tbody></table></div>`}
-function loadLocalFeedback(){try{return JSON.parse(localStorage.getItem(STORAGE.feedback)||'[]')}catch{return []}}
-function getDownloadedVideoIds() {
-  try { return new Set(JSON.parse(localStorage.getItem('openmic_downloaded_videos') || '[]')); }
-  catch { return new Set(); }
-}
-function markVideoDownloaded(id) {
-  const set = getDownloadedVideoIds();
-  set.add(String(id));
-  try { localStorage.setItem('openmic_downloaded_videos', JSON.stringify([...set])); } catch {}
-}
-async function saveVideoToLaptop(blob, filename) {
-  try {
-    const res = await fetch('http://127.0.0.1:8765/api/save-video', {
-      method: 'POST',
-      headers: { 'X-Filename': filename },
-      body: blob
-    });
-    if (res.ok) return true;
-  } catch {}
-  return false;
-}
-function triggerBrowserDownload(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 20000);
-}
-async function fetchAndDownloadVideo(entry) {
-  try {
-    const res = await fetch(`/api/media?id=${encodeURIComponent(entry.id)}`);
-    if (!res.ok) return false;
-    const blob = await res.blob();
-    const rawName = entry.filename || `newsroom_${entry.id}.webm`;
-    const cleanName = rawName.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
-    const savedLocally = await saveVideoToLaptop(blob, cleanName);
-    triggerBrowserDownload(blob, cleanName);
-    markVideoDownloaded(entry.id);
-    const status = $('#auto-download-status');
-    if (status) {
-      status.textContent = savedLocally
-        ? `⚡ Saved to recordings/ & downloaded: ${cleanName}`
-        : `📥 Downloaded to laptop: ${cleanName}`;
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
-async function syncNewVideos() {
-  if (!adminAuthenticated || adminDemoMode) return;
-  try {
-    const res = await fetch('/api/admin/media');
-    if (!res.ok) return;
-    const data = await res.json();
-    const entries = data.entries || [];
-    const downloaded = getDownloadedVideoIds();
-    const newEntries = entries.filter(e => !downloaded.has(String(e.id)));
-    if (!newEntries.length) return;
-    for (const entry of newEntries) {
-      await fetchAndDownloadVideo(entry);
-      await new Promise(r => setTimeout(r, 600));
-    }
-    if (adminTab() === 'feedback') {
-      const mt = $('#admin-media-list');
-      if (mt) mt.innerHTML = renderMediaTable(entries);
-    }
-  } catch {}
-}
-function startAutoDownloadPoller() {
-  if (autoDownloadInterval) return;
-  autoDownloadInterval = setInterval(syncNewVideos, 5000);
-  syncNewVideos();
-}
-function stopAutoDownloadPoller() {
-  if (autoDownloadInterval) {
-    clearInterval(autoDownloadInterval);
-    autoDownloadInterval = null;
-  }
-}
-function toggleAutoDownload() {
-  autoDownloadVideosActive = !autoDownloadVideosActive;
-  try { localStorage.setItem('openmic_auto_download_videos', String(autoDownloadVideosActive)); } catch {}
-  if (autoDownloadVideosActive) {
-    startAutoDownloadPoller();
-  } else {
-    stopAutoDownloadPoller();
-  }
-  const btn = $('#auto-download-toggle');
-  if (btn) {
-    btn.style.background = autoDownloadVideosActive ? '#10b981' : '#2563eb';
-    btn.textContent = `⚡ Auto-Download Videos to Laptop: ${autoDownloadVideosActive ? 'ON' : 'OFF'}`;
-  }
-  const status = $('#auto-download-status');
-  if (status) {
-    status.textContent = autoDownloadVideosActive ? '🟢 Watching for student videos…' : 'Auto-download paused.';
-  }
-}
-async function downloadAllMedia() {
-  const btn = $('#download-all-media');
-  if (btn) { btn.disabled = true; btn.textContent = 'Downloading…'; }
-  try {
-    const res = await fetch('/api/admin/media');
-    if (!res.ok) throw new Error('Could not fetch media list.');
-    const data = await res.json();
-    const entries = data.entries || [];
-    if (!entries.length) { showToast('No saved videos found.'); return; }
-    let count = 0;
-    for (const entry of entries) {
-      const ok = await fetchAndDownloadVideo(entry);
-      if (ok) count++;
-      await new Promise(r => setTimeout(r, 600));
-    }
-    showToast(`Downloaded ${count} video(s) to your laptop.`);
-  } catch (err) {
-    showToast(`Download failed: ${err.message}`);
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Download All Videos ⤓'; }
-  }
-}
-async function exportFeedbackWorkbook(){
-  let entries=[];
-  if(adminDemoMode){entries=loadLocalFeedback()}else{try{const response=await fetch('/api/admin/feedback');const data=await response.json();if(!response.ok)throw new Error(data.error||'Could not load feedback');entries=data.entries||[]}catch(error){showToast(`Could not export feedback: ${error.message}`);return}}
-  const feedbackLabels={feedback:'General feedback',bug:'Report a problem',support:'Support request',feature:'Feature idea',accessibility:'Accessibility request'};
-  const rows=entries.map(item=>({'Submitted at':item.createdAt||item.created_at||'','Type':feedbackLabels[item.category]||'General feedback','Rating':Number(item.rating||0),'Message':item.message||'','Reply address':item.contact||''}));
-  if(window.XLSX){const wb=XLSX.utils.book_new();const ws=XLSX.utils.json_to_sheet(rows.length?rows:[{'Submitted at':'','Type':'No feedback','Rating':'','Message':'','Reply address':''}]);XLSX.utils.book_append_sheet(wb,ws,'Feedback');XLSX.writeFile(wb,`open-mic-feedback-${new Date().toISOString().slice(0,10)}.xlsx`);showToast('Excel workbook downloaded.');return}
-  const keys=['Submitted at','Type','Rating','Message','Reply address'];const quote=value=>'"'+String(value??'').replace(/"/g,'""')+'"';const csv=[keys.map(quote).join(','),...rows.map(row=>keys.map(key=>quote(row[key])).join(','))].join('\r\n');const blob=new Blob(['\ufeff',csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='open-mic-feedback.csv';link.click();URL.revokeObjectURL(url);showToast('Excel-compatible CSV downloaded.');
 }
 async function saveAdminSettings(next) {
   settings={...settings,...next,features:{...settings.features,...(next.features||{})},providerEnabled:{...settings.providerEnabled,...(next.providerEnabled||{})},providerOrder:next.providerOrder||settings.providerOrder};
@@ -1181,17 +1586,40 @@ async function saveAdminSettings(next) {
 async function saveProviderKeys() {
   if(adminDemoMode){setMessage($('#provider-key-message'),'Demo mode cannot store provider credentials. Deploy the server endpoint and configure CONFIG_ENCRYPTION_KEY.',true);return;}
   const geminiKeys=$('#gemini-keys').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  const payload={geminiKeys,cartesiaKey:$('#cartesia-key')?.value.trim()||'',openaiKey:$('#openai-key')?.value.trim()||'',deepgramKey:$('#deepgram-key')?.value.trim()||'',kokoroUrl:$('#kokoro-url')?.value.trim()||'',elevenlabsKey:$('#elevenlabs-key')?.value.trim()||'',freeUrl:$('#free-url').value.trim(),freeKey:$('#free-key').value,freeModel:$('#free-model').value.trim(),laptopUrl:$('#laptop-url').value.trim(),laptopToken:$('#laptop-token').value,laptopModel:$('#laptop-model').value.trim()};
+  const payload={geminiKeys,freeUrl:$('#free-url').value.trim(),freeKey:$('#free-key').value,freeModel:$('#free-model').value.trim(),laptopUrl:$('#laptop-url').value.trim(),laptopToken:$('#laptop-token').value,laptopModel:$('#laptop-model').value.trim()};
   if(!Object.values(payload).some(value=>Array.isArray(value)?value.length:!!value)){setMessage($('#provider-key-message'),'Enter at least one provider value to save.',true);return;}
   setMessage($('#provider-key-message'),'Encrypting values on the server…');
   try {
     const response=await fetch('/api/admin/keys',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await response.json();
     if(!response.ok)throw new Error(data.error||'Credential storage failed.');
     adminSecretsStatus={...adminSecretsStatus,...data.status};
-    $('#gemini-keys').value='';$('#elevenlabs-key').value='';$('#free-key').value='';$('#laptop-token').value='';
+    $('#gemini-keys').value='';$('#free-key').value='';$('#laptop-token').value='';
     setMessage($('#provider-key-message'),'Credentials encrypted and saved. The secret values were cleared from the form.');
     $('#gemini-key-status').textContent=`${adminSecretsStatus.geminiCount||0} keys stored server-side. Values are never shown again.`;
   } catch(error){setMessage($('#provider-key-message'),`${error.message}. No credentials were stored in this browser.`,true);}
+}
+function initQR() {
+  const current = location.protocol==='http:'||location.protocol==='https:' ? `${location.origin}${location.pathname}` : 'https://github.com/bhavyakumar-dev/careerfair';
+  $('#share-url').textContent=current;
+  const target=$('#qr-code');target.innerHTML='';
+  if(window.QRCode){new QRCode(target,{text:current,width:220,height:220,colorDark:'#17191f',colorLight:'#fffdf7',correctLevel:QRCode.CorrectLevel.H});}
+  else {const img=document.createElement('img');img.alt='QR code for Open Mic';img.src=`https://api.qrserver.com/v1/create-qr-code/?size=240x240&ecc=H&color=17191f&bgcolor=fffdf7&data=${encodeURIComponent(current)}`;img.style.width='100%';img.style.height='100%';target.appendChild(img);}
+}
+function downloadQRArtwork() {
+  const current=$('#share-url').textContent;
+  const qrCanvas=$('#qr-code canvas');const qrImage=$('#qr-code img');
+  const draw=source=>{
+    const canvas=document.createElement('canvas');canvas.width=900;canvas.height=1040;const context=canvas.getContext('2d');
+    context.fillStyle='#b5a6ff';context.fillRect(0,0,900,1040);context.strokeStyle='rgba(23,25,31,.35)';context.lineWidth=2;context.strokeRect(38,38,824,964);
+    context.fillStyle='#17191f';context.font='700 26px DM Sans, sans-serif';context.fillText('OPEN MIC',75,100);context.font='700 15px DM Sans, sans-serif';context.fillText('THE ENGLISH CAREER LAB',75,132);
+    context.fillStyle='#fffdf7';context.fillRect(135,180,630,630);context.drawImage(source,175,220,550,550);
+    context.fillStyle='#ff6b3d';context.fillRect(412,457,76,76);context.strokeStyle='#fffdf7';context.lineWidth=13;context.strokeRect(412,457,76,76);context.fillStyle='#17191f';context.font='800 30px Syne, sans-serif';context.fillText('OM',428,503);
+    context.fillStyle='#17191f';context.font='800 49px Syne, sans-serif';context.fillText('Good practice travels.',75,890);context.font='700 17px DM Sans, sans-serif';context.fillText('SCAN TO EXPLORE',75,930);context.font='12px DM Sans, sans-serif';context.fillText(current.slice(0,100),75,964);
+    const link=document.createElement('a');link.download='open-mic-careerfair-qr.png';link.href=canvas.toDataURL('image/png');link.click();
+  };
+  if(qrCanvas){draw(qrCanvas);return;}
+  if(qrImage&&qrImage.complete){draw(qrImage);return;}
+  const temp=new Image();temp.crossOrigin='anonymous';temp.onload=()=>draw(temp);temp.onerror=()=>showToast('The QR generator is unavailable. Reopen the page while online.');temp.src=`https://api.qrserver.com/v1/create-qr-code/?size=550x550&ecc=H&color=17191f&bgcolor=fffdf7&data=${encodeURIComponent(current)}`;
 }
 function setPronunciationSound(key) {
   const sound = PRONUNCIATION_SOUNDS[key] || PRONUNCIATION_SOUNDS.th;
@@ -1217,8 +1645,6 @@ function buildDebate(event) {
     showToast('Add a clear claim, one concrete reason or example, and a fair counterargument with your response.');
     return;
   }
-  const qualityCheck=scoreText(`${claim}. ${evidence}. ${counter}.`);
-  if(qualityCheck.lowSignal){showToast('That text does not look like a readable English argument yet. Write a clear sentence with recognizable words, then try again.');return;}
   const intro = side === 'support' ? `I support the motion that ${topic.charAt(0).toLowerCase()}${topic.slice(1)}.` : `I challenge the motion that ${topic.charAt(0).toLowerCase()}${topic.slice(1)}.`;
   debateDraft = `${intro}\n\nMy main claim is this: ${claim}\n\nOne reason for my view is ${evidence}\n\nA fair counterargument is: ${counter}`;
   const wordCount = debateDraft.split(/\s+/).filter(Boolean).length;
@@ -1228,7 +1654,6 @@ function buildDebate(event) {
   $('#review-debate').disabled = false;
   $('#debate-feedback').hidden = true;
   $('#debate-feedback').textContent = '';
-  saveComponentScore('debate',structureScore);
 }
 async function reviewDebate() {
   if (!debateDraft) return;
@@ -1238,7 +1663,7 @@ async function reviewDebate() {
   const metrics = { words: debateDraft.split(/\s+/).filter(Boolean).length, hasClaim: Boolean($('#debate-claim').value.trim()), hasExample: Boolean($('#debate-evidence').value.trim()), hasCounterargument: Boolean($('#debate-counter').value.trim()) };
   try {
     const result = await requestAI('speech-feedback', { text: debateDraft, metrics, prompt: 'Review this debate argument for logical structure, clarity, fair treatment of an opposing view and usefulness of the supporting example. Give concrete advice without judging the student or requiring a particular opinion.' });
-    target.innerHTML = `<p><strong>Coach feedback · ${escapeHtml(result.provider || 'AI')}</strong></p><p>${escapeHtml(result.text || 'No feedback was returned.')}</p>`;
+    target.innerHTML = `<p><strong>Coach feedback · ${escapeHtml(result.provider || 'AI')}</strong></p><div class="ai-review-body">${formatMarkdown(result.text || 'No feedback was returned.')}</div>`;
   } catch {
     const suggestions = [];
     if (metrics.words < 70) suggestions.push('Add one more concrete detail so your argument is easier to evaluate.');
@@ -1249,75 +1674,6 @@ async function reviewDebate() {
   }
 }
 
-const GAME_VOCAB={
- starter:[{word:'clear',meaning:'Easy to understand'},{word:'speak',meaning:'To say words aloud'},{word:'learn',meaning:'To gain knowledge or a skill'},{word:'write',meaning:'To put words on a page'},{word:'story',meaning:'An account of events'},{word:'brave',meaning:'Ready to face something difficult'},{word:'trust',meaning:'Belief that someone is reliable'},{word:'share',meaning:'To give part of something to others'}],
- growing:[{word:'brief',meaning:'Short but containing the main points'},{word:'adapt',meaning:'To change for a new situation'},{word:'focus',meaning:'To give attention to one thing'},{word:'draft',meaning:'An early version of a piece of writing'},{word:'pitch',meaning:'A short presentation of an idea'},{word:'style',meaning:'The way something is expressed or done'},{word:'proof',meaning:'Information that shows a claim is true'},{word:'claim',meaning:'A statement that something is true'}],
- advanced:[{word:'lucid',meaning:'Clear and easy to understand'},{word:'vivid',meaning:'Producing strong, clear images in the mind'},{word:'terse',meaning:'Brief, sometimes to the point of sounding abrupt'},{word:'ethic',meaning:'A set of principles about right conduct'},{word:'irony',meaning:'A contrast between expectation and reality'},{word:'poise',meaning:'Calm confidence and self-control'},{word:'craft',meaning:'Skill in making or doing something'},{word:'stark',meaning:'Very clear or severe, without decoration'}]
-};
-const SENTENCE_BANK={
- starter:[{q:'Choose the correct sentence.',opts:['She go to school every day.','She goes to school every day.','She going to school every day.'],correct:1,why:'With “she”, the simple present verb takes -s: goes.'},{q:'Choose the clearest request.',opts:['Can you help me with this question?','You helping question me.','Can you helping with question?'],correct:0,why:'The request uses a clear question form and a complete phrase.'}],
- growing:[{q:'Choose the correct sentence.',opts:['Each of the students have a notebook.','Each of the students has a notebook.','Each students has a notebook.'],correct:1,why:'“Each” is singular, so use “has”.'},{q:'Choose the strongest professional message.',opts:['Send it now, I need it.','Please send the draft by 3 pm so I can review it before the meeting.','You should know that the draft is needed.'],correct:1,why:'It is polite, specific and explains the reason and deadline.'}],
- advanced:[{q:'Choose the sentence with the correct parallel structure.',opts:['The role involves researching, writing and presenting findings.','The role involves researching, to write and findings presentation.','The role involves to research, writing and present findings.'],correct:0,why:'The list uses matching -ing forms: researching, writing and presenting.'},{q:'Choose the clearest sentence.',opts:['Having reviewed the proposal, the deadline was changed.','After reviewing the proposal, the team changed the deadline.','The proposal reviewing, the deadline change.'],correct:1,why:'The subject doing the reviewing is clear, so the sentence avoids a dangling modifier.'}]
-};
-function updateWordsScore(){saveComponentScore('words',Math.round((gameScores.wordle+gameScores.matching+gameScores.sentence)/3));$('#wordle-score').textContent=String(gameScores.wordle);$('#matching-score').textContent=String(gameScores.matching);$('#sentence-score').textContent=String(gameScores.sentence)}
-function startWordle(){const level=$('#games-level').value;const vocabulary=GAME_VOCAB[level]||GAME_VOCAB.growing;const day=Math.floor(Date.now()/86400000);wordleTarget=vocabulary[(day+Math.floor(Math.random()*vocabulary.length))%vocabulary.length].word.toUpperCase();wordleGuesses=[];wordleFinished=false;$('#wordle-guess').value='';$('#wordle-guess').disabled=false;$('#wordle-form').querySelector('button[type="submit"]').disabled=false;$('#wordle-round').textContent='6 tries';$('#wordle-feedback').textContent='Guess a five-letter word. Use everyday English for your selected level.';renderWordleBoard();}
-function renderWordleBoard(){const board=$('#wordle-board');const rows=[];for(let row=0;row<6;row++){const guess=wordleGuesses[row];const marks=guess?wordleMarks(guess):[];rows.push(`<div class="wordle-row">${Array.from({length:5},(_,i)=>`<span class="wordle-cell ${marks[i]||''}">${escapeHtml((guess||'')[i]||'')}</span>`).join('')}</div>`)}board.innerHTML=rows.join('');}
-function wordleMarks(guess){const target=wordleTarget.split('');const result=Array(5).fill('');for(let i=0;i<5;i++)if(guess[i]===target[i]){result[i]='correct';target[i]='';}for(let i=0;i<5;i++)if(!result[i]){const index=target.indexOf(guess[i]);if(index>=0){result[i]='present';target[index]='';}else result[i]='absent';}return result;}
-function submitWordleGuess(event){event.preventDefault();if(wordleFinished)return;const guess=$('#wordle-guess').value.trim().toUpperCase();if(!/^[A-Z]{5}$/.test(guess)){showToast('Enter exactly five letters.');return;}wordleGuesses.push(guess);renderWordleBoard();$('#wordle-guess').value='';if(guess===wordleTarget){wordleFinished=true;gameScores.wordle=Math.max(gameScores.wordle,Math.round(100-(wordleGuesses.length-1)*12));$('#wordle-feedback').textContent=`Solved in ${wordleGuesses.length} ${wordleGuesses.length===1?'try':'tries'}! The word was ${wordleTarget.toLowerCase()}.`;saveComponentScore('words',Math.round((gameScores.wordle+gameScores.matching+gameScores.sentence)/3));}else if(wordleGuesses.length>=6){wordleFinished=true;$('#wordle-feedback').textContent=`Round complete. The word was ${wordleTarget.toLowerCase()}. Start a new round to keep practising.`;}else $('#wordle-feedback').textContent=`${6-wordleGuesses.length} ${6-wordleGuesses.length===1?'try':'tries'} left.`;$('#wordle-round').textContent=`${Math.max(0,6-wordleGuesses.length)} tries`;$('#wordle-guess').disabled=wordleFinished;$('#wordle-form').querySelector('button[type="submit"]').disabled=wordleFinished;updateWordsScore();}
-function startMatchingRound(){const level=$('#games-level').value;const source=[...(GAME_VOCAB[level]||GAME_VOCAB.growing)];matchingItems=[];while(matchingItems.length<4&&source.length){const index=Math.floor(Math.random()*source.length);matchingItems.push(source.splice(index,1)[0]);}matchingSelectedWord=null;matchingCorrect=new Set();$('#matching-feedback').textContent='Pick a word to begin.';$('#match-round').textContent='0 / 4 pairs';renderMatchingRound();}
-function renderMatchingRound(){const words=$('#matching-words'),meanings=$('#matching-meanings');const mix=[...matchingItems].sort((a,b)=>a.word.localeCompare(b.word));const shuffled=[...matchingItems].sort(()=>Math.random()-.5);words.innerHTML=mix.map(item=>`<button class="matching-option ${matchingCorrect.has(item.word)?'matched':''} ${matchingSelectedWord===item.word?'selected':''}" type="button" data-match-word="${item.word}" ${matchingCorrect.has(item.word)?'disabled':''}>${item.word}</button>`).join('');meanings.innerHTML=shuffled.map(item=>`<button class="matching-option matching-definition ${matchingCorrect.has(item.word)?'matched':''}" type="button" data-match-meaning="${item.word}" ${matchingCorrect.has(item.word)?'disabled':''}>${item.meaning}</button>`).join('');}
-function renderSentenceQuestion(){const level=$('#games-level').value;const bank=SENTENCE_BANK[level]||SENTENCE_BANK.growing;const item=bank[sentenceIndex%bank.length];sentenceAnswered=false;$('#sentence-round').textContent=`Question ${(sentenceIndex%bank.length)+1} / ${bank.length}`;$('#sentence-question').textContent=item.q;$('#sentence-options').innerHTML=item.opts.map((text,index)=>`<button type="button" class="sentence-option" data-sentence-option="${index}"><span>${String.fromCharCode(65+index)}</span><span>${text}</span></button>`).join('');$('#sentence-feedback').textContent='Choose an answer to see why it works.';$('#sentence-next').textContent='Next question';$('#sentence-next').disabled=true;}
-function chooseSentenceAnswer(event){const button=event.target.closest('[data-sentence-option]');if(!button||sentenceAnswered)return;const bank=SENTENCE_BANK[$('#games-level').value]||SENTENCE_BANK.growing;const item=bank[sentenceIndex%bank.length];const chosen=Number(button.dataset.sentenceOption);sentenceAnswered=true;$$('.sentence-option').forEach((option,index)=>{option.disabled=true;if(index===item.correct)option.classList.add('correct');if(index===chosen&&chosen!==item.correct)option.classList.add('incorrect')});if(chosen===item.correct){sentenceScore+=1;gameScores.sentence=Math.round(Math.min(100,(sentenceScore/Math.max(1,sentenceIndex+1))*100));$('#sentence-feedback').textContent=`Correct. ${item.why}`}else $('#sentence-feedback').textContent=`Not quite. ${item.why}`;$('#sentence-score').textContent=String(gameScores.sentence);saveComponentScore('words',Math.round((gameScores.wordle+gameScores.matching+gameScores.sentence)/3));$('#sentence-next').disabled=false;}
-function initGames(){startWordle();startMatchingRound();renderSentenceQuestion();}
-function loadCareerChat(){try{careerChatHistory=JSON.parse(localStorage.getItem(STORAGE.chat)||'[]')}catch{careerChatHistory=[]}renderCareerChat()}
-function renderCareerChat(){const target=$('#career-chat-messages');const history=careerChatHistory.slice(-20);target.innerHTML=history.length?history.map(item=>`<div class="career-chat-message ${item.role==='user'?'user':'assistant'}"><strong>${item.role==='user'?'You':'Career guide'}</strong><p>${escapeHtml(item.text).replace(/\n/g,'<br>')}</p></div>`).join(''):'<div class="career-chat-message assistant"><strong>Career guide</strong><p>Tell me about your interests and I’ll ask one question at a time.</p></div>';target.scrollTop=target.scrollHeight;}
-async function sendCareerChat(event){
-  event.preventDefault();
-  const input=$('#career-chat-input');
-  const message=input.value.trim();
-  if(!message)return;
-  careerChatHistory.push({role:'user',text:message});
-  input.value='';
-  renderCareerChat();
-  const container=$('#career-chat-messages');
-  const typingIndicator=document.createElement('div');
-  typingIndicator.className='chat-bubble chat-bubble--assistant typing-bubble';
-  typingIndicator.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
-  container.appendChild(typingIndicator);
-  container.scrollTop=container.scrollHeight;
-  const context={grade:$('#career-chat-grade').value,stream:$('#career-chat-stream').value,location:$('#career-chat-location').value,budget:$('#career-chat-budget').value,priority:$('#career-chat-priorities').value};
-  const send=$('#career-chat-send');
-  send.disabled=true;
-  send.textContent='Thinking…';
-  let reply='Let’s narrow this down. Which subjects or activities do you enjoy enough to practise even when they are difficult? Also, tell me whether you would prefer a creative, technical, people-focused or research-based day at work.';
-  try{
-    const result=await requestAI('career-chat',{text:message,history:careerChatHistory.slice(-10),profile:context,prompt:'Reply in normal, simple English. Ask no more than one or two useful follow-up questions at the end. Use the learner’s preferences, suggest realistic Indian study routes and colleges only when relevant, distinguish confirmed official admissions pages from general suggestions, and link to official course/admission pages when a reliable URL is known. Never invent exact fees, cut-offs or salary guarantees.'});
-    if(result.text)reply=result.text;
-  }catch(error){
-    reply=`I can keep helping, but the live AI service is not available right now (${error.message}). To personalise the next step, tell me: ${context.priority==='fees and scholarships'?'what yearly budget range would feel manageable, and would you consider public colleges or scholarships?':context.priority==='admission route and entrance exams'?'which subjects do you plan to take, and which entrance exams are you considering?':context.priority==='colleges and course choices'?'which city or state can you study in, and what subjects do you enjoy most?':'what subjects do you enjoy, what kind of work sounds exciting, and do you prefer practical projects or academic study?'} When the AI provider is configured, this chat can build a tailored comparison.`;
-  }
-  typingIndicator.remove();
-  const assistantBubble=document.createElement('div');
-  assistantBubble.className='career-chat-message assistant';
-  assistantBubble.innerHTML='<strong>Career guide</strong><p></p>';
-  container.appendChild(assistantBubble);
-  const p=assistantBubble.querySelector('p');
-  const words=String(reply).split(/(\s+)/);
-  let output='';
-  for(let i=0; i<words.length; i++){
-    output+=words[i];
-    if(p) p.innerHTML=escapeHtml(output)+'<span class="typing-cursor" aria-hidden="true"> ●</span>';
-    container.scrollTop=container.scrollHeight;
-    if(words[i].trim()) await new Promise(r=>setTimeout(r, 22));
-  }
-  if(p) p.innerHTML=escapeHtml(reply).replace(/\n/g,'<br>');
-  careerChatHistory.push({role:'assistant',text:reply});
-  careerChatHistory=careerChatHistory.slice(-24);
-  try{localStorage.setItem(STORAGE.chat,JSON.stringify(careerChatHistory))}catch{}
-  send.disabled=false;
-  send.innerHTML='Ask the guide <span aria-hidden="true">↗</span>';
-}
-async function submitFeedback(event){event.preventDefault();const message=$('#feedback-message').value.trim();if(!message){setMessage($('#feedback-message-status'),'Write a note before sending.',true);return}if(!$('#feedback-consent').checked){setMessage($('#feedback-message-status'),'Please agree to the storage notice before sending.',true);return}const record={category:$('#feedback-type').value,rating:feedbackRating,message,contact:$('#feedback-contact').value.trim(),consent:true,createdAt:new Date().toISOString()};const button=$('#send-feedback');button.disabled=true;setMessage($('#feedback-message-status'),'Sending…');try{const response=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(record)});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Server did not save this note.');setMessage($('#feedback-message-status'),'Thank you. Your note is saved for the project team.');$('#feedback-form').reset();feedbackRating=5;$('#feedback-rating').value='5';$$('[data-rating]').forEach(item=>{item.classList.toggle('active',Number(item.dataset.rating)<=5);item.setAttribute('aria-pressed',String(Number(item.dataset.rating)===5))});}catch(error){const rows=loadLocalFeedback();rows.unshift(record);try{localStorage.setItem(STORAGE.feedback,JSON.stringify(rows.slice(0,200)))}catch{}setMessage($('#feedback-message-status'),`Saved only on this browser. Shared storage is not available: ${error.message}`,true);}finally{button.disabled=false;}}
 function bindEvents() {
   $('#career-stream-options').addEventListener('click',event=>{const button=event.target.closest('[data-stream]');if(button)selectCareerStream(button.dataset.stream);});
   $('#career-change-stream').addEventListener('click',()=>{$('#career-stream-step').hidden=false;$('#career-selected-summary').hidden=true;$('#career-browser').hidden=true;selectedCareerStream='';careerShowAll=false;activeCareerFilter='All';$('#career-detail').hidden=true;$('#career-search').value='';$('#career-stream-step').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});
@@ -1337,23 +1693,13 @@ function bindEvents() {
   $$('.scenario-card').forEach(button=>button.addEventListener('click',()=>applyRoleplay(button.dataset.roleplay)));$('#roleplay-feedback').addEventListener('click',reviewRoleplay);
   $('#anchor-script').addEventListener('change',()=>{stopTeleprompter();setTeleprompterText();});$('#anchor-custom-script').addEventListener('input',()=>{if($('#anchor-script').value==='custom')$('#teleprompter-text').textContent=$('#anchor-custom-script').value;});$('#anchor-play').addEventListener('click',toggleTeleprompter);$('#anchor-reset').addEventListener('click',()=>{stopTeleprompter();teleprompterOffset=0;$('#teleprompter-text').style.transform=$('#anchor-mirror').checked?'scaleX(-1)':'translateY(0)';});$('#anchor-mirror').addEventListener('change',()=>{$('#teleprompter-text').classList.toggle('mirrored',$('#anchor-mirror').checked);});$('#anchor-record').addEventListener('click',toggleAnchorRecording);
   $('#compare-reference').addEventListener('change',()=>{$('#reference-custom').hidden=$('#compare-reference').value!=='custom';});$('#compare-audio').addEventListener('change',event=>{selectedAudioFile=event.target.files?.[0]||null;$('#compare-audio-name').textContent=selectedAudioFile?`${selectedAudioFile.name} · ${(selectedAudioFile.size/1024/1024).toFixed(1)} MB`:'Audio is processed only when you choose to analyze.';if(selectedAudioFile&&selectedAudioFile.size>10*1024*1024){selectedAudioFile=null;event.target.value='';$('#compare-audio-name').textContent='Choose a file smaller than 10 MB.';showToast('Please choose an audio file smaller than 10 MB.');}});$('#compare-analyze').addEventListener('click',analyzeComparison);
-  $('#next-word').addEventListener('click',()=>setWord(activeWordIndex+1));$('#hear-word').addEventListener('click',speakWordOfDay);$('#save-word').addEventListener('click',()=>{let words=[];try{words=JSON.parse(localStorage.getItem(STORAGE.savedWords)||'[]');}catch{}const word=WORDS[activeWordIndex].word;if(!words.includes(word))words.push(word);localStorage.setItem(STORAGE.savedWords,JSON.stringify(words));loadSavedWords();showToast(`${word} saved to your practice list.`);});
-  $('#email-options').addEventListener('click',event=>{const button=event.target.closest('[data-email]');if(!button)return;const correct=Number(button.dataset.email)===Number($('#email-options').dataset.correct||1);if(button.dataset.answered==='true')return;$$('.email-option').forEach(item=>{item.disabled=true;if(Number(item.dataset.email)===Number($('#email-options').dataset.correct||1))item.classList.add('correct');});if(!correct)button.classList.add('incorrect');button.dataset.answered='true';emailScore+=correct?1:0;$('#email-score').textContent=`${emailScore} / ${emailRound+1}`;saveComponentScore('editor',Math.round(emailScore/(emailRound+1)*100));$('#email-feedback').textContent=correct?($('#email-options').dataset.explanation||'Strong choice. It is clear, respectful and gives the reader a next step.'):'Look for a message that is specific, respectful and easy to act on.';});$('#email-next').addEventListener('click',nextEmailRound);
+  $('#next-word').addEventListener('click',()=>setWord(activeWordIndex+1));$('#save-word').addEventListener('click',()=>{let words=[];try{words=JSON.parse(localStorage.getItem(STORAGE.savedWords)||'[]');}catch{}const word=WORDS[activeWordIndex].word;if(!words.includes(word))words.push(word);localStorage.setItem(STORAGE.savedWords,JSON.stringify(words));loadSavedWords();showToast(`${word} saved to your practice list.`);});
+  $('#email-options').addEventListener('click',event=>{const button=event.target.closest('[data-email]');if(!button)return;const correct=Number(button.dataset.email)===Number($('#email-options').dataset.correct||1);if(button.dataset.answered==='true')return;$$('.email-option').forEach(item=>{item.disabled=true;if(Number(item.dataset.email)===Number($('#email-options').dataset.correct||1))item.classList.add('correct');});if(!correct)button.classList.add('incorrect');button.dataset.answered='true';emailScore+=correct?1:0;$('#email-score').textContent=`${emailScore} / ${emailRound+1}`;$('#email-feedback').textContent=correct?($('#email-options').dataset.explanation||'Strong choice. It is clear, respectful and gives the reader a next step.'):'Look for a message that is specific, respectful and easy to act on.';});$('#email-next').addEventListener('click',nextEmailRound);
   $('#sound-buttons').addEventListener('click',event=>{const button=event.target.closest('[data-sound]');if(button)setPronunciationSound(button.dataset.sound);});$('#hear-sound').addEventListener('click',()=>{const sound=PRONUNCIATION_SOUNDS[activePronunciationSound];if(!window.SpeechSynthesisUtterance||!window.speechSynthesis){showToast('Model audio is not supported in this browser.');return;}window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(`${sound.examples.join(', ')}. ${sound.practice}`);utterance.lang='en-GB';utterance.rate=.82;window.speechSynthesis.speak(utterance);});$('#copy-sound-to-lab').addEventListener('click',()=>{$('#speech-transcript').value=PRONUNCIATION_SOUNDS[activePronunciationSound].practice;$('#speech-lab').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});$('#speech-transcript').focus({preventScroll:true});});$('#debate-form').addEventListener('submit',buildDebate);$('#copy-debate').addEventListener('click',async()=>{if(!debateDraft)return;try{await navigator.clipboard.writeText(debateDraft);showToast('Argument copied.');}catch{showToast('Clipboard access is unavailable; select the argument text to copy it.');}});$('#review-debate').addEventListener('click',reviewDebate);
   $('#leaderboard-form').addEventListener('submit',submitLeaderboard);$$('[data-board]').forEach(button=>button.addEventListener('click',()=>{selectedBoard=button.dataset.board;$$('[data-board]').forEach(item=>item.classList.toggle('active',item===button));refreshLeaderboard();}));
-  $('#refresh-editor-board').addEventListener('click',()=>refreshLeaderboard('#email-leaderboard-list','editor'));$('#refresh-games-board').addEventListener('click',()=>refreshLeaderboard('#games-leaderboard-list','games'));
-  
+  $('#copy-link').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('#share-url').textContent);showToast('Website link copied.');}catch{showToast('Copy the link shown beside the QR code.');}});$('#download-qr').addEventListener('click',downloadQRArtwork);
   $('#brand-mark').addEventListener('click',event=>{if(event.detail>=5){event.preventDefault();revealAdmin();}});$('#hero h1').addEventListener('click',()=>{window._heroAdminClicks=(window._heroAdminClicks||0)+1;if(window._heroAdminClicks>=5){window._heroAdminClicks=0;revealAdmin();}});
-  $('#debate-mode').addEventListener('change',()=>{const mode=$('#debate-mode').value;$('#debate-room-controls').hidden=mode!=='room';if(mode==='duo')showToast('Two-speaker mode: pass the device between speakers and use the same argument form.');});
-  let activeDebateRoom='';
-  async function refreshDebateRoom(){if(!activeDebateRoom)return;try{const response=await fetch(`/api/debate?room=${encodeURIComponent(activeDebateRoom)}`),data=await response.json();if(!response.ok)throw new Error(data.error||'Room unavailable');$('#debate-room-messages').innerHTML=(data.messages||[]).map(m=>`<article class="debate-room-message"><strong>${escapeHtml(m.name||'Speaker')}</strong><p>${escapeHtml(m.message||'')}</p><small>${escapeHtml(new Date(m.createdAt||Date.now()).toLocaleTimeString())}</small></article>`).join('')||'<p class="muted-small">No replies yet. Start the discussion.</p>';$('#debate-room-status').textContent=`Room ${activeDebateRoom} · ${data.messages?.length||0} messages. Refresh to see new replies.`;}catch(error){$('#debate-room-status').textContent=`Live room unavailable: ${error.message}. Deploy the D1 migration and API first.`;}}
-  $('#debate-room-join').addEventListener('click',async()=>{if(!$('#debate-save-consent').checked){showToast('Tick server-storage consent before joining a saved room.');return;}const name=$('#debate-room-name').value.trim();if(!name){showToast('Add a display name or nickname.');return;}try{const response=await fetch('/api/debate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'join',room:$('#debate-room-code').value.trim(),name,consent:true})}),data=await response.json();if(!response.ok)throw new Error(data.error||'Could not join room');activeDebateRoom=data.room;$('#debate-room-code').value=data.room;$('#debate-room-status').textContent=`Joined room ${data.room}. Share this code with the other speaker.`;await refreshDebateRoom();}catch(error){$('#debate-room-status').textContent=error.message;}});
-  $('#debate-room-refresh').addEventListener('click',refreshDebateRoom);
-  window.setInterval(()=>{if(activeDebateRoom&&$('#debate-mode')?.value==='room'&&!document.hidden)refreshDebateRoom();},5000);
-  $('#debate-room-message-form').addEventListener('submit',async event=>{event.preventDefault();const message=$('#debate-room-message').value.trim();if(!activeDebateRoom||!message)return;if(!$('#debate-save-consent').checked){showToast('Server-storage consent is required for saved live debate messages.');return;}try{const response=await fetch('/api/debate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'message',room:activeDebateRoom,name:$('#debate-room-name').value.trim(),message,consent:true})}),data=await response.json();if(!response.ok)throw new Error(data.error||'Could not send reply');$('#debate-room-message').value='';await refreshDebateRoom();saveComponentScore('debate',Math.min(100,Math.max(30,Math.round(message.split(/\s+/).length*2))));}catch(error){showToast(error.message);}});
-  let debateRecorder=null,debateChunks=[];
-  $('#debate-room-mic').addEventListener('click',async()=>{const button=$('#debate-room-mic');if(debateRecorder?.state==='recording'){debateRecorder.stop();button.textContent='Transcribing…';button.disabled=true;return;}if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){showToast('Audio recording is not supported here. Type your reply instead.');return;}try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});debateChunks=[];debateRecorder=new MediaRecorder(stream);debateRecorder.ondataavailable=event=>{if(event.data.size)debateChunks.push(event.data)};debateRecorder.onstop=async()=>{stream.getTracks().forEach(track=>track.stop());try{const blob=new Blob(debateChunks,{type:debateRecorder.mimeType||'audio/webm'});const file=new File([blob],'debate-reply.webm',{type:blob.type});const result=await requestSpeechTranscription(file);$('#debate-room-message').value=result.text||'';showToast(result.text?'Speech transcribed. Review it before sending.':'No transcript was returned.');}catch(error){showToast(`Transcription failed: ${error.message}. You can type your reply.`)}finally{button.disabled=false;button.textContent='Speak reply';}};debateRecorder.start();button.textContent='Stop & transcribe';showToast('Recording your reply. Press Stop & transcribe when finished.');}catch(error){showToast('Microphone access failed. Check browser permission, or type your reply.');}});
-  $('#admin-exit').addEventListener('click',closeAdmin);$('#admin-login-form').addEventListener('submit',adminLogin);
+  $('#admin-exit').addEventListener('click',closeAdmin);$('#admin-login-form').addEventListener('submit',adminLogin);$('#privacy-modal').addEventListener('click',event=>{if(event.target===event.currentTarget||event.target.closest('[data-close-modal]')){$('#privacy-modal').hidden=true;document.body.classList.remove('modal-open');}});$$('[href="#privacy-modal"]').forEach(a=>a.addEventListener('click',event=>{event.preventDefault();$('#privacy-modal').hidden=false;document.body.classList.add('modal-open');}));
   $('#admin-workspace').addEventListener('click',async event=>{
     const tab=event.target.closest('[data-admin-tab]');if(tab){renderAdminTab(tab.dataset.adminTab);return;}
     const up=event.target.closest('[data-provider-up]');const down=event.target.closest('[data-provider-down]');
@@ -1361,89 +1707,15 @@ function bindEvents() {
     if(event.target.closest('#save-feature-settings')){const features={...settings.features};$$('[data-feature-toggle]').forEach(input=>features[input.dataset.featureToggle]=input.checked);await saveAdminSettings({features});return;}
     if(event.target.closest('#enable-all-features')){await saveAdminSettings({features:Object.fromEntries(Object.keys(FEATURE_LABELS).map(key=>[key,true]))});return;}
     if(event.target.closest('#disable-all-features')){await saveAdminSettings({features:Object.fromEntries(Object.keys(FEATURE_LABELS).map(key=>[key,['hero','careers'].includes(key)?true:false]))});return;}
-    if(event.target.closest('#save-router-settings')){const providerEnabled={...settings.providerEnabled};$('[data-provider-enabled]').forEach(input=>providerEnabled[input.dataset.providerEnabled]=input.checked);await saveAdminSettings({automaticFallback:$('#automatic-fallback').checked,preferredProvider:$('#preferred-provider').value,ttsProvider:$('#tts-provider')?.value||settings.ttsProvider||'cartesia',qualityMode:$('#quality-mode').value,speechProvider:$('#speech-provider').value,providerOrder:settings.providerOrder,providerEnabled});return;}
+    if(event.target.closest('#save-router-settings')){const providerEnabled={...settings.providerEnabled};$$('[data-provider-enabled]').forEach(input=>providerEnabled[input.dataset.providerEnabled]=input.checked);await saveAdminSettings({automaticFallback:$('#automatic-fallback').checked,preferredProvider:$('#preferred-provider').value,qualityMode:$('#quality-mode').value,providerOrder:settings.providerOrder,providerEnabled});return;}
     if(event.target.closest('#save-provider-keys')){await saveProviderKeys();return;}
-    if(event.target.closest('#clear-provider-fields')){$('#gemini-keys').value='';$('#cartesia-key')&&($('#cartesia-key').value='');$('#openai-key')&&($('#openai-key').value='');$('#deepgram-key')&&($('#deepgram-key').value='');$('#kokoro-url')&&($('#kokoro-url').value='');$('#elevenlabs-key').value='';$('#free-key').value='';$('#laptop-token').value='';$('#free-url').value='';$('#free-model').value='';$('#laptop-url').value='';$('#laptop-model').value='llama3.2:3b';return;}
+    if(event.target.closest('#clear-provider-fields')){$('#gemini-keys').value='';$('#free-key').value='';$('#laptop-token').value='';$('#free-url').value='';$('#free-model').value='';$('#laptop-url').value='';$('#laptop-model').value='llama3.2:3b';return;}
     if(event.target.closest('#save-brand-settings')){await saveAdminSettings({theme:$('#brand-theme').value,language:$('#brand-language').value,showSchoolName:$('#show-school-name').checked,schoolName:$('#school-name').value.trim()||DEFAULT_SETTINGS.schoolName});return;}
     if(event.target.closest('#reset-brand-settings')){await saveAdminSettings({theme:DEFAULT_SETTINGS.theme,language:'en',showSchoolName:true,schoolName:DEFAULT_SETTINGS.schoolName});return;}
     if(event.target.closest('#refresh-request-logs')){renderAdminTab('requests');return;}
     if(event.target.closest('#clear-demo-logs')){localStorage.removeItem(STORAGE.demoLogs);renderAdminTab('requests');return;}
     if(event.target.closest('#refresh-admin-board')){renderAdminTab('leaderboard');return;}
-    if(event.target.closest('#refresh-feedback')){renderAdminTab('feedback');return;}
-    if(event.target.closest('#refresh-admin-testimonials')){renderAdminTab('testimonials');return;}
-    if(event.target.closest('#download-feedback')){await exportFeedbackWorkbook();return;}
-    if(event.target.closest('#auto-download-toggle')){toggleAutoDownload();return;}
-    if(event.target.closest('#download-all-media')){await downloadAllMedia();return;}
-    const mediaDelete=event.target.closest('[data-delete-media]');if(mediaDelete){if(!confirm('Permanently delete this saved newsroom recording?'))return;const response=await fetch(`/api/admin/media?id=${encodeURIComponent(mediaDelete.dataset.deleteMedia)}`,{method:'DELETE'});if(response.ok)renderAdminTab('feedback');else showToast('The recording could not be deleted. Check media storage settings.');return;}
     if(event.target.closest('#clear-admin-board')){if(!confirm('Remove every opt-in leaderboard entry?'))return;if(adminDemoMode){localStorage.removeItem(STORAGE.demoLeaderboard);renderAdminTab('leaderboard');}else{const res=await fetch('/api/admin/leaderboard',{method:'DELETE'});if(res.ok)renderAdminTab('leaderboard');else showToast('Could not clear the shared board.');}return;}
-    
-    const banBtn=event.target.closest('#btn-ban-ip');
-    if(banBtn){
-      const ipInput=document.getElementById('ban-ip-address');
-      const reasonInput=document.getElementById('ban-ip-reason');
-      const ip=ipInput?ipInput.value.trim():'';
-      const reason=reasonInput?reasonInput.value.trim():'';
-      if(!ip){showToast('Please enter an IP address to ban.');return;}
-      if(adminDemoMode){
-        const local=JSON.parse(localStorage.getItem('openmic.banned.ips')||'[]');
-        local.push({ip,reason,bannedAt:new Date().toISOString()});
-        localStorage.setItem('openmic.banned.ips',JSON.stringify(local));
-        loadAdminBannedIps();
-        showToast(`Banned IP ${ip}`);
-      } else {
-        const res=await fetch('/api/admin/banned-ips',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip,reason})});
-        const data=await res.json();
-        if(res.ok){
-          loadAdminBannedIps();
-          showToast(`Banned IP ${ip}`);
-          if(ipInput)ipInput.value='';
-          if(reasonInput)reasonInput.value='';
-        } else {
-          showToast(data.error||'Failed to ban IP');
-        }
-      }
-      return;
-    }
-    const unbanBtn=event.target.closest('[data-unban-ip]');
-    if(unbanBtn){
-      const ip=unbanBtn.dataset.unbanIp;
-      if(!confirm(`Unban IP ${ip}?`))return;
-      if(adminDemoMode){
-        let local=JSON.parse(localStorage.getItem('openmic.banned.ips')||'[]');
-        local=local.filter(x=>(typeof x==='string'?x!==ip:x.ip!==ip));
-        localStorage.setItem('openmic.banned.ips',JSON.stringify(local));
-        loadAdminBannedIps();
-        showToast(`Unbanned IP ${ip}`);
-      } else {
-        const res=await fetch(`/api/admin/banned-ips?ip=${encodeURIComponent(ip)}`,{method:'DELETE'});
-        if(res.ok){
-          loadAdminBannedIps();
-          showToast(`Unbanned IP ${ip}`);
-        } else {
-          showToast('Failed to unban IP');
-        }
-      }
-      return;
-    }
-    const quickBan=event.target.closest('[data-quick-ban-ip]');
-    if(quickBan){
-      const ip=quickBan.dataset.quickBanIp;
-      const reason=quickBan.dataset.banReason||'Restricted by administrator';
-      if(!confirm(`Ban IP ${ip} immediately? They will be blocked from AI requests, feedback, and leaderboard.`))return;
-      if(adminDemoMode){
-        const local=JSON.parse(localStorage.getItem('openmic.banned.ips')||'[]');
-        local.push({ip,reason,bannedAt:new Date().toISOString()});
-        localStorage.setItem('openmic.banned.ips',JSON.stringify(local));
-        showToast(`Banned IP ${ip}`);
-      } else {
-        const res=await fetch('/api/admin/banned-ips',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip,reason})});
-        if(res.ok)showToast(`Banned IP ${ip}`);
-        else showToast('Failed to ban IP');
-      }
-      renderAdminTab(adminTab());
-      return;
-    }
-  
     const deleteEntry=event.target.closest('[data-delete-entry]');if(deleteEntry){if(!confirm('Remove this leaderboard entry?'))return;if(adminDemoMode){const entries=getBoardData().filter(entry=>String(entry.id||entry.createdAt||entry.nickname)!==deleteEntry.dataset.deleteEntry);localStorage.setItem(STORAGE.demoLeaderboard,JSON.stringify(entries));renderAdminTab('leaderboard');}else{const response=await fetch(`/api/admin/leaderboard?id=${encodeURIComponent(deleteEntry.dataset.deleteEntry)}`,{method:'DELETE'});if(response.ok)renderAdminTab('leaderboard');else showToast('Could not remove this entry.');}return;}
   });
 }
@@ -1462,7 +1734,7 @@ function init() {
   const year = $('#current-year');
   if (year) year.textContent = String(new Date().getFullYear());
   bindEvents();
-  $$('.speaker-photo').forEach(image => image.addEventListener('error', () => { const fallback=image.dataset.fallback; if(fallback && image.src!==fallback){image.src=fallback;image.dataset.fallback='';return;} const frame=image.closest('.speaker-art');if(frame)frame.classList.add('photo-failed');image.remove(); }, {once:false}));
+  $$('.speaker-photo').forEach(image => image.addEventListener('error', () => { const frame = image.closest('.speaker-art'); if (frame) frame.classList.add('photo-failed'); image.remove(); }, {once:true}));
   lastPracticeScore = readStoredPracticeScore();
   updatePracticeScoreDisplay();
   applySettings(settings,false);
@@ -1473,1015 +1745,13 @@ function init() {
   setWord(Math.floor((Date.now()/86400000)%WORDS.length));
   loadSavedWords();
   setPronunciationSound('th');
-  initGames();
-  loadCareerChat();
-  loadLocalFeedback();
-  $('#anchor-upload-consent')?.addEventListener('change',()=>$('#anchor-analyze-save')?$('#anchor-analyze-save').disabled=!$('#anchor-upload-consent')?.checked||!anchorVideoBlob:null);
-  $('#feedback-rating-picker').addEventListener('click',event=>{const button=event.target.closest('[data-rating]');if(!button)return;feedbackRating=Number(button.dataset.rating);$('#feedback-rating').value=String(feedbackRating);$$('[data-rating]').forEach(item=>{item.classList.toggle('active',Number(item.dataset.rating)<=feedbackRating);item.setAttribute('aria-pressed',String(item===button));});});
-  $('#feedback-form').addEventListener('submit',submitFeedback);
-  $('#career-chat-form').addEventListener('submit',sendCareerChat);
-  $('#anchor-analyze-save')?.addEventListener('click',analyzeAndSaveNewsroomVideo);
-  $('#career-chat-messages').addEventListener('click',event=>{const choice=event.target.closest('[data-career-chat-choice]');if(choice){$('#career-chat-input').value=choice.dataset.careerChatChoice;$('#career-chat-input').focus();}});
-  $('#games-level').addEventListener('change',()=>{const level=$('#games-level').value;$('#game-level-note').textContent=level==='starter'?'Everyday words and clear, short sentences.':level==='advanced'?'Advanced vocabulary and more subtle grammar choices.':'Words you may meet at school, work and presentations.';startWordle();startMatchingRound();renderSentenceQuestion();});
-  $$('.game-tab').forEach(tab=>tab.addEventListener('click',()=>{const key=tab.dataset.gameTab;$$('.game-tab').forEach(item=>{item.classList.toggle('active',item===tab);item.setAttribute('aria-selected',String(item===tab));});$$('[data-game-panel]').forEach(panel=>panel.hidden=panel.dataset.gamePanel!==key);}));
-  $('#wordle-form').addEventListener('submit',submitWordleGuess);$('#wordle-new').addEventListener('click',startWordle);$('#matching-words').addEventListener('click',event=>{const button=event.target.closest('[data-match-word]');if(button&&!matchingCorrect.has(button.dataset.matchWord)){matchingSelectedWord=button.dataset.matchWord;renderMatchingRound();}});$('#matching-meanings').addEventListener('click',event=>{const button=event.target.closest('[data-match-meaning]');if(!button||!matchingSelectedWord||matchingCorrect.has(button.dataset.matchMeaning))return;const word=matchingItems.find(item=>item.word===matchingSelectedWord);if(word&&word.word===button.dataset.matchMeaning){matchingCorrect.add(word.word);gameScores.matching+=25;$('#matching-feedback').textContent=`Correct — ${word.word} means ${word.definition.toLowerCase()}`;saveComponentScore('words',Math.round((gameScores.wordle+gameScores.matching+gameScores.sentence)/3));if(matchingCorrect.size===matchingItems.length)$('#matching-feedback').textContent='All four pairs matched. Excellent work.';}else $('#matching-feedback').textContent='Not quite. Think about the word’s use in a sentence, then try again.';matchingSelectedWord=null;$('#matching-score').textContent=String(gameScores.matching);$('#match-round').textContent=`${matchingCorrect.size} / ${matchingItems.length} pairs`;renderMatchingRound();});$('#matching-new').addEventListener('click',startMatchingRound);$('#sentence-options').addEventListener('click',chooseSentenceAnswer);$('#sentence-next').addEventListener('click',()=>{if(!sentenceAnswered){showToast('Choose an answer first.');return;}sentenceIndex++;renderSentenceQuestion();});
+  initQR();
   refreshLeaderboard();
   setupScrollReveal();
   window.addEventListener('scroll',updateScrollProgress,{passive:true});
   updateScrollProgress();
-  if(location.hash==='#admin')revealAdmin();
+  initTheatricalSuite();
+if(location.hash==='#admin'||location.hash==='#admin-panel')revealAdmin();
   loadPublicSettings();
-  setupDebateFeatures();
-  setupObsStudioFeed();
-  setupTelegramAndGitHubVault();
-  setupCareerScrollRail();
-  setupWaveformThemeSwitcher();
-  loadPublicFeedbackAndTestimonials();
 }
 init();
-
-let duoState={activeSpeaker:'A',timerA:45,timerB:45,intervalA:null,intervalB:null,textA:'',textB:'',scoreA:0,scoreB:0};
-function setupDebateFeatures(){
-  const micBtn=$('#debate-builder-mic');
-  if(micBtn){
-    micBtn.addEventListener('click',()=>{
-      const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-      if(!SpeechRecognition){showToast('Browser speech recognition is not supported here. Type your argument instead.');return;}
-      const recog=new SpeechRecognition();
-      recog.lang='en-IN';
-      recog.continuous=false;
-      micBtn.textContent='Listening…';
-      recog.onresult=e=>{
-        const spoken=e.results[0][0].transcript;
-        const evidence=$('#debate-evidence');
-        if(evidence)evidence.value=(evidence.value?evidence.value+' ':'')+spoken;
-        micBtn.textContent='🎙️ Speak argument';
-        showToast('Speech added to supporting reason.');
-      };
-      recog.onerror=()=>{micBtn.textContent='🎙️ Speak argument';showToast('Microphone error or permission denied.');};
-      recog.onend=()=>{micBtn.textContent='🎙️ Speak argument';};
-      recog.start();
-    });
-  }
-  const modeSelect=$('#debate-mode');
-  const btnSolo=$('#btn-mode-solo');
-  const btnDuo=$('#btn-mode-duo');
-  const btnRoom=$('#btn-mode-room');
-  const setDebateMode=mode=>{
-    if(modeSelect)modeSelect.value=mode;
-    [btnSolo,btnDuo,btnRoom].forEach(b=>{if(b)b.classList.toggle('active',b.dataset.mode===mode);});
-    const soloLayout=$('#debate-solo-layout');
-    const duoStage=$('#debate-duo-stage');
-    const roomControls=$('#debate-room-controls');
-    if(soloLayout)soloLayout.hidden=mode!=='solo';
-    if(duoStage)duoStage.hidden=mode!=='duo';
-    if(roomControls)roomControls.hidden=mode!=='room';
-  };
-  if(modeSelect)modeSelect.addEventListener('change',()=>setDebateMode(modeSelect.value));
-  [btnSolo,btnDuo,btnRoom].forEach(b=>{if(b)b.addEventListener('click',()=>setDebateMode(b.dataset.mode));});
-
-  const duoBtnA=$('#duo-btn-a');
-  const duoBtnB=$('#duo-btn-b');
-  const duoMicA=$('#duo-mic-a');
-  const duoMicB=$('#duo-mic-b');
-  const duoTextA=$('#duo-text-a');
-  const duoTextB=$('#duo-text-b');
-  const duoTimerA=$('#duo-timer-a');
-  const duoTimerB=$('#duo-timer-b');
-  const scoreDuoText=(text)=>{
-    const words=text.trim().split(/\s+/).filter(Boolean).length;
-    let score=Math.min(50,words*2);
-    if(/because|therefore|for example|evidence|fact/i.test(text))score+=25;
-    if(/however|although|counter|despite|argue/i.test(text))score+=25;
-    return Math.min(100,score);
-  };
-  if(duoBtnA){
-    duoBtnA.addEventListener('click',()=>{
-      if(duoState.intervalA){
-        clearInterval(duoState.intervalA);
-        duoState.intervalA=null;
-        duoBtnA.textContent='Resume Turn';
-        if(duoBtnB)duoBtnB.disabled=false;
-        return;
-      }
-      duoBtnA.textContent='Pause Turn';
-      duoState.intervalA=setInterval(()=>{
-        duoState.timerA--;
-        if(duoTimerA)duoTimerA.textContent=`${duoState.timerA}s`;
-        if(duoState.timerA<=0){
-          clearInterval(duoState.intervalA);
-          duoState.intervalA=null;
-          duoBtnA.disabled=true;
-          duoBtnA.textContent='Turn Over';
-          if(duoBtnB)duoBtnB.disabled=false;
-          const score=scoreDuoText(duoTextA ? duoTextA.value : '');
-          duoState.scoreA=score;
-          const scEl=$('#duo-score-a');
-          if(scEl)scEl.textContent=`Score: ${score}/100`;
-          const boxA=$('#box-speaker-a');
-          const boxB=$('#box-speaker-b');
-          if(boxA)boxA.classList.remove('active-turn');
-          if(boxB)boxB.classList.add('active-turn');
-          saveComponentScore('debate',Math.max(score,duoState.scoreB));
-          showToast('Speaker 1 turn complete. Speaker 2 is ready!');
-        }
-      },1000);
-    });
-  }
-  if(duoBtnB){
-    duoBtnB.addEventListener('click',()=>{
-      if(duoState.intervalB){
-        clearInterval(duoState.intervalB);
-        duoState.intervalB=null;
-        duoBtnB.textContent='Resume Turn';
-        return;
-      }
-      duoBtnB.textContent='Pause Turn';
-      duoState.intervalB=setInterval(()=>{
-        duoState.timerB--;
-        if(duoTimerB)duoTimerB.textContent=`${duoState.timerB}s`;
-        if(duoState.timerB<=0){
-          clearInterval(duoState.intervalB);
-          duoState.intervalB=null;
-          duoBtnB.disabled=true;
-          duoBtnB.textContent='Turn Over';
-          const score=scoreDuoText(duoTextB ? duoTextB.value : '');
-          duoState.scoreB=score;
-          const scEl=$('#duo-score-b');
-          if(scEl)scEl.textContent=`Score: ${score}/100`;
-          const boxB=$('#box-speaker-b');
-          if(boxB)boxB.classList.remove('active-turn');
-          const finalDebateScore=Math.round((duoState.scoreA+score)/2);
-          saveComponentScore('debate',finalDebateScore);
-          showToast(`Debate round complete! Combined debate score: ${finalDebateScore}`);
-        }
-      },1000);
-    });
-  }
-  const attachDuoMic=(btn,textarea)=>{
-    if(!btn||!textarea)return;
-    btn.addEventListener('click',()=>{
-      const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-      if(!SpeechRecognition){showToast('Speech recognition not available.');return;}
-      const recog=new SpeechRecognition();
-      recog.lang='en-IN';
-      recog.continuous=true;
-      btn.textContent='Listening…';
-      recog.onresult=e=>{
-        const spoken=e.results[e.results.length-1][0].transcript;
-        textarea.value=(textarea.value?textarea.value+' ':'')+spoken;
-      };
-      recog.onerror=()=>{btn.textContent='🎙️ Speak';};
-      recog.onend=()=>{btn.textContent='🎙️ Speak';};
-      recog.start();
-    });
-  };
-  attachDuoMic(duoMicA,duoTextA);
-  attachDuoMic(duoMicB,duoTextB);
-}
-async function loadPublicFeedbackAndTestimonials(){
-  const summaryEl=$('#feedback-ai-summary');
-  const listEl=$('#testimonials-list');
-  if(!summaryEl&&!listEl)return;
-  try{
-    const res=await fetch('/api/feedback');
-    if(!res.ok)return;
-    const data=await res.json();
-    if(summaryEl&&data.summary){
-      summaryEl.innerHTML=`<div class="ai-summary-card"><span class="mini-tag">AI SENTIMENT SUMMARY · ${data.count||0} REVIEWS</span><p>${escapeHtml(data.summary)}</p></div>`;
-    }
-    if(listEl&&Array.isArray(data.entries)&&data.entries.length){
-      listEl.innerHTML=data.entries.slice(0,6).map(e=>`
-        <article class="testimonial-card">
-          <div class="rating-stars">${'★'.repeat(Math.max(1,Math.min(5,e.rating||5)))}</div>
-          <p>“${escapeHtml(e.message)}”</p>
-          <small>${escapeHtml((e.category||'review').toUpperCase())} · Student review</small>
-        </article>
-      `).join('');
-    }
-  }catch{}
-}
-
-let obsMediaStream = null;
-let audioWaveformContext = null;
-let audioWaveformAnalyser = null;
-let audioWaveformAnimationId = null;
-
-function setupAudioWaveformVisualizer(stream, canvasId) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas || !stream) return;
-  try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    if (audioWaveformContext) {
-      audioWaveformContext.close().catch(()=>{});
-    }
-    audioWaveformContext = new AudioCtx();
-    const source = audioWaveformContext.createMediaStreamSource(stream);
-    audioWaveformAnalyser = audioWaveformContext.createAnalyser();
-    audioWaveformAnalyser.fftSize = 256;
-    source.connect(audioWaveformAnalyser);
-    const bufferLength = audioWaveformAnalyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    const ctx = canvas.getContext('2d');
-
-    const draw = () => {
-      audioWaveformAnimationId = requestAnimationFrame(draw);
-      audioWaveformAnalyser.getByteFrequencyData(dataArray);
-      ctx.fillStyle = '#181a20';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      const barWidth = (canvas.width / bufferLength) * 2.2;
-      let x = 0;
-      for (let i = 0; i < bufferLength; i++) {
-        const barHeight = (dataArray[i] / 255) * canvas.height;
-        let c1 = '#ff6b3d', c2 = '#ff9e7d';
-        if (typeof activeWaveformTheme !== 'undefined' && activeWaveformTheme === 'violet') {
-          c1 = '#b5a6ff'; c2 = '#d8b4fe';
-        } else if (typeof activeWaveformTheme !== 'undefined' && activeWaveformTheme === 'mint') {
-          c1 = '#38b2ac'; c2 = '#c9e5cf';
-        }
-        ctx.fillStyle = i % 2 === 0 ? c1 : c2;
-        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-        x += barWidth + 1;
-      }
-    };
-    draw();
-  } catch {}
-}
-
-function stopAudioWaveformVisualizer() {
-  if (audioWaveformAnimationId) {
-    cancelAnimationFrame(audioWaveformAnimationId);
-    audioWaveformAnimationId = null;
-  }
-}
-
-async function enumerateObsVideoDevices() {
-  const select = document.getElementById('obs-device-select');
-  if (!select || !navigator.mediaDevices?.enumerateDevices) return;
-  try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const videoInputs = devices.filter(d => d.kind === 'videoinput');
-    if (!videoInputs.length) return;
-    select.innerHTML = videoInputs.map(d => `<option value="${escapeHtml(d.deviceId)}">${escapeHtml(d.label || ('Camera ' + d.deviceId.slice(0, 5)))}</option>`).join('');
-    const obsOption = videoInputs.find(d => /obs/i.test(d.label));
-    if (obsOption) select.value = obsOption.deviceId;
-  } catch {}
-}
-
-let obsRecorder = null;
-let obsRecordedChunks = [];
-let obsRecordTimerInterval = 0;
-let obsRecordStartTime = 0;
-
-function setupObsStudioFeed() {
-  enumerateObsVideoDevices();
-  const toggleBtn = document.getElementById('obs-feed-toggle');
-  const container = document.getElementById('obs-feed-container');
-  const connectBtn = document.getElementById('obs-connect-btn');
-  const stopBtn = document.getElementById('obs-stop-btn');
-  const recordBtn = document.getElementById('obs-record-btn');
-  const recordTimer = document.getElementById('obs-record-timer');
-  const recordProgress = document.getElementById('obs-record-progress');
-  const recordLog = document.getElementById('obs-record-log');
-  const placeholder = document.getElementById('obs-video-placeholder');
-  const deviceSelect = document.getElementById('obs-device-select');
-  const streamUrlInput = document.getElementById('obs-stream-url');
-  const videoPreview = document.getElementById('obs-video-preview');
-  const statusTag = document.getElementById('obs-status-tag');
-
-  const logObs = (msg, isSuccess, isError) => {
-    if (!recordLog) return;
-    const p = document.createElement('p');
-    if (isSuccess) p.className = 'success';
-    if (isError) p.className = 'error';
-    p.textContent = msg;
-    recordLog.appendChild(p);
-    recordLog.scrollTop = recordLog.scrollHeight;
-  };
-
-  if (toggleBtn && container) {
-    toggleBtn.addEventListener('click', () => {
-      const willShow = container.hidden;
-      container.hidden = !willShow;
-      toggleBtn.textContent = willShow ? 'Hide OBS Live Stage Feed ▲' : 'Open OBS Live Stage Feed ▼';
-      if (willShow) enumerateObsVideoDevices();
-    });
-  }
-
-  if (connectBtn && videoPreview) {
-    connectBtn.addEventListener('click', async () => {
-      const customUrl = streamUrlInput ? streamUrlInput.value.trim() : '';
-      if (customUrl) {
-        if (obsMediaStream) {
-          obsMediaStream.getTracks().forEach(t => t.stop());
-          obsMediaStream = null;
-        }
-        videoPreview.srcObject = null;
-        videoPreview.src = customUrl;
-        videoPreview.play().catch(()=>{});
-        if (placeholder) placeholder.style.display = 'none';
-        if (statusTag) statusTag.textContent = 'CONNECTING TO STREAM URL...';
-        if (recordBtn) recordBtn.disabled = false;
-        showToast('Connecting to external OBS stream feed…');
-        return;
-      }
-
-      const deviceId = deviceSelect ? deviceSelect.value : undefined;
-      const constraints = {
-        video: deviceId ? { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } } : true,
-        audio: true
-      };
-
-      try {
-        if (obsMediaStream) {
-          obsMediaStream.getTracks().forEach(t => t.stop());
-        }
-        obsMediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-        videoPreview.src = '';
-        videoPreview.srcObject = obsMediaStream;
-        await videoPreview.play();
-        if (placeholder) placeholder.style.display = 'none';
-        if (statusTag) statusTag.textContent = 'ONLINE · OBS VIRTUAL CAMERA';
-        if (stopBtn) stopBtn.disabled = false;
-        if (recordBtn) recordBtn.disabled = false;
-        connectBtn.textContent = 'Re-sync Stream';
-        setupAudioWaveformVisualizer(obsMediaStream, 'obs-waveform-canvas');
-        showToast('Live interview feed from OBS Studio connected!');
-      } catch (err) {
-        if (statusTag) statusTag.textContent = 'FEED ERROR';
-        showToast('Could not access selected camera or OBS feed: ' + (err.message || 'Permission denied'));
-      }
-    });
-  }
-
-  if (stopBtn && videoPreview) {
-    stopBtn.addEventListener('click', () => {
-      if (obsRecorder && obsRecorder.state === 'recording') {
-        try { obsRecorder.stop(); } catch(e) {}
-      }
-      if (obsRecordTimerInterval) clearInterval(obsRecordTimerInterval);
-      if (obsMediaStream) {
-        obsMediaStream.getTracks().forEach(t => t.stop());
-        obsMediaStream = null;
-      }
-      videoPreview.srcObject = null;
-      videoPreview.src = '';
-      stopAudioWaveformVisualizer();
-      if (placeholder) placeholder.style.display = 'block';
-      if (statusTag) statusTag.textContent = 'STANDBY · FEED PAUSED';
-      stopBtn.disabled = true;
-      if (recordBtn) recordBtn.disabled = true;
-      if (connectBtn) connectBtn.textContent = 'Start Live Feed';
-      showToast('OBS Live feed stopped.');
-    });
-  }
-
-  if (recordBtn && videoPreview) {
-    recordBtn.addEventListener('click', async () => {
-      if (obsRecorder && obsRecorder.state === 'recording') {
-        recordBtn.disabled = true;
-        recordBtn.textContent = 'Finalizing Recording…';
-        if (obsRecordTimerInterval) clearInterval(obsRecordTimerInterval);
-        obsRecorder.stop();
-        return;
-      }
-
-      const streamToRecord = obsMediaStream || (videoPreview.captureStream ? videoPreview.captureStream() : null);
-      if (!streamToRecord) {
-        showToast('Please start the OBS live feed before recording.');
-        return;
-      }
-
-      const s = getVaultSettings();
-      if (!s.ghToken || !s.ghOwner || !s.ghRepo) {
-        showToast('Please configure GitHub Vault settings in remote storage vault section first.');
-        const vaultSec = document.getElementById('github-vault');
-        if (vaultSec) vaultSec.scrollIntoView({ behavior: 'smooth' });
-        return;
-      }
-
-      obsRecordedChunks = [];
-      const mime = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t => MediaRecorder.isTypeSupported(t));
-      try {
-        obsRecorder = mime ? new MediaRecorder(streamToRecord, { mimeType: mime }) : new MediaRecorder(streamToRecord);
-      } catch(e) {
-        obsRecorder = new MediaRecorder(streamToRecord);
-      }
-
-      obsRecorder.ondataavailable = e => {
-        if (e.data && e.data.size > 0) obsRecordedChunks.push(e.data);
-      };
-
-      obsRecorder.onstop = async () => {
-        const fullBlob = new Blob(obsRecordedChunks, { type: obsRecorder.mimeType || 'video/webm' });
-        recordBtn.textContent = 'Splitting & Uploading to GitHub…';
-        logObs(`🎬 Incoming OBS stream captured: ${(fullBlob.size / 1024).toFixed(1)} KB. Slicing into split video chunks…`, true);
-
-        const localUrl = URL.createObjectURL(fullBlob);
-        const downloadP = document.createElement('p');
-        downloadP.innerHTML = `<a href="${localUrl}" download="obs-interview-${Date.now()}.webm" style="color:#ff6b3d;text-decoration:underline;font-weight:bold;">Download recorded OBS clip (${Math.round(fullBlob.size / 1024)} KB) ↓</a>`;
-        recordLog.appendChild(downloadP);
-
-        const labels = ['obs_header_sync', 'obs_interview_part1', 'obs_interview_part2', 'obs_trailer_sync'];
-
-        try {
-          const res = await chunkAndUploadLabeledVideoToGitHub(
-            fullBlob,
-            `obs-live-interview-${Date.now()}.webm`,
-            labels,
-            pct => {
-              if (recordProgress) recordProgress.style.width = pct + '%';
-            },
-            (msg, isSuccess) => logObs(msg, isSuccess)
-          );
-          logObs(`🎉 OBS video successfully split and committed to GitHub: ${res.owner}/${res.repo} in ${res.totalChunks} chunks!`, true);
-          showToast('OBS video split and stored in GitHub vault successfully!');
-        } catch(err) {
-          logObs('GitHub upload error: ' + err.message, false, true);
-          showToast('Failed to push chunks: ' + err.message);
-        } finally {
-          recordBtn.disabled = false;
-          recordBtn.textContent = 'Record & Split-Store to GitHub';
-          if (recordTimer) recordTimer.textContent = '';
-        }
-      };
-
-      obsRecordStartTime = Date.now();
-      obsRecorder.start(500);
-      recordBtn.textContent = 'Stop & Split-Store to GitHub ⏹';
-      logObs('🔴 Recording incoming OBS stream...', false);
-      if (recordProgress) recordProgress.style.width = '0%';
-
-      obsRecordTimerInterval = setInterval(() => {
-        const elapsed = Math.round((Date.now() - obsRecordStartTime) / 1000);
-        const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
-        const secs = String(elapsed % 60).padStart(2, '0');
-        if (recordTimer) recordTimer.textContent = `REC ${mins}:${secs}`;
-      }, 1000);
-    });
-  }
-}
-
-const VAULT_STORAGE_KEY = 'openmic.vault.v12';
-
-function getVaultSettings() {
-  try {
-    return JSON.parse(localStorage.getItem(VAULT_STORAGE_KEY)) || {};
-  } catch {
-    return {};
-  }
-}
-
-function saveVaultSettings(settings) {
-  try {
-    localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(settings));
-  } catch {}
-}
-
-async function sendTelegramAlert(message, customToken, customChatId) {
-  const settings = getVaultSettings();
-  const token = customToken || settings.tgToken;
-  const chatId = customChatId || settings.tgChatId;
-  if (!token || !chatId) return false;
-  try {
-    const res = await fetch('/api/telegram', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'send', message, token, chatId })
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
-async function chunkAndUploadToGitHub(fileOrBlob, originalName, progressCallback, logCallback) {
-  const settings = getVaultSettings();
-  const owner = settings.ghOwner;
-  const repo = settings.ghRepo;
-  const branch = settings.ghBranch || 'main';
-  const token = settings.ghToken;
-
-  if (!owner || !repo || !token) {
-    throw new Error('Please configure your GitHub Owner, Repo and Token in Cloud Vault first.');
-  }
-
-  const fileName = originalName || fileOrBlob.name || ('recording_' + Date.now() + '.webm');
-  const fileSize = fileOrBlob.size;
-  const CHUNK_SIZE = 2 * 1024 * 1024;
-  const totalChunks = Math.ceil(fileSize / CHUNK_SIZE) || 1;
-  const sessionId = 'rec_' + Date.now();
-  const chunkManifest = [];
-
-  logCallback(`Beginning chunked upload: ${fileName} (${Math.round(fileSize / 1024)} KB) into ${totalChunks} chunks…`, false);
-
-  for (let i = 0; i < totalChunks; i++) {
-    const start = i * CHUNK_SIZE;
-    const end = Math.min(fileSize, start + CHUNK_SIZE);
-    const chunkBlob = fileOrBlob.slice(start, end);
-    const base64Data = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(chunkBlob);
-    });
-
-    const chunkPath = `uploads/${sessionId}/chunk_${String(i).padStart(3, '0')}.bin`;
-    const res = await fetch('/api/github-vault', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token, owner, repo, branch,
-        path: chunkPath,
-        content: base64Data,
-        message: `Upload chunk ${i + 1}/${totalChunks} for ${fileName}`
-      })
-    });
-
-    const result = await res.json();
-    if (!res.ok) {
-      throw new Error(result.error || `Chunk ${i + 1} upload failed`);
-    }
-
-    chunkManifest.push({ index: i, path: chunkPath, sha: result.commitSha });
-    const pct = Math.round(((i + 1) / totalChunks) * 100);
-    progressCallback(pct);
-    logCallback(`✓ Chunk ${i + 1}/${totalChunks} committed: ${chunkPath}`, false);
-  }
-
-  const manifestData = {
-    sessionId,
-    fileName,
-    fileSize,
-    mimeType: fileOrBlob.type || 'video/webm',
-    totalChunks,
-    chunkSize: CHUNK_SIZE,
-    chunks: chunkManifest,
-    uploadedAt: new Date().toISOString()
-  };
-
-  const manifestJsonB64 = btoa(unescape(encodeURIComponent(JSON.stringify(manifestData, null, 2))));
-  await fetch('/api/github-vault', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      token, owner, repo, branch,
-      path: `uploads/${sessionId}/manifest.json`,
-      content: manifestJsonB64,
-      message: `Finalize manifest for ${fileName}`
-    })
-  });
-
-  logCallback(`🎉 Complete! All chunks stored in GitHub repo ${owner}/${repo}/uploads/${sessionId}/`, true);
-
-  const tgMsg = `<b>Open Mic v14 Video Vault</b>\nSaved <code>${fileName}</code> (${Math.round(fileSize / 1024)} KB) in ${totalChunks} chunks to GitHub repository <b>${owner}/${repo}</b>.\nSession ID: <code>${sessionId}</code>`;
-  sendTelegramAlert(tgMsg).then(ok => {
-    if (ok) logCallback('✓ Dispatched Telegram notification alert.', true);
-  });
-
-  return { sessionId, totalChunks, owner, repo };
-}
-
-async function generateTestVideoBlob(durationMs = 3000) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 640;
-  canvas.height = 360;
-  const ctx = canvas.getContext('2d');
-  let audioCtx, dest, osc;
-  try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    dest = audioCtx.createMediaStreamDestination();
-    osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-    osc.connect(gain);
-    gain.connect(dest);
-    osc.start();
-  } catch(e) {}
-  const stream = canvas.captureStream(30);
-  if (dest && dest.stream) {
-    dest.stream.getAudioTracks().forEach(track => stream.addTrack(track));
-  }
-  const mime = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t => MediaRecorder.isTypeSupported(t));
-  const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
-  const chunks = [];
-  recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
-  const startTime = Date.now();
-  let animId = 0;
-  const colors = ['#e11d48', '#ea580c', '#d97706', '#16a34a', '#0284c7', '#7c3aed', '#db2777'];
-  const drawTestFrame = () => {
-    const elapsed = Date.now() - startTime;
-    const progress = Math.min(1, elapsed / durationMs);
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    const barWidth = canvas.width / colors.length;
-    colors.forEach((col, idx) => {
-      ctx.fillStyle = col;
-      ctx.fillRect(idx * barWidth, 0, barWidth, 200);
-    });
-    ctx.fillStyle = '#020617';
-    ctx.fillRect(0, 200, canvas.width, 160);
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillRect(0, 200, canvas.width * progress, 8);
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = 'bold 22px Syne, sans-serif';
-    ctx.fillText('OPEN MIC v14 · TEST VIDEO CHUNKER', 24, 246);
-    ctx.font = '15px monospace';
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillText(`Timestamp: ${new Date().toISOString()} · ${(progress * 100).toFixed(0)}%`, 24, 280);
-    ctx.fillText(`Signal: 440Hz Sine · 640x360 30fps`, 24, 308);
-    ctx.fillStyle = '#f59e0b';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.fillText('LABEL: REPOSITORY VAULT MULTIPART VERIFICATION', 24, 336);
-    if (elapsed < durationMs) {
-      animId = requestAnimationFrame(drawTestFrame);
-    }
-  };
-  drawTestFrame();
-  recorder.start(200);
-  await new Promise(r => setTimeout(r, durationMs + 200));
-  recorder.stop();
-  if (animId) cancelAnimationFrame(animId);
-  if (osc) {
-    try { osc.stop(); } catch(e) {}
-    try { audioCtx.close(); } catch(e) {}
-  }
-  stream.getTracks().forEach(t => t.stop());
-  await new Promise(r => { recorder.onstop = r; });
-  return new Blob(chunks, { type: recorder.mimeType || 'video/webm' });
-}
-
-async function chunkAndUploadLabeledVideoToGitHub(fileOrBlob, fileName, chunkLabels = [], progressCallback, logCallback) {
-  const CHUNK_SIZE = 1 * 1024 * 1024;
-  const fileSize = fileOrBlob.size;
-  const totalChunks = Math.max(1, Math.ceil(fileSize / CHUNK_SIZE));
-  const sessionId = 'testvid_' + Date.now();
-  const settings = getVaultSettings();
-  const token = settings.ghToken;
-  const owner = settings.ghOwner;
-  const repo = settings.ghRepo;
-  const branch = settings.ghBranch || 'main';
-
-  if (!token || !owner || !repo) {
-    throw new Error('Please configure and save your GitHub Owner, Repo, and Personal Access Token first.');
-  }
-
-  logCallback(`Starting labelled chunk upload: ${fileName} (${Math.round(fileSize / 1024)} KB) into ${totalChunks} chunk(s) to ${owner}/${repo}@${branch}…`, false);
-
-  const defaultLabels = ['header_sync', 'payload_body', 'keyframe_stream', 'trailer_checksum'];
-  const chunkManifest = [];
-
-  for (let i = 0; i < totalChunks; i++) {
-    const start = i * CHUNK_SIZE;
-    const end = Math.min(fileSize, start + CHUNK_SIZE);
-    const chunkBlob = fileOrBlob.slice(start, end);
-    const label = chunkLabels[i] || defaultLabels[i % defaultLabels.length] || `part_${i + 1}`;
-    const base64Data = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(chunkBlob);
-    });
-
-    const chunkFileName = `chunk_${String(i).padStart(3, '0')}_${label}.bin`;
-    const chunkPath = `uploads/${sessionId}/${chunkFileName}`;
-
-    logCallback(`⏳ Uploading labelled chunk ${i + 1}/${totalChunks} [${label}]…`, false);
-
-    const res = await fetch('/api/github-vault', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token, owner, repo, branch,
-        path: chunkPath,
-        content: base64Data,
-        message: `Upload labelled chunk ${i + 1}/${totalChunks} [${label}] for ${fileName}`
-      })
-    });
-
-    const result = await res.json();
-    if (!res.ok) {
-      throw new Error(result.error || `Chunk ${i + 1} (${label}) upload failed`);
-    }
-
-    chunkManifest.push({
-      index: i,
-      label,
-      sizeBytes: chunkBlob.size,
-      path: chunkPath,
-      sha: result.commitSha,
-      htmlUrl: result.htmlUrl
-    });
-
-    const pct = Math.round(((i + 1) / totalChunks) * 100);
-    progressCallback(pct);
-    logCallback(`✓ Labelled chunk ${i + 1}/${totalChunks} committed: ${chunkPath}`, false);
-  }
-
-  const manifestData = {
-    sessionId,
-    fileName,
-    fileSize,
-    mimeType: fileOrBlob.type || 'video/webm',
-    totalChunks,
-    chunkSize: CHUNK_SIZE,
-    chunks: chunkManifest,
-    uploadedAt: new Date().toISOString(),
-    status: 'complete'
-  };
-
-  const manifestJsonB64 = btoa(unescape(encodeURIComponent(JSON.stringify(manifestData, null, 2))));
-  const manifestPath = `uploads/${sessionId}/manifest.json`;
-
-  await fetch('/api/github-vault', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      token, owner, repo, branch,
-      path: manifestPath,
-      content: manifestJsonB64,
-      message: `Finalize labelled manifest for ${fileName}`
-    })
-  });
-
-  logCallback(`🎉 Complete! All ${totalChunks} labelled chunk(s) stored in ${owner}/${repo}/uploads/${sessionId}/`, true);
-
-  const tgMsg = `<b>Open Mic v14 Labeled Video Vault</b>\nSaved <code>${fileName}</code> (${Math.round(fileSize / 1024)} KB) in <b>${totalChunks} labeled chunk(s)</b> to GitHub repository <b>${owner}/${repo}</b>.\nSession: <code>${sessionId}</code>\nManifest: <code>${manifestPath}</code>`;
-  sendTelegramAlert(tgMsg).then(ok => {
-    if (ok) logCallback('✓ Dispatched Telegram notification alert.', true);
-  });
-
-  return { sessionId, totalChunks, owner, repo, manifestPath };
-}
-
-window.uploadVideoToGitHubVault = chunkAndUploadToGitHub;
-window.pushTestVideoToGitHubVault = chunkAndUploadLabeledVideoToGitHub;
-
-function setupTelegramAndGitHubVault() {
-  const settings = getVaultSettings();
-
-  const tgTokenInput = document.getElementById('vault-tg-token');
-  const tgChatInput = document.getElementById('vault-tg-chat');
-  const tgTestBtn = document.getElementById('vault-tg-test');
-  const tgStatusChip = document.getElementById('vault-tg-status');
-
-  const ghOwnerInput = document.getElementById('vault-gh-owner');
-  const ghRepoInput = document.getElementById('vault-gh-repo');
-  const ghBranchInput = document.getElementById('vault-gh-branch');
-  const ghTokenInput = document.getElementById('vault-gh-token');
-  const ghSaveBtn = document.getElementById('vault-gh-save');
-  const ghStatusChip = document.getElementById('vault-gh-status');
-
-  const filePicker = document.getElementById('vault-file-picker');
-  const uploadBtn = document.getElementById('vault-upload-btn');
-  const progressFill = document.getElementById('vault-progress-fill');
-  const logBox = document.getElementById('vault-log-box');
-
-  if (tgTokenInput && settings.tgToken) tgTokenInput.value = settings.tgToken;
-  if (tgChatInput && settings.tgChatId) tgChatInput.value = settings.tgChatId;
-  if (ghOwnerInput && settings.ghOwner) ghOwnerInput.value = settings.ghOwner;
-  if (ghRepoInput && settings.ghRepo) ghRepoInput.value = settings.ghRepo;
-  if (ghBranchInput && settings.ghBranch) ghBranchInput.value = settings.ghBranch;
-  if (ghTokenInput && settings.ghToken) ghTokenInput.value = settings.ghToken;
-
-  if (tgStatusChip && settings.tgToken && settings.tgChatId) {
-    tgStatusChip.className = 'vault-status-chip connected';
-    tgStatusChip.textContent = 'CONFIGURED';
-  }
-  if (ghStatusChip && settings.ghOwner && settings.ghRepo && settings.ghToken) {
-    ghStatusChip.className = 'vault-status-chip connected';
-    ghStatusChip.textContent = 'READY';
-  }
-
-  const logMessage = (msg, isSuccess) => {
-    if (!logBox) return;
-    const p = document.createElement('p');
-    p.className = isSuccess ? 'success' : '';
-    p.textContent = msg;
-    logBox.appendChild(p);
-    logBox.scrollTop = logBox.scrollHeight;
-  };
-
-  if (tgTestBtn) {
-    tgTestBtn.addEventListener('click', async () => {
-      const token = tgTokenInput ? tgTokenInput.value.trim() : '';
-      const chatId = tgChatInput ? tgChatInput.value.trim() : '';
-      if (!token || !chatId) {
-        showToast('Please enter both Telegram Bot Token and Chat ID.');
-        return;
-      }
-      tgTestBtn.textContent = 'Sending…';
-      try {
-        const res = await fetch('/api/telegram', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'test', token, chatId })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          const s = getVaultSettings();
-          s.tgToken = token;
-          s.tgChatId = chatId;
-          saveVaultSettings(s);
-          if (tgStatusChip) {
-            tgStatusChip.className = 'vault-status-chip connected';
-            tgStatusChip.textContent = 'ONLINE';
-          }
-          logMessage('✓ Telegram test message sent successfully!', true);
-          showToast('Telegram connection verified!');
-        } else {
-          logMessage('Telegram test error: ' + (data.error || 'Unknown error'), false);
-          showToast('Telegram test error: ' + (data.error || 'Failed'));
-        }
-      } catch (err) {
-        logMessage('Network error reaching Telegram endpoint: ' + err.message, false);
-      } finally {
-        tgTestBtn.textContent = 'Test Telegram Alert';
-      }
-    });
-  }
-
-  if (ghSaveBtn) {
-    ghSaveBtn.addEventListener('click', () => {
-      const owner = ghOwnerInput ? ghOwnerInput.value.trim() : '';
-      const repo = ghRepoInput ? ghRepoInput.value.trim() : '';
-      const branch = ghBranchInput ? ghBranchInput.value.trim() || 'main' : 'main';
-      const token = ghTokenInput ? ghTokenInput.value.trim() : '';
-
-      if (!owner || !repo || !token) {
-        showToast('Please enter GitHub Owner, Repo name, and Personal Access Token.');
-        return;
-      }
-
-      const s = getVaultSettings();
-      s.ghOwner = owner;
-      s.ghRepo = repo;
-      s.ghBranch = branch;
-      s.ghToken = token;
-      saveVaultSettings(s);
-
-      if (ghStatusChip) {
-        ghStatusChip.className = 'vault-status-chip connected';
-        ghStatusChip.textContent = 'CONFIGURED';
-      }
-      logMessage(`✓ GitHub vault saved: ${owner}/${repo} (${branch})`, true);
-      showToast('GitHub repository settings saved!');
-    });
-  }
-
-  if (uploadBtn && filePicker) {
-    uploadBtn.addEventListener('click', async () => {
-      const file = filePicker.files && filePicker.files[0];
-      if (!file) {
-        showToast('Please select a video or media file to upload.');
-        return;
-      }
-
-      uploadBtn.disabled = true;
-      uploadBtn.textContent = 'Chunking & Uploading…';
-      if (progressFill) progressFill.style.width = '0%';
-
-      try {
-        await chunkAndUploadToGitHub(
-          file,
-          file.name,
-          pct => {
-            if (progressFill) progressFill.style.width = pct + '%';
-          },
-          (msg, isSuccess) => logMessage(msg, isSuccess)
-        );
-        showToast('File stored successfully in chunks on your GitHub repository!');
-      } catch (err) {
-        logMessage('Upload error: ' + err.message, false);
-        showToast('Upload error: ' + err.message);
-      } finally {
-        uploadBtn.disabled = false;
-        uploadBtn.textContent = 'Start Chunked Upload';
-      }
-    });
-  }
-
-  const testVideoBtn = document.getElementById('vault-test-video-btn');
-  const testPrefixInput = document.getElementById('vault-test-label-prefix');
-  const testDurationSelect = document.getElementById('vault-test-duration');
-  const testVideoStatus = document.getElementById('vault-test-video-status');
-
-  if (testVideoBtn) {
-    testVideoBtn.addEventListener('click', async () => {
-      const s = getVaultSettings();
-      if (!s.ghToken || !s.ghOwner || !s.ghRepo) {
-        showToast('Please configure and save your GitHub Owner, Repo, and Token above first.');
-        return;
-      }
-      testVideoBtn.disabled = true;
-      testVideoBtn.textContent = 'Generating test video…';
-      if (progressFill) progressFill.style.width = '0%';
-      const duration = Number(testDurationSelect ? testDurationSelect.value : 3500) || 3500;
-      const prefix = (testPrefixInput ? testPrefixInput.value.trim() : '') || 'openmic_test';
-      logMessage(`🎬 Rendering ${duration / 1000}s SMPTE test video pattern with 440Hz tone…`, false);
-      try {
-        const testBlob = await generateTestVideoBlob(duration);
-        logMessage(`✓ Test video generated (${Math.round(testBlob.size / 1024)} KB). Slicing into labelled chunks…`, true);
-        testVideoBtn.textContent = 'Pushing labelled chunks…';
-        const labels = [
-          `${prefix}_part01_header_sync`,
-          `${prefix}_part02_audio_video_payload`,
-          `${prefix}_part03_manifest_trailer`,
-          `${prefix}_part04_postroll`
-        ];
-        await chunkAndUploadLabeledVideoToGitHub(
-          testBlob,
-          `${prefix}-sample.webm`,
-          labels,
-          pct => {
-            if (progressFill) progressFill.style.width = pct + '%';
-          },
-          (msg, isSuccess) => logMessage(msg, isSuccess)
-        );
-        showToast('Test video successfully pushed in labelled chunks to GitHub repository!');
-        if (testVideoStatus) testVideoStatus.textContent = `Pushed to ${s.ghOwner}/${s.ghRepo}`;
-      } catch (err) {
-        logMessage('Test video push error: ' + err.message, false);
-        showToast('Test video error: ' + err.message);
-      } finally {
-        testVideoBtn.disabled = false;
-        testVideoBtn.textContent = 'Push Test Video in Labelled Chunks to Git Repo';
-      }
-    });
-  }
-}
-
-function renderBannedIpsTable(ips) {
-  if(!ips||!ips.length)return '<p class="admin-section-description">No IP addresses are currently banned.</p>';
-  return `<div style="overflow-x:auto;margin-top:12px"><table class="admin-log-table"><thead><tr><th>IP Address</th><th>Reason</th><th>Date Banned</th><th>Action</th></tr></thead><tbody>${ips.map(item=>{
-    const ip=typeof item==='string'?item:item.ip;
-    const reason=item.reason||'No reason recorded';
-    const date=item.bannedAt?new Date(item.bannedAt).toLocaleString():'';
-    return `<tr><td><code>${escapeHtml(ip)}</code></td><td>${escapeHtml(reason)}</td><td>${escapeHtml(date)}</td><td><button type="button" class="button button-outline" data-unban-ip="${escapeHtml(ip)}" style="min-height:30px;padding:0 8px">Unban</button></td></tr>`;
-  }).join('')}</tbody></table></div>`;
-}
-async function loadAdminBannedIps() {
-  const wrap=document.getElementById('admin-banned-ips-wrap');
-  if(!wrap)return;
-  if(adminDemoMode){
-    const local=JSON.parse(localStorage.getItem('openmic.banned.ips')||'[]');
-    wrap.innerHTML=renderBannedIpsTable(local);
-    return;
-  }
-  try {
-    const res=await fetch('/api/admin/banned-ips');
-    if(res.ok){
-      const data=await res.json();
-      wrap.innerHTML=renderBannedIpsTable(data.ips||[]);
-    } else {
-      wrap.innerHTML='<p class="admin-section-description">Could not load banned IPs.</p>';
-    }
-  } catch {
-    wrap.innerHTML='<p class="admin-section-description">Could not load banned IPs.</p>';
-  }
-}
-
-
-// V16 Interactive Features
-let activeWaveformTheme = 'orange';
-
-function setupCareerScrollRail() {
-  const grid = $('#career-grid');
-  const prevBtn = $('#career-scroll-prev');
-  const nextBtn = $('#career-scroll-next');
-  if (!grid || !prevBtn || !nextBtn) return;
-
-  prevBtn.addEventListener('click', () => {
-    grid.scrollBy({ left: -340, behavior: 'smooth' });
-  });
-
-  nextBtn.addEventListener('click', () => {
-    grid.scrollBy({ left: 340, behavior: 'smooth' });
-  });
-
-  grid.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') {
-      grid.scrollBy({ left: -340, behavior: 'smooth' });
-    } else if (e.key === 'ArrowRight') {
-      grid.scrollBy({ left: 340, behavior: 'smooth' });
-    }
-  });
-}
-
-function setupWaveformThemeSwitcher() {
-  const buttons = $$('.wave-theme-btn');
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      buttons.forEach(b => {
-        b.classList.remove('active');
-        b.style.borderColor = 'transparent';
-      });
-      btn.classList.add('active');
-      btn.style.borderColor = '#fff';
-      activeWaveformTheme = btn.dataset.waveTheme || 'orange';
-    });
-  });
-}

@@ -55,13 +55,13 @@
 .speaker-art{position:relative;isolation:isolate;overflow:hidden}.speaker-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;z-index:1;filter:saturate(.9);image-orientation:from-image}.speaker-art:before,.speaker-art:after{z-index:2;border-color:rgba(255,255,255,.42)}.speaker-art>span:first-child,.speaker-art-caption{z-index:3;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8)}.speaker-art-caption{background:rgba(20,22,26,.65);padding:5px 7px;border-radius:2px}.speaker-monogram{z-index:0}.speaker-art.photo-failed .speaker-monogram{z-index:1}.newsroom-finalizer{margin-top:18px;padding-top:16px;border-top:1px solid var(--dark-line,#3a3f4d);display:grid;gap:12px}.newsroom-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.newsroom-fields label{font-size:10px;font-weight:700;color:#c6c9c4;display:block;margin-bottom:4px}.newsroom-fields input{width:100%;height:38px;padding:0 10px;background:#181c24;border:1px solid var(--dark-line,#3a3f4d);color:#f4f1e9;border-radius:2px;font-size:12px}.newsroom-consent{margin:4px 0;font-size:10px;color:#c5c8c2;line-height:1.5}.newsroom-analysis{margin-top:12px;padding:14px;background:#14171f;border:1px solid var(--dark-line,#3a3f4d);border-radius:3px;font-size:12px;color:#f4f1e9}.newsroom-preview-video{width:100%;max-height:360px;border-radius:3px;border:1px solid var(--dark-line,#3a3f4d);margin-bottom:10px;display:block;background:#000}
 
 
-/* V15 Select and Option Contrast Guarantees */
+
 select option { background: var(--paper, #f4f1e9); color: var(--ink, #17191f); }
 body[data-theme="dark"] select option { background: #171b23; color: #f4f1e9; }
 body[data-theme="clean"] select option { background: #ffffff; color: #172029; }
 body[data-theme="vibrant"] select option { background: #fff8e9; color: #17191f; }
 
-/* V15 AI Chat Typewriter Cursor */
+
 .typing-cursor {
   display: inline-block;
   animation: blink-cursor 0.75s infinite;
@@ -74,7 +74,7 @@ body[data-theme="vibrant"] select option { background: #fff8e9; color: #17191f; 
   50% { opacity: 1; }
 }
 
-/* V15 Testimonial Moderation in Admin */
+
 .admin-mod-card {
   border: 1px solid var(--line, rgba(255,255,255,0.12));
   padding: 14px 18px;
