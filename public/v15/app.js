@@ -1,6 +1,6 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-const STORAGE = { settings: 'openmic.settings.v1', scores: 'openmic.scores.v1', practiceScore: 'openmic.practiceScore.v1', savedWords: 'openmic.words.v1', demoLogs: 'openmic.logs.v1', demoLeaderboard: 'openmic.leaderboard.v1', participant: 'openmic.participant.v1', feedback: 'openmic.feedback.v1', chat: 'openmic.career-chat.v1', testimonials: 'openmic.testimonials.v1' };
+const STORAGE = { settings: 'openmic.settings.v1', scores: 'openmic.scores.v1', practiceScore: 'openmic.practiceScore.v1', savedWords: 'openmic.words.v1', demoLogs: 'openmic.logs.v1', demoLeaderboard: 'openmic.leaderboard.v1', participant: 'openmic.participant.v1', feedback: 'openmic.feedback.v1', chat: 'openmic.career-chat.v1' };
 const FEATURE_LABELS = {
   hero: ['Hero experience', 'Opening statement and animated stage'],
   whyEnglish: ['Why English matters', 'Introductory context and skill framing'],
@@ -21,19 +21,13 @@ const FEATURE_LABELS = {
   feedback: ['Feedback and support', 'Save feedback, request support and export it for review'],
   careerChat: ['Career guide chat', 'Ask questions and build a personalised college roadmap'],
   games: ['Games arcade', 'Wordle, vocabulary matching, sentence choices and game scores'],
-  closing: ['Closing section', 'Final encouragement'],
-  liveStage: ['OBS / live stage', 'Optional OBS Virtual Camera and administrator-configured stream preview'],
-  testimonials: ['Community testimonials', 'Submit for review; only approved entries appear publicly'],
-  versionLibrary: ['Version archive', 'Open preserved snapshots and review release milestones']
+  closing: ['Closing section', 'Final encouragement']
 };
 const DEFAULT_SETTINGS = {
   theme: 'mix', language: 'en', showSchoolName: true, schoolName: 'Kanakia International School Mira Road',
   automaticFallback: true, preferredProvider: 'gemini', speechProvider: 'auto', qualityMode: 'balanced',
   providerOrder: ['gemini', 'cloudflare', 'free', 'laptop'],
   providerEnabled: { cloudflare: true, gemini: true, free: true, laptop: false },
-  ttsAutomaticFallback: true, ttsPreferredProvider: 'browser', ttsProviderOrder: ['cartesia','openai','deepgram','kokoro','elevenlabs'],
-  ttsProviderEnabled: {cartesia:true,openai:true,deepgram:true,kokoro:true,elevenlabs:true},
-  liveStageEnabled: false, liveStageUrl: '', horizontalSections: false,
   features: Object.fromEntries(Object.keys(FEATURE_LABELS).map(key => [key, true]))
 };
 const CAREERS = [
@@ -190,10 +184,6 @@ let speechRecorder = null;
 let speechRecorderChunks = [];
 let speechAudioBlob = null;
 let anchorRecorder = null;
-let anchorAudioRecorder = null;
-let anchorAudioChunks = [];
-let anchorAudioBlob = null;
-let anchorAudioStopResolve = null;
 let anchorRecorderChunks = [];
 let anchorCameraStream = null;
 let anchorComposedStream = null;
@@ -202,15 +192,6 @@ let anchorVideoBlob = null;
 let anchorVideoUrl = null;
 let newsroomSubmission = null;
 let careerChatHistory = [];
-let careerChatTyping = false;
-let debateStageTimer = null;
-let debateStageRemaining = 60;
-let debateStageSpeaker = 1;
-const debateStageAudio = { 1: null, 2: null };
-const debateStageStreams = { 1: null, 2: null };
-const debateStageChunks = { 1: [], 2: [] };
-const debateStageTurns = { prop: null, opp: null };
-let debateStageWaveStop = null;
 let gameScores = { wordle:0, matching:0, sentence:0 };
 let wordleTarget = '';
 let wordleGuesses = [];
@@ -234,7 +215,9 @@ let selectedAudioFile = null;
 let adminAuthenticated = false;
 let adminDemoMode = false;
 let adminSettings = null;
-let adminSecretsStatus = { geminiCount: 0, freeConfigured: false, laptopConfigured: false, cartesiaConfigured:false, openaiTtsConfigured:false, deepgramConfigured:false, kokoroConfigured:false, telegramConfigured:false, githubVaultConfigured:false };
+let adminSecretsStatus = { geminiCount: 0, freeConfigured: false, laptopConfigured: false };
+let autoDownloadVideosActive = localStorage.getItem('openmic_auto_download_videos') === 'true';
+let autoDownloadInterval = null;
 let toastTimer = null;
 
 function loadLocalSettings() {
@@ -715,7 +698,7 @@ async function toggleAnchorRecording() {
   if(anchorRecorder && anchorRecorder.state==='recording') {anchorRecorder.stop();$('#anchor-record').textContent='Record me';return;}
   if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){showToast('Video recording with headline overlay is not supported in this browser.');return;}
   try {
-    const cameraChoice=$('#anchor-camera-source')?.value||'default';const videoConstraints={width:{ideal:1280},height:{ideal:720},...(cameraChoice!=='default'?{deviceId:{exact:cameraChoice}}:{facingMode:'user'})};anchorCameraStream=await navigator.mediaDevices.getUserMedia({video:videoConstraints,audio:true});
+    anchorCameraStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720},facingMode:'user'},audio:true});
     const cameraVideo=document.createElement('video');cameraVideo.muted=true;cameraVideo.playsInline=true;cameraVideo.srcObject=anchorCameraStream;await cameraVideo.play();
     const canvas=document.createElement('canvas');canvas.width=1280;canvas.height=720;const context=canvas.getContext('2d');
     const drawFrame=()=>{
@@ -724,70 +707,25 @@ async function toggleAnchorRecording() {
       if(cameraVideo.videoWidth){const scale=Math.max(canvas.width/cameraVideo.videoWidth,canvas.height/cameraVideo.videoHeight);const width=cameraVideo.videoWidth*scale,height=cameraVideo.videoHeight*scale;context.save();context.translate(canvas.width,0);context.scale(-1,1);context.drawImage(cameraVideo,(canvas.width-width)/2,(canvas.height-height)/2,width,height);context.restore();}
       const gradient=context.createLinearGradient(0,420,0,720);gradient.addColorStop(0,'rgba(17,19,25,0)');gradient.addColorStop(.35,'rgba(17,19,25,.8)');gradient.addColorStop(1,'rgba(17,19,25,.96)');context.fillStyle=gradient;context.fillRect(0,410,canvas.width,310);
       context.fillStyle='#ff6b3d';context.fillRect(54,566,7,78);context.fillStyle='#ffffff';context.font='700 20px DM Sans, sans-serif';context.fillText('OPEN MIC  ·  NEWSROOM',78,532);
-      context.font='800 43px Syne, sans-serif';const headline=($('#anchor-headline').value.trim()||'Student newsroom').slice(0,72);wrapCanvasText(context,headline,78,590,1100,48,2);
-      context.fillStyle='#f3eee5';context.font='500 22px DM Sans, sans-serif';context.fillText(($('#anchor-subheadline').value.trim()||'Open Mic').slice(0,90),78,663);
+      context.font='800 43px Syne, sans-serif';const headline=($('#anchor-headline')?.value.trim()||'Student newsroom').slice(0,72);wrapCanvasText(context,headline,78,590,1100,48,2);
+      context.fillStyle='#f3eee5';context.font='500 22px DM Sans, sans-serif';context.fillText(($('#anchor-subheadline')?.value.trim()||'Open Mic').slice(0,90),78,663);
       anchorCanvasFrame=requestAnimationFrame(drawFrame);
     };
     const canvasStream=canvas.captureStream(30);anchorComposedStream=canvasStream;anchorCameraStream.getAudioTracks().forEach(track=>canvasStream.addTrack(track));
     const mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(type=>MediaRecorder.isTypeSupported(type));
     anchorRecorderChunks=[];anchorRecorder=mime?new MediaRecorder(canvasStream,{mimeType:mime}):new MediaRecorder(canvasStream);
     anchorRecorder.ondataavailable=event=>{if(event.data.size)anchorRecorderChunks.push(event.data);};
-    anchorRecorder.onstop=async()=>{
-      if(anchorAudioRecorder?.state==='recording')await new Promise(resolve=>{anchorAudioStopResolve=resolve;anchorAudioRecorder.stop();});
+    anchorRecorder.onstop=()=>{
       if(anchorCanvasFrame)cancelAnimationFrame(anchorCanvasFrame);anchorCanvasFrame=0;
       anchorCameraStream?.getTracks().forEach(track=>track.stop());anchorComposedStream?.getTracks().forEach(track=>track.stop());anchorCameraStream=null;anchorComposedStream=null;
       anchorVideoBlob=new Blob(anchorRecorderChunks,{type:anchorRecorder.mimeType||'video/webm'});
       if(anchorVideoUrl)URL.revokeObjectURL(anchorVideoUrl);anchorVideoUrl=URL.createObjectURL(anchorVideoBlob);
       state.hidden=false;state.innerHTML=`<video controls playsinline class="newsroom-preview-video" src="${anchorVideoUrl}"></video><a class="button button-light" download="open-mic-newsroom-final.webm" href="${anchorVideoUrl}">Download final video ↓</a><p class="muted-small">Your headline and subheading are burned into this file. To analyse and store it, tick the consent box and choose Analyze video &amp; save.</p>`;
-      $('#anchor-record').textContent='Record me';$('#anchor-analyze-save').disabled=!$('#anchor-upload-consent').checked;$('#anchor-upload-consent').checked=false;$('#newsroom-analysis').hidden=true;
+      $('#anchor-record').textContent='Record me';if($('#anchor-analyze-save'))$('#anchor-analyze-save').disabled=!($('#anchor-upload-consent')?.checked);if($('#anchor-upload-consent'))$('#anchor-upload-consent').checked=false;if($('#newsroom-analysis'))$('#newsroom-analysis').hidden=true;
     };
-    anchorAudioBlob=null;anchorAudioChunks=[];const audioTracks=anchorCameraStream.getAudioTracks();
-    if(audioTracks.length){try{anchorAudioRecorder=new MediaRecorder(new MediaStream(audioTracks));anchorAudioRecorder.ondataavailable=event=>{if(event.data.size)anchorAudioChunks.push(event.data)};anchorAudioRecorder.onstop=()=>{anchorAudioBlob=new Blob(anchorAudioChunks,{type:anchorAudioRecorder?.mimeType||'audio/webm'});anchorAudioRecorder=null;anchorAudioStopResolve?.();anchorAudioStopResolve=null;};anchorAudioRecorder.start(800);}catch{anchorAudioRecorder=null;}}
-    drawFrame();anchorRecorder.start(800);$('#anchor-record').textContent='Stop recording';state.hidden=false;state.textContent='Recording with your headline and subheading overlay. Select Stop recording when you are done.';$('#anchor-analyze-save').disabled=true;
+    drawFrame();anchorRecorder.start(800);$('#anchor-record').textContent='Stop recording';state.hidden=false;state.textContent='Recording with your headline and subheading overlay. Select Stop recording when you are done.';if($('#anchor-analyze-save'))$('#anchor-analyze-save').disabled=true;
   } catch(error) {anchorCameraStream?.getTracks().forEach(track=>track.stop());anchorCameraStream=null;showToast(`Camera or microphone permission was not granted: ${error.message||'check browser permissions'}.`);}
 }
-function loadAnchorStreamPreview(){
-  const raw=$('#anchor-stream-url').value.trim();const target=$('#anchor-stream-preview');if(!target)return;
-  if(!raw){target.hidden=true;target.replaceChildren();showToast('Paste an HTTPS stream or embed URL first.');return;}
-  let url;try{url=new URL(raw);if(url.protocol!=='https:')throw new Error();}catch{showToast('The stream URL must be a valid HTTPS link.');return;}
-  const youtube=/^(?:www\.)?(?:youtube\.com|youtube-nocookie\.com|youtu\.be)$/i.test(url.hostname);let videoId='';
-  if(/youtu\.be$/i.test(url.hostname))videoId=url.pathname.split('/').filter(Boolean)[0]||'';
-  if(/youtube(?:-nocookie)?\.com$/i.test(url.hostname)){if(url.pathname==='/watch')videoId=url.searchParams.get('v')||'';else videoId=url.pathname.match(/\/(?:live|embed|shorts)\/([^/?]+)/)?.[1]||'';}
-  target.replaceChildren();target.hidden=false;
-  if(youtube&&videoId){const frame=document.createElement('iframe');frame.src=`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`;frame.title='Newsroom stream preview';frame.allow='autoplay; encrypted-media; picture-in-picture';frame.allowFullscreen=true;frame.loading='lazy';target.append(frame);return;}
-  if(/\.m3u8(?:$|[?#])/i.test(url.href)||/\.(?:mp4|webm|ogg)(?:$|[?#])/i.test(url.href)){const video=document.createElement('video');video.controls=true;video.playsInline=true;video.preload='metadata';target.append(video);if(/\.m3u8(?:$|[?#])/i.test(url.href)&&!video.canPlayType('application/vnd.apple.mpegurl')&&window.Hls&&window.Hls.isSupported()){const hls=new window.Hls({enableWorker:true});hls.loadSource(url.href);hls.attachMedia(video);target._hls?.destroy?.();target._hls=hls;}else video.src=url.href;if(/\.m3u8(?:$|[?#])/i.test(url.href)&&!video.canPlayType('application/vnd.apple.mpegurl')&&!window.Hls){const note=document.createElement('p');note.className='muted-small';note.textContent='HLS player unavailable. Use a YouTube Live embed or a browser that supports HLS playback.';target.append(note);}return;}
-  const frame=document.createElement('iframe');frame.src=url.href;frame.title='Newsroom stream preview';frame.loading='lazy';frame.referrerPolicy='strict-origin-when-cross-origin';frame.allow='autoplay; encrypted-media; picture-in-picture';target.append(frame);
-}
-async function uploadNewsroomBlob(blob,token){
-  const metadata={filename:'open-mic-newsroom.webm',mimeType:blob.type||'video/webm',sizeBytes:blob.size,headline:$('#anchor-headline').value.trim(),subheadline:$('#anchor-subheadline').value.trim(),consent:true,submissionToken:token};
-  if(blob.size<=25*1024*1024){const form=new FormData();form.append('file',blob,metadata.filename);form.append('headline',metadata.headline);form.append('subheadline',metadata.subheadline);form.append('consent','true');form.append('submissionToken',token);const response=await fetch('/api/media',{method:'POST',body:form});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||`Server storage returned ${response.status}`);return data;}
-  if(blob.size>500*1024*1024)throw new Error('The final video is larger than 500 MB. Reduce the recording size or duration and try again.');
-  const startResponse=await fetch('/api/media-upload?action=start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(metadata)});const start=await startResponse.json().catch(()=>({}));if(!startResponse.ok)throw new Error(start.error||`Could not start upload (${startResponse.status})`);
-  try{const count=Number(start.expectedParts),partBytes=Number(start.partBytes);if(!start.sessionId||!Number.isFinite(count)||!Number.isFinite(partBytes))throw new Error('The server returned an invalid upload session.');for(let part=1;part<=count;part++){const piece=blob.slice((part-1)*partBytes,Math.min(blob.size,part*partBytes));const response=await fetch(`/api/media-upload?action=part&id=${encodeURIComponent(start.sessionId)}&part=${part}`,{method:'POST',headers:{'X-Upload-Token':token,'Content-Type':'application/octet-stream'},body:piece});const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||`Video part ${part} failed (${response.status}).`);$('#newsroom-analysis').innerHTML=`<p>Uploading the private video: part ${part} of ${count}…</p>`;}
-    const completedResponse=await fetch('/api/media-upload?action=complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:start.sessionId,submissionToken:token})});const completed=await completedResponse.json().catch(()=>({}));if(!completedResponse.ok)throw new Error(completed.error||`Could not finish upload (${completedResponse.status})`);return completed;
-  }catch(error){try{await fetch('/api/media-upload?action=cancel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:start.sessionId,submissionToken:token})});}catch{}throw error;}
-}
-async function refreshAnchorCameraList(){
-  const select=$('#anchor-camera-source');
-  const status=$('#live-stage-status');
-  if(!select||!navigator.mediaDevices?.enumerateDevices){showToast('This browser does not provide a camera device list.');return;}
-  let permissionStream=null;
-  try{permissionStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});}catch{}
-  permissionStream?.getTracks().forEach(track=>track.stop());
-  try{const devices=await navigator.mediaDevices.enumerateDevices();const cameras=devices.filter(device=>device.kind==='videoinput');const previous=select.value;const buildOptions=target=>{if(!target)return;const old=target.value;target.replaceChildren(new Option('Default camera','default'));cameras.forEach((device,index)=>target.add(new Option(device.label||`Camera ${index+1}`,device.deviceId)));target.value=cameras.some(device=>device.deviceId===old)?old:'default';};buildOptions(select);buildOptions($('#anchor-camera-device'));if(status)status.textContent=cameras.length?'Camera list updated · choose OBS Virtual Camera when available':'No camera was found';}catch(error){showToast(`Could not list cameras: ${error.message}`);}
-}
-function startDebateWaveform(stream,canvas){
-  if(!canvas||!window.AudioContext)return()=>{};
-  const context=new AudioContext();const analyser=context.createAnalyser();analyser.fftSize=128;const source=context.createMediaStreamSource(stream);source.connect(analyser);const data=new Uint8Array(analyser.frequencyBinCount);const ctx=canvas.getContext('2d');canvas.hidden=false;let frame=0;let stopped=false;
-  const draw=()=>{if(stopped)return;analyser.getByteTimeDomainData(data);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='#ff6b3d';ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<data.length;i++){const x=i/(data.length-1)*canvas.width;const y=data[i]/255*canvas.height;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();frame=requestAnimationFrame(draw);};draw();
-  return()=>{stopped=true;cancelAnimationFrame(frame);try{source.disconnect();}catch{}context.close().catch(()=>{});ctx.clearRect(0,0,canvas.width,canvas.height);canvas.hidden=true;};
-}
-function scoreDebateTurn(text){const scored=scoreText(text);if(scored.lowSignal)return null;const lower=text.toLowerCase();const words=String(text).trim().split(/\s+/).length;const hasReason=/\b(because|therefore|since|for example|for instance|evidence|data)\b/.test(lower);const hasCounter=/\b(however|although|on the other hand|some people|counterargument|in contrast)\b/.test(lower);const lengthScore=Math.min(100,35+Math.min(25,Math.floor(words/5)));return Math.round(lengthScore*.4+Number(scored.clarity||0)*.25+Number(scored.fluency||0)*.15+(hasReason?10:0)+(hasCounter?10:0));}
-function renderDebateStage(){const prop=debateStageTurns.prop;const opp=debateStageTurns.opp;$('#debate-prop-text').textContent=prop?.text||'Your opening speech will appear here.';$('#debate-opp-text').textContent=opp?.text||'The opposing speech will appear here.';$('#debate-prop-score').textContent=prop?`${prop.score}/100`:'—';$('#debate-opp-score').textContent=opp?`${opp.score}/100`:'—';$('#debate-prop-name').textContent=prop?.name||'Speaker 1';$('#debate-opp-name').textContent=opp?.name||'Speaker 2';$('#debate-stage-topic').textContent=prop&&opp?'Both turns submitted · practise a rebuttal':$('#debate-turn-speaker').value==='opp'?'Speaker 2 is speaking · Opposition':'Speaker 1 is speaking · Proposition';}
-function updateDebateMode(){const mode=$('#debate-mode').value;$('#debate-stage').hidden=!['duo','stage'].includes(mode);$('#debate-room-controls').hidden=mode!=='room';$('.debate-layout').hidden=mode!=='solo';renderDebateStage();}
-function startDebateStageTimer(){if(debateStageTimer){clearInterval(debateStageTimer);debateStageTimer=null;$('#debate-turn-timer').textContent='Start 60-second timer';$('#debate-turn-status').textContent='Timer paused.';return;}debateStageRemaining=60;$('#debate-countdown').textContent='01:00';$('#debate-turn-timer').textContent='Stop timer';$('#debate-turn-status').textContent='Your 60-second speaking turn has started.';debateStageTimer=setInterval(()=>{debateStageRemaining=Math.max(0,debateStageRemaining-1);$('#debate-countdown').textContent=`${String(Math.floor(debateStageRemaining/60)).padStart(2,'0')}:${String(debateStageRemaining%60).padStart(2,'0')}`;if(debateStageRemaining===0){clearInterval(debateStageTimer);debateStageTimer=null;$('#debate-turn-timer').textContent='Start 60-second timer';$('#debate-turn-status').textContent='Time is up. Submit your turn or switch speaker.';showToast('Speaking time is up.');}},1000);}
-async function toggleDebateTurnRecording(){const speaker=$('#debate-turn-speaker').value==='opp'?2:1;const current=debateStageAudio[speaker];const button=$('#debate-turn-mic');if(current&&current.state==='recording'){current.stop();button.textContent='Finishing recording…';button.disabled=true;return;}if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){showToast('Audio recording is not supported in this browser. You can type your speech.');return;}try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});debateStageStreams[speaker]=stream;debateStageChunks[speaker]=[];const recorder=new MediaRecorder(stream);debateStageAudio[speaker]=recorder;recorder.ondataavailable=event=>{if(event.data.size)debateStageChunks[speaker].push(event.data)};recorder.onstop=async()=>{debateStageWaveStop?.();debateStageWaveStop=null;stream.getTracks().forEach(track=>track.stop());const blob=new Blob(debateStageChunks[speaker],{type:recorder.mimeType||'audio/webm'});debateStageAudio[speaker]=null;debateStageStreams[speaker]=null;button.disabled=false;button.textContent='Record speech';if(!blob.size){$('#debate-turn-status').textContent='No audio was captured. Try typing your speech.';return;}$('#debate-turn-status').textContent='Sending recorded speech to the configured speech service for transcription…';try{const file=new File([blob],`debate-speaker-${speaker}.webm`,{type:blob.type||'audio/webm'});const result=await requestSpeechTranscription(file);if(!result.text?.trim())throw new Error('The transcription service returned no text.');$('#debate-turn-text').value=result.text.trim();$('#debate-turn-status').textContent=`Transcript ready from ${result.provider||'speech service'}. Review it, then submit the turn. Audio is not saved by this debate stage.`;}catch(error){$('#debate-turn-status').textContent=`Transcription unavailable: ${error.message}. You can still type and submit the speech.`;}};recorder.start(250);debateStageWaveStop=startDebateWaveform(stream,$('#debate-waveform'));button.textContent='Stop and transcribe';$('#debate-turn-status').textContent='Recording. Speak clearly, then stop to transcribe.';}catch(error){showToast(`Microphone permission failed: ${error.message}`);}}
-function submitDebateStageTurn(event){event.preventDefault();const side=$('#debate-turn-speaker').value;const text=$('#debate-turn-text').value.trim();if(text.length<12){showToast('Add a little more speech before submitting this turn.');return;}const score=scoreDebateTurn(text);if(score===null){showToast('This transcript does not look like readable English yet. Please review it and try again.');return;}debateStageTurns[side]={text,name:side==='prop'?'Speaker 1 · Proposition':'Speaker 2 · Opposition',score};renderDebateStage();$('#debate-turn-status').textContent=`Turn saved on this device. Structure check: ${score}/100. The score measures argument structure, not a speaker’s ability or viewpoint.`;$('#debate-turn-text').value='';const next=side==='prop'?'opp':'prop';$('#debate-turn-speaker').value=next;renderDebateStage();if(debateStageTurns.prop&&debateStageTurns.opp)saveComponentScore('debate',Math.round((debateStageTurns.prop.score+debateStageTurns.opp.score)/2));}
 function wrapCanvasText(context,text,x,y,maxWidth,lineHeight,maxLines=2){const words=String(text).split(/\s+/);let line='',lineCount=0;for(const word of words){const test=line?`${line} ${word}`:word;if(context.measureText(test).width>maxWidth&&line){context.fillText(line,x,y+lineCount*lineHeight);line=word;lineCount++;if(lineCount>=maxLines-1)break;}else line=test;}if(lineCount<maxLines)context.fillText(line,x,y+lineCount*lineHeight);}
 async function extractVideoFrames(blob){
   const url=URL.createObjectURL(blob);const video=document.createElement('video');video.muted=true;video.playsInline=true;video.src=url;video.preload='metadata';
@@ -798,15 +736,15 @@ async function extractVideoFrames(blob){
 }
 async function analyzeAndSaveNewsroomVideo(){
   const target=$('#newsroom-analysis');const button=$('#anchor-analyze-save');if(!anchorVideoBlob){showToast('Record a newsroom video first.');return;}if(!$('#anchor-upload-consent').checked){showToast('Please give permission before uploading the recording.');return;}
-  if(anchorVideoBlob.size>500*1024*1024){showToast('The final video is larger than 500 MB. Reduce recording length or resolution, then record again.');return;}
+  if(anchorVideoBlob.size>25*1024*1024){showToast('Keep the final video under 25 MB. Lower recording length or resolution, then record again.');return;}
   button.disabled=true;button.textContent='Saving video securely…';target.hidden=false;target.innerHTML='<p>Saving the recording to the private project server before analysis…</p>';
-  const token=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random()}`;
+  const token=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random()}`;const form=new FormData();form.append('file',anchorVideoBlob,'open-mic-newsroom.webm');form.append('headline',$('#anchor-headline').value.trim());form.append('subheadline',$('#anchor-subheadline').value.trim());form.append('consent','true');form.append('submissionToken',token);
   let saved;
-  try{saved=await uploadNewsroomBlob(anchorVideoBlob,token);newsroomSubmission={id:saved.id,token};}
-  catch(error){target.innerHTML=`<p><strong>Server storage is not ready, so analysis was not started.</strong></p><p>${escapeHtml(error.message)}</p><p>Configure the private Cloudflare R2 binding named MEDIA and the D1 database, apply all migrations, redeploy, then retry. Your local video remains available to download.</p>`;button.disabled=false;button.textContent='Retry: analyse & save to server';return;}
+  try{const response=await fetch('/api/media',{method:'POST',body:form});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||`Server storage returned ${response.status}`);saved=data;newsroomSubmission={id:data.id,token};}
+  catch(error){target.innerHTML=`<p><strong>Server storage is not ready, so analysis was not started.</strong></p><p>${escapeHtml(error.message)}</p><p>Configure the private Cloudflare R2 binding named MEDIA and the D1 database, redeploy, then retry. Your local video remains available to download.</p>`;button.disabled=false;button.textContent='Retry: analyze & save to server';return;}
   target.innerHTML='<p>Video saved to private server storage. Transcribing the audio and reviewing selected video frames…</p>';
   let transcript='',transcriptionProvider='unavailable',transcriptionWarning='';
-  try{const transcriptionBlob=anchorAudioBlob||anchorVideoBlob;const transcriptionFile=new File([transcriptionBlob],anchorAudioBlob?'newsroom-audio.webm':'newsroom-final.webm',{type:transcriptionBlob.type||(anchorAudioBlob?'audio/webm':'video/webm')});const result=await requestSpeechTranscription(transcriptionFile);transcript=(result.text||'').trim();transcriptionProvider=result.provider||'AI transcription';if(!transcript)throw new Error('The provider returned an empty transcript.');}
+  try{const result=await requestSpeechTranscription(new File([anchorVideoBlob],'newsroom-final.webm',{type:anchorVideoBlob.type||'video/webm'}));transcript=(result.text||'').trim();transcriptionProvider=result.provider||'AI transcription';if(!transcript)throw new Error('The provider returned an empty transcript.');}
   catch(error){transcriptionWarning=error.message||'Transcription unavailable';}
   const displayedScript=$('#teleprompter-text').textContent||'';const reviewText=transcript||displayedScript;let frames=[];try{frames=await extractVideoFrames(anchorVideoBlob)}catch{}
   const scored=scoreText(reviewText,0);saveComponentScore('newsroom',scored.score);
@@ -857,7 +795,7 @@ function setWord(index) {
 }
 async function speakWordOfDay(){
   const word=WORDS[activeWordIndex],status=$('#word-audio-status'),button=$('#hear-word');button.disabled=true;status.textContent='Preparing pronunciation audio…';
-  try{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:`${word.word}. ${word.definition}. Example: ${word.example}`,voice:'british',staticWordId:word.word.toLowerCase()})});if(response.ok){const blob=await response.blob(),url=URL.createObjectURL(blob),audio=new Audio(url);audio.onended=()=>URL.revokeObjectURL(url);await audio.play();status.textContent='Playing model pronunciation and example sentence.';return;}}catch{}
+  try{const response=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:`${word.word}. ${word.definition}. Example: ${word.example}`,voice:'british'})});if(response.ok){const blob=await response.blob(),url=URL.createObjectURL(blob),audio=new Audio(url);audio.onended=()=>URL.revokeObjectURL(url);await audio.play();status.textContent='Playing model pronunciation and example sentence.';return;}}catch{}
   try{if(!window.SpeechSynthesisUtterance||!window.speechSynthesis)throw new Error('unsupported');window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(`${word.word}. ${word.definition}. Example: ${word.example}`);utterance.lang='en-GB';utterance.rate=.86;window.speechSynthesis.speak(utterance);status.textContent='Using your browser’s English voice. Configure ElevenLabs on the server for its voice.';}catch{status.textContent='Audio is unavailable in this browser. The pronunciation guide and sample sentence remain available.';}finally{button.disabled=false;}
 }
 function loadSavedWords() {
@@ -908,9 +846,9 @@ async function submitLeaderboard(event) {
   const nickname=$('#leader-nickname').value.trim().slice(0,20),grade=$('#leader-grade').value;
   const components=readScoreComponents();
   if(!nickname||nickname.length<2){showToast('Choose a nickname with at least two characters.');return;}
-  if(!Object.keys(components).length){showToast('Complete Speech Lab or one of the games first. Your scores are generated automatically.');$('#games-arcade').scrollIntoView({behavior:'smooth',block:'start'});return;}
-  const speech=components.speech||{};
-  const entry={participantKey:participantKey(),nickname,grade,score:calculateAggregateScore(components),fluency:Number(speech.fluency??speech.score??0),clarity:Number(speech.clarity??speech.score??0),scores:Object.fromEntries(Object.entries(components).map(([key,value])=>[key,Number(typeof value==='object'?value.score:value)])),consent:true,createdAt:new Date().toISOString()};
+  const finalComponents=Object.keys(components).length?components:{speech:{score:60,fluency:60,clarity:60}};
+  const speech=finalComponents.speech||{score:60,fluency:60,clarity:60};
+  const entry={participantKey:participantKey(),nickname,grade,score:calculateAggregateScore(finalComponents),fluency:Number(speech.fluency??speech.score??60),clarity:Number(speech.clarity??speech.score??60),scores:Object.fromEntries(Object.entries(finalComponents).map(([key,value])=>[key,Number(typeof value==='object'?value.score:value)])),consent:true,createdAt:new Date().toISOString()};
   try {
     const response=await fetch('/api/leaderboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});const data=await response.json();
     if(response.ok){localStorage.setItem('openmic.optin.v1',JSON.stringify({consent:true,nickname,grade}));const local=getBoardData().filter(row=>row.nickname!==nickname);local.push(entry);localStorage.setItem(STORAGE.demoLeaderboard,JSON.stringify(local));setMessage($('#leaderboard-message'),'You joined the shared practice board. New activity scores will update your entry.');$('#leaderboard-form').reset();await refreshLeaderboard();await refreshLeaderboard('#email-leaderboard-list','editor');await refreshLeaderboard('#games-leaderboard-list','games');return;}
@@ -920,30 +858,8 @@ async function submitLeaderboard(event) {
   const entries=getBoardData().filter(row=>row.nickname!==nickname);entries.push({...entry,editorScore:Number(components.editor?.score||0),newsroomScore:Number(components.newsroom?.score||0),gamesScore:Number(components.words?.score||0)});localStorage.setItem(STORAGE.demoLeaderboard,JSON.stringify(entries));
   setMessage($('#leaderboard-message'),'Saved on this browser only. Deploy D1 to publish shared rankings.');$('#leaderboard-form').reset();await refreshLeaderboard();
 }
-function renderLiveStage() {
-  const panel=$('#live-stage');
-  const video=$('#anchor-stage-video');
-  const frame=$('#anchor-stage-frame');
-  const status=$('#live-stage-status');
-  const help=$('#anchor-stage-help');
-  if(!panel||!video||!frame||!status)return;
-  const enabled=settings.liveStageEnabled===true;
-  if(liveStageHls){try{liveStageHls.destroy()}catch{}liveStageHls=null;}
-  if(!enabled){video.pause();video.removeAttribute('src');video.load();video.hidden=true;frame.removeAttribute('src');frame.hidden=true;status.textContent='Disabled by the administrator';if(help)help.textContent='The live stage is currently off. An administrator can enable it and configure an HTTPS stream URL.';return;}
-  const raw=String(settings.liveStageUrl||'').trim();
-  if(!raw){video.hidden=true;frame.hidden=true;status.textContent='Enabled · awaiting stream URL';if(help)help.textContent='The stage is enabled, but no stream URL has been configured yet. Choose OBS Virtual Camera for local recording, or ask the administrator to set an HTTPS relay / YouTube Live URL.';return;}
-  let url;
-  try{url=new URL(raw);if(url.protocol!=='https:')throw new Error();}catch{video.hidden=true;frame.hidden=true;status.textContent='Invalid stream URL';if(help)help.textContent='The stream URL must be a valid HTTPS address.';return;}
-  const youtubeHost=/^(?:www\.)?(?:youtube\.com|youtube-nocookie\.com|youtu\.be)$/i.test(url.hostname);
-  let videoId='';
-  if(/youtu\.be$/i.test(url.hostname))videoId=url.pathname.split('/').filter(Boolean)[0]||'';
-  if(/youtube(?:-nocookie)?\.com$/i.test(url.hostname)){if(url.pathname==='/watch')videoId=url.searchParams.get('v')||'';else{const match=url.pathname.match(/\/(?:live|embed|shorts)\/([^/?]+)/);if(match)videoId=match[1];}}
-  if(youtubeHost&&videoId){video.pause();video.removeAttribute('src');video.load();video.hidden=true;frame.src=`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=0&mute=1`;frame.hidden=false;status.textContent='Live video preview ready';if(help)help.textContent='YouTube preview is embedded with privacy-enhanced mode. Playback may depend on the stream owner’s embed settings.';return;}
-  if(/\.m3u8(?:$|[?#])/i.test(url.href)){frame.removeAttribute('src');frame.hidden=true;video.hidden=false;status.textContent='Loading HLS stream…';if(help)help.textContent='HLS playback uses the browser’s native support or the HLS.js player. The stream host must allow cross-origin playlist and segment requests.';if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=url.href;video.load();status.textContent='HLS stream loaded';}else if(window.Hls&&window.Hls.isSupported()){liveStageHls=new window.Hls({enableWorker:true,lowLatencyMode:true});liveStageHls.loadSource(url.href);liveStageHls.attachMedia(video);liveStageHls.on(window.Hls.Events.MANIFEST_PARSED,()=>{status.textContent='HLS stream ready';});liveStageHls.on(window.Hls.Events.ERROR,(_,data)=>{if(data?.fatal)status.textContent='HLS playback failed · check the stream URL and CORS settings';});}else{video.hidden=true;status.textContent='HLS playback is unavailable in this browser';if(help)help.textContent='Use a YouTube Live embed or a browser that supports HLS playback.';}return;}
-  video.pause();video.removeAttribute('src');video.load();video.hidden=true;frame.src=url.href;frame.hidden=false;status.textContent='Secure stream embed loaded';if(help)help.textContent='The HTTPS relay is embedded. The remote host must permit embedding for this preview to appear.';
-}
 function applySettings(next, persist = false) {
-  settings={...structuredClone(DEFAULT_SETTINGS),...settings,...next,features:{...DEFAULT_SETTINGS.features,...(settings.features||{}),...(next.features||{})},providerEnabled:{...DEFAULT_SETTINGS.providerEnabled,...(settings.providerEnabled||{}),...(next.providerEnabled||{})},providerOrder:next.providerOrder||settings.providerOrder||DEFAULT_SETTINGS.providerOrder,ttsProviderEnabled:{...DEFAULT_SETTINGS.ttsProviderEnabled,...(settings.ttsProviderEnabled||{}),...(next.ttsProviderEnabled||{})},ttsProviderOrder:next.ttsProviderOrder||settings.ttsProviderOrder||DEFAULT_SETTINGS.ttsProviderOrder};
+  settings={...structuredClone(DEFAULT_SETTINGS),...settings,...next,features:{...DEFAULT_SETTINGS.features,...(settings.features||{}),...(next.features||{})},providerEnabled:{...DEFAULT_SETTINGS.providerEnabled,...(settings.providerEnabled||{}),...(next.providerEnabled||{})},providerOrder:next.providerOrder||settings.providerOrder||DEFAULT_SETTINGS.providerOrder};
   document.body.dataset.theme=settings.theme;
   document.documentElement.lang=settings.language==='hi'?'hi':'en';
   Object.entries(settings.features||{}).forEach(([key,enabled])=>{const nodes=$$(`[data-feature="${key}"]`);nodes.forEach(node=>node.classList.toggle('feature-hidden',!enabled));});
@@ -970,8 +886,6 @@ function applySettings(next, persist = false) {
     if(selectedCareerStream)renderCareerCards();
     $('#quiz-next').innerHTML=quizIndex===QUIZ_QUESTIONS.length-1?'See my directions <span aria-hidden="true">↗</span>':'Next question <span aria-hidden="true">↗</span>';
   }
-  renderLiveStage();
-  document.body.classList.toggle('horizontal-experiment',settings.horizontalSections===true);
   if(persist) saveLocalSettings();
 }
 function loadDemoLogs(){try{return JSON.parse(localStorage.getItem(STORAGE.demoLogs)||'[]');}catch{return[];}}
@@ -981,25 +895,13 @@ function adminLocalLogin() {
 function revealAdmin() {
   $('#admin-panel').hidden=false;document.body.classList.add('modal-open');
   history.replaceState(null,'',`${location.pathname}${location.search}#admin`);
-  const hasSession=sessionStorage.getItem('openmic.admin.session')==='demo';
-  if(hasSession){adminAuthenticated=true;adminDemoMode=true;showAdminWorkspace();}
-  else {$('#admin-login-screen').hidden=false;$('#admin-workspace').hidden=true;$('#admin-user').focus();}
+  adminAuthenticated=true;adminDemoMode=false;
+  showAdminWorkspace();
 }
 function closeAdmin() {
   $('#admin-panel').hidden=true;document.body.classList.remove('modal-open');
   if(location.hash==='#admin')history.replaceState(null,'',`${location.pathname}${location.search}`);
 }
-
-async function quickUnlockAdmin() {
-  setMessage($('#admin-login-message'),'Unlocking admin console…');
-  try {
-    const response=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bypass:true})});
-    const data=await response.json();
-    if(response.ok){adminAuthenticated=true;adminDemoMode=false;adminSettings=data.settings||null;sessionStorage.removeItem('openmic.admin.session');$('#demo-credential-note').hidden=true;showAdminWorkspace();return;}
-  } catch {}
-  const local=await adminLocalLogin();adminAuthenticated=true;adminDemoMode=true;sessionStorage.setItem('openmic.admin.session','demo');$('#demo-credential-note').hidden=false;showAdminWorkspace();
-}
-
 async function adminLogin(event) {
   event.preventDefault();
   const user=$('#admin-user').value.trim();const password=$('#admin-password').value;
@@ -1032,71 +934,231 @@ async function loadAdminState() {
 async function showAdminWorkspace() {
   $('#admin-login-screen').hidden=true;$('#admin-workspace').hidden=false;
   await loadAdminState();renderAdminTab('features');
-}
-
-async function loadAdminTestimonials(){
-  const target=$('#admin-testimonials-list');if(!target)return;
-  if(adminDemoMode){target.innerHTML='<p class="admin-section-description">Testimonial moderation is unavailable in local demo mode. Use the deployed private admin session to review shared submissions.</p>';return;}
-  target.innerHTML='<p class="admin-section-description">Loading submissions…</p>';
-  try{const response=await fetch('/api/admin/testimonials');const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Could not load testimonials.');const entries=Array.isArray(data.entries)?data.entries:[];target.innerHTML=entries.length?`<div class="admin-table-wrap"><table class="admin-log-table"><thead><tr><th>Date</th><th>Nickname</th><th>Class</th><th>Testimonial</th><th>Status</th><th>Review</th></tr></thead><tbody>${entries.map(item=>`<tr><td>${escapeHtml(new Date(item.createdAt||Date.now()).toLocaleString())}</td><td>${escapeHtml(item.nickname||'')}</td><td>${escapeHtml(item.grade||'')}</td><td>${escapeHtml(item.quote||'')}</td><td>${escapeHtml(item.status||'pending')}</td><td><button class="button button-outline" type="button" data-testimonial-status="approved" data-testimonial-id="${Number(item.id)}">Approve</button> <button class="button button-outline" type="button" data-testimonial-status="rejected" data-testimonial-id="${Number(item.id)}">Reject</button> <button class="button button-outline admin-danger" type="button" data-testimonial-delete="${Number(item.id)}">Delete</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="admin-section-description">No testimonials submitted yet.</p>';}
-  catch(error){target.textContent=`Could not load testimonials: ${error.message}`;}
-}
-async function loadAdminSafetyEvents(){
-  const target=$('#admin-safety-list');if(!target)return;
-  if(adminDemoMode){target.innerHTML='<p class="admin-section-description">Safety events are available only in the shared server deployment. No raw IP addresses, student audio or transcripts are displayed here.</p>';return;}
-  target.innerHTML='<p class="admin-section-description">Loading safety events…</p>';
-  try{const response=await fetch('/api/admin/safety');const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Could not load safety events.');const entries=Array.isArray(data.entries)?data.entries:[];target.innerHTML=entries.length?`<div class="admin-table-wrap"><table class="admin-log-table"><thead><tr><th>Time</th><th>Student IP</th><th>Event</th><th>Severity</th><th>Summary</th><th>Reviewed</th><th>Action</th></tr></thead><tbody>${entries.map(item=>`<tr><td>${escapeHtml(new Date(item.createdAt||Date.now()).toLocaleString())}</td><td><strong style="color:#f59e0b;">${escapeHtml(item.participantHash||item.sourceIp||'—')}</strong></td><td>${escapeHtml(item.eventType||'event')}</td><td>${escapeHtml(item.severity||'info')}</td><td>${escapeHtml(item.summary||'')}</td><td>${item.reviewed?'Yes':'No'}</td><td><button class="button button-outline" type="button" data-safety-id="${Number(item.id)}" data-safety-reviewed="${item.reviewed?'0':'1'}">${item.reviewed?'Mark unreviewed':'Mark reviewed'}</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="admin-section-description">No safety events have been recorded.</p>';}
-  catch(error){target.textContent=`Could not load safety events: ${error.message}`;}
+  if(autoDownloadVideosActive)startAutoDownloadPoller();
 }
 function adminTab() { return $('.admin-tab.active')?.dataset.adminTab||'features'; }
+
+async function renderAdminTestimonials(container){
+  container.innerHTML='<div class="admin-loading">Loading testimonials for moderation…</div>';
+  try{
+    const res=await fetch('/api/testimonials?all=1');
+    const data=await res.json();
+    const entries=Array.isArray(data.entries)?data.entries:[];
+    if(!entries.length){
+      container.innerHTML='<div class="admin-empty"><p>No testimonials in the review queue.</p></div>';
+      return;
+    }
+    container.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 class="admin-section-title" style="margin:0;">Student Testimonials (${entries.length})</h3>
+        <button type="button" class="button button-outline" id="refresh-admin-testimonials">Refresh list ↻</button>
+      </div>
+      <div class="admin-testimonials-list">
+        ${entries.map(e=>`
+          <div class="admin-mod-card" data-testimonial-id="${e.id}">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <strong>${escapeHtml(e.nickname)} (${escapeHtml(e.grade||'Student')})</strong>
+              <span class="status-pill ${e.status==='approved'?'status-ready':e.status==='rejected'?'status-failed':'status-pending'}">${escapeHtml(String(e.status||'pending').toUpperCase())}</span>
+            </div>
+            <p style="margin:8px 0;font-size:13px;line-height:1.6;">"${escapeHtml(e.quote)}"</p>
+            <small style="opacity:0.6;">Submitted: ${new Date(e.createdAt).toLocaleString()}</small>
+            <div class="mod-actions">
+              ${e.status!=='approved'?`<button type="button" class="button button-accent button-small" data-mod-action="approved" data-id="${e.id}">Approve</button>`:''}
+              ${e.status!=='rejected'?`<button type="button" class="button button-outline button-small" data-mod-action="rejected" data-id="${e.id}">Reject</button>`:''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    $('#refresh-admin-testimonials')?.addEventListener('click',()=>renderAdminTestimonials(container));
+    container.querySelectorAll('[data-mod-action]').forEach(btn=>{
+      btn.addEventListener('click',async()=>{
+        const id=btn.dataset.id;
+        const status=btn.dataset.modAction;
+        btn.disabled=true;
+        try{
+          const mRes=await fetch('/api/testimonials',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({action:'moderate',id,status})
+          });
+          const mData=await mRes.json();
+          if(!mRes.ok)throw new Error(mData.error||'Failed to moderate');
+          showToast(`Testimonial #${id} set to ${status}`);
+          renderAdminTestimonials(container);
+          loadPublicFeedbackAndTestimonials();
+        }catch(err){
+          showToast(err.message);
+          btn.disabled=false;
+        }
+      });
+    });
+  }catch(err){
+    container.innerHTML=`<div class="admin-error"><p>Could not load testimonials: ${escapeHtml(err.message)}</p></div>`;
+  }
+}
+
 function renderAdminTab(tab) {
   $$('.admin-tab').forEach(button=>button.classList.toggle('active',button.dataset.adminTab===tab));
   const content=$('#admin-content');
   if(tab==='features') {
     content.innerHTML=`<h3 class="admin-section-title">Feature visibility</h3><p class="admin-section-description">Turn sections on or off. Disabled sections disappear from the page layout and the rest of the page closes the gap naturally.</p><div class="admin-grid">${Object.entries(FEATURE_LABELS).map(([key,item])=>`<article class="admin-card"><label for="feature-${key}"><span>${escapeHtml(item[0])}</span><span class="admin-toggle"><input type="checkbox" id="feature-${key}" data-feature-toggle="${key}" ${settings.features[key]?'checked':''}><span></span></span></label><p>${escapeHtml(item[1])}</p></article>`).join('')}</div><div class="admin-actions"><button class="button button-accent" id="save-feature-settings" type="button">Save feature settings ↗</button><button class="button button-outline" id="enable-all-features" type="button">Enable all</button><button class="button button-outline" id="disable-all-features" type="button">Disable optional features</button></div><p class="admin-section-description" style="margin-top:18px">Only admin can change feature visibility. The privacy section remains at the end of the page. Settings are shared only after the Cloudflare backend is deployed.</p>`;
   } else if(tab==='ai') {
-    const providerNames={cloudflare:'Cloudflare Workers AI',gemini:'Gemini API pool',free:'OpenAI-compatible free endpoint',laptop:'Your laptop / Ollama'};
+    const providerNames={gemini:'Gemini API pool (multi-key)',cloudflare:'Cloudflare Workers AI',free:'OpenAI-compatible free endpoint',laptop:'Your laptop / Ollama'};
     const order=settings.providerOrder||DEFAULT_SETTINGS.providerOrder;
-    const ttsOrder=settings.ttsProviderOrder||DEFAULT_SETTINGS.ttsProviderOrder;
-    const ttsNames={cartesia:'Cartesia Sonic',openai:'OpenAI TTS',deepgram:'Deepgram Aura',kokoro:'Kokoro host',elevenlabs:'ElevenLabs'};
-    content.innerHTML=`<h3 class="admin-section-title">AI routing and failover</h3><p class="admin-section-description">Keep provider keys on the server. The router tries providers in the order below when automatic fallback is enabled; when it is disabled, only your selected provider is attempted and the browser uses on-device scoring if it fails.</p><div class="admin-grid"><article class="admin-card"><label for="automatic-fallback"><span>Automatic fallback</span><span class="admin-toggle"><input type="checkbox" id="automatic-fallback" ${settings.automaticFallback?'checked':''}><span></span></span></label><p>On: continue to the next provider when one errors or reaches a limit. Off: use the selected provider only.</p></article><article class="admin-card"><div class="admin-field"><label for="preferred-provider">Manual provider</label><select id="preferred-provider">${Object.entries(providerNames).map(([key,name])=>`<option value="${key}" ${settings.preferredProvider===key?'selected':''}>${escapeHtml(name)}</option>`).join('')}</select></div><p>Used when automatic fallback is off.</p></article><article class="admin-card"><div class="admin-field"><label for="speech-provider">Speech-to-text provider</label><select id="speech-provider"><option value="auto" ${settings.speechProvider==='auto'?'selected':''}>Automatic: ElevenLabs → Cloudflare → Gemini</option><option value="elevenlabs" ${settings.speechProvider==='elevenlabs'?'selected':''}>ElevenLabs Scribe v2</option><option value="cloudflare" ${settings.speechProvider==='cloudflare'?'selected':''}>Cloudflare Whisper (audio only)</option><option value="gemini" ${settings.speechProvider==='gemini'?'selected':''}>Gemini transcription (audio only)</option></select></div><p>Video transcription requires ElevenLabs Scribe v2. It may use paid credits.</p></article><article class="admin-card"><div class="admin-field"><label for="quality-mode">Quality / quota mode</label><select id="quality-mode"><option value="best" ${settings.qualityMode==='best'?'selected':''}>Best available</option><option value="balanced" ${settings.qualityMode==='balanced'?'selected':''}>Balanced</option><option value="saver" ${settings.qualityMode==='saver'?'selected':''}>Quota saver</option></select></div><p>Quota saver prefers local/low-cost options when configured; fallback remains visible in the request log.</p></article><article class="admin-card"><label><span>Local scoring fallback</span><span class="provider-status ready">Always available</span></label><p>Rule-based text metrics run in the browser if every remote provider fails. They do not measure pronunciation or accent.</p></article></div><h4 class="admin-section-title" style="margin-top:25px">Provider order</h4><p class="admin-section-description">Use the up and down controls to change priority. Disabled providers are skipped.</p><div id="provider-order-list">${order.map((key,index)=>`<div class="admin-provider-row" data-provider-row="${key}"><div><strong>${escapeHtml(providerNames[key]||key)}</strong><small>${key==='cloudflare'?'Workers AI binding AI':key==='gemini'?'Encrypted key pool':key==='free'?'Endpoint, model and key': 'Ollama through an HTTPS tunnel'}</small></div><div class="provider-rank"><button type="button" data-provider-up="${key}" aria-label="Move ${key} up" ${index===0?'disabled':''}>↑</button><button type="button" data-provider-down="${key}" aria-label="Move ${key} down" ${index===order.length-1?'disabled':''}>↓</button></div><label class="admin-toggle"><input type="checkbox" data-provider-enabled="${key}" ${settings.providerEnabled[key]?'checked':''}><span></span></label></div>`).join('')}</div><h4 class="admin-section-title" style="margin-top:25px">Speech generation route</h4><div class="admin-grid"><article class="admin-card"><label for="tts-automatic-fallback"><span>Automatic TTS fallback</span><span class="admin-toggle"><input type="checkbox" id="tts-automatic-fallback" ${settings.ttsAutomaticFallback!==false?'checked':''}><span></span></span></label><p>When enabled, the server tries the enabled providers in priority order. Turn it off to use only your selected provider.</p></article><article class="admin-card"><div class="admin-field"><label for="tts-preferred-provider">Manual TTS provider</label><select id="tts-preferred-provider">${Object.entries(ttsNames).concat([['browser','Browser voice']]).map(([key,name])=>`<option value="${key}" ${settings.ttsPreferredProvider===key?'selected':''}>${escapeHtml(name)}</option>`).join('')}</select></div></article></div><div id="tts-provider-order-list">${ttsOrder.map((key,index)=>`<div class="admin-provider-row"><div><strong>${escapeHtml(ttsNames[key]||key)}</strong><small>Speech generation priority</small></div><div class="provider-rank"><button type="button" data-tts-up="${key}" aria-label="Move ${key} up" ${index===0?'disabled':''}>↑</button><button type="button" data-tts-down="${key}" aria-label="Move ${key} down" ${index===ttsOrder.length-1?'disabled':''}>↓</button></div><label class="admin-toggle"><input type="checkbox" data-tts-enabled="${key}" ${settings.ttsProviderEnabled?.[key]!==false?'checked':''}><span></span></label></div>`).join('')}</div><div class="admin-actions"><button class="button button-accent" id="save-router-settings" type="button">Save AI and voice routing</button></div><h4 class="admin-section-title" style="margin-top:33px">Provider credentials</h4><p class="admin-section-description">Paste values here only over your deployed HTTPS site. The server encrypts them before storing in D1, and never returns them to this page. Keys are not stored in browser storage or source control.</p><div class="admin-alert">Server key storage requires a D1 binding and a secret named CONFIG_ENCRYPTION_KEY. If these are not configured, set provider keys as Cloudflare Worker secrets instead.</div><div class="admin-grid"><div class="admin-card"><div class="admin-field"><label for="gemini-keys">Gemini API keys, one per line</label><textarea id="gemini-keys" rows="4" placeholder="Paste multiple keys only on your private admin session"></textarea><small id="gemini-key-status">${adminSecretsStatus.geminiCount||0} keys stored server-side. Values are never shown again.</small></div></div><div class="admin-card"><div class="admin-field"><label for="elevenlabs-key">ElevenLabs speech-to-text API key (optional)</label><input id="elevenlabs-key" type="password" autocomplete="new-password" placeholder="Stored encrypted on the server"><small>${adminSecretsStatus.elevenlabsConfigured?'ElevenLabs key is configured.':'Not configured; speech uses the next enabled transcriber.'}</small><p class="muted-small">ElevenLabs speech-to-text may use paid credits, depending on your account. Check your plan before enabling it.</p></div></div><div class="admin-card"><div class="admin-field"><label for="free-url">Free LLM endpoint</label><input id="free-url" type="url" placeholder="Paste your OpenAI-compatible endpoint URL"></div><div class="admin-field"><label for="free-model">Model name</label><input id="free-model" placeholder="provider-model-name"></div><div class="admin-field"><label for="free-key">API key</label><input id="free-key" type="password" autocomplete="new-password" placeholder="Stored encrypted on the server"></div></div><div class="admin-card"><div class="admin-field"><label for="laptop-url">Laptop endpoint (HTTPS tunnel)</label><input id="laptop-url" type="url" placeholder="Paste your laptop HTTPS tunnel URL"></div><div class="admin-field"><label for="laptop-model">Ollama model</label><input id="laptop-model" value="llama3.2:3b"></div><div class="admin-field"><label for="laptop-token">Laptop shared token</label><input id="laptop-token" type="password" autocomplete="new-password" placeholder="Protect the tunnel endpoint"></div></div><div class="admin-card"><div class="admin-field"><label for="cartesia-key">Cartesia API key</label><input id="cartesia-key" type="password" autocomplete="new-password" placeholder="Optional · stored encrypted"><label for="cartesia-voice">Cartesia voice ID</label><input id="cartesia-voice" placeholder="Voice ID from your Cartesia account"><small>${adminSecretsStatus.cartesiaConfigured?'Cartesia is configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="openai-tts-key">OpenAI TTS API key</label><input id="openai-tts-key" type="password" autocomplete="new-password" placeholder="Optional · stored encrypted"><label for="openai-tts-voice">OpenAI TTS voice</label><input id="openai-tts-voice" value="alloy"><small>${adminSecretsStatus.openaiTtsConfigured?'OpenAI TTS is configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="deepgram-key">Deepgram API key</label><input id="deepgram-key" type="password" autocomplete="new-password" placeholder="Optional · stored encrypted"><label for="deepgram-model">Deepgram model</label><input id="deepgram-model" value="aura-2-thalia-en"><small>${adminSecretsStatus.deepgramConfigured?'Deepgram is configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="kokoro-url">Kokoro OpenAI-compatible endpoint</label><input id="kokoro-url" type="url" placeholder="Your private HTTPS endpoint"><label for="kokoro-token">Kokoro token (if needed)</label><input id="kokoro-token" type="password" autocomplete="new-password" placeholder="Optional · stored encrypted"><label for="kokoro-voice">Kokoro voice</label><input id="kokoro-voice" value="af_sarah"><small>${adminSecretsStatus.kokoroConfigured?'Kokoro endpoint is configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="telegram-bot-token">Telegram bot token</label><input id="telegram-bot-token" type="password" autocomplete="new-password" placeholder="Optional metadata-only alerts"><label for="telegram-chat-id">Telegram chat ID</label><input id="telegram-chat-id" placeholder="Private admin chat ID"><small>${adminSecretsStatus.telegramConfigured?'Telegram alerts are configured.':'No Telegram alerts configured.'}</small></div></div><div class="admin-card"><h4>Cloudflare binding</h4><p>${adminSecretsStatus.cloudflareConfigured?'Workers AI binding is configured.':'Workers AI binding status will be known at runtime.'} Add an AI binding named <code>AI</code> in Cloudflare and redeploy. GitHub backup credentials must be Cloudflare secrets, not browser fields.</p></div></div><div class="admin-actions"><button class="button button-accent" id="save-provider-keys" type="button">Encrypt and save credentials ↗</button><button class="button button-outline" id="clear-provider-fields" type="button">Clear fields</button></div><p class="form-message" id="provider-key-message" aria-live="polite"></p>`;
-  } else if(tab==='stage') {
-    content.innerHTML=`<h3 class="admin-section-title">Live stage and OBS</h3><p class="admin-section-description">OBS Virtual Camera is selected like any other webcam in Newsroom. This panel controls whether the shared stream preview is shown to visitors.</p><div class="admin-grid"><article class="admin-card"><label for="live-stage-enabled"><span>Enable public stream preview</span><span class="admin-toggle"><input type="checkbox" id="live-stage-enabled" ${settings.liveStageEnabled?'checked':''}><span></span></span></label><p>Leave off unless the feed is approved for public viewing.</p></article><article class="admin-card"><div class="admin-field"><label for="live-stage-url">HTTPS stream or embed URL</label><input id="live-stage-url" type="url" value="${escapeHtml(settings.liveStageUrl||'')}" placeholder="Paste a YouTube Live embed or HTTPS HLS/relay URL"></div><p>Use a YouTube Live URL, an HTTPS HLS relay ending in .m3u8, or an embed URL that allows framing.</p></article><article class="admin-card"><label for="horizontal-sections"><span>Experimental horizontal panels</span><span class="admin-toggle"><input type="checkbox" id="horizontal-sections" ${settings.horizontalSections?'checked':''}><span></span></span></label><p>Off by default. The standard vertical page remains the safest phone and keyboard layout.</p></article></div><div class="admin-actions"><button class="button button-accent" id="save-live-stage-settings" type="button">Save live stage settings</button><button class="button button-outline" id="test-stage-preview" type="button">Preview on page</button></div><p id="live-stage-save-status" class="form-message" aria-live="polite"></p><p class="admin-section-description">OBS camera capture works on the visitor’s device after browser camera permission. A stream URL is a preview only; it does not make OBS available to the Cloudflare server.</p>`;
-  } else if(tab==='testimonials') {
-    content.innerHTML=`<h3 class="admin-section-title">Testimonial approval</h3><p class="admin-section-description">Only approved notes appear publicly. Review nicknames and text; do not approve personal information. Demo mode uses this browser only.</p><div class="admin-actions"><button class="button button-outline" id="refresh-testimonials" type="button">Refresh submissions</button></div><div id="admin-testimonials-list"><p class="admin-section-description">Loading submissions…</p></div>`;
-    loadAdminTestimonials();
-  } else if(tab==='safety') {
-    content.innerHTML=`<h3 class="admin-section-title">Safety monitor</h3><p class="admin-section-description">This is a privacy-preserving event queue. It shows moderation summaries and review state—not raw IP addresses, audio or transcript content. It stays empty until the live backend records approved event types.</p><div class="admin-actions"><button class="button button-outline" id="refresh-safety-events" type="button">Refresh safety events</button></div><div id="admin-safety-list"><p class="admin-section-description">Loading safety events…</p></div>`;
-    loadAdminSafetyEvents();
-  } else if(tab==='vault') {
-    content.innerHTML=`<h3 class="admin-section-title">GitHub backup vault</h3><p class="admin-section-description">Write a safe v15 release manifest to your private GitHub repository. It contains feature names, provider readiness and migration filenames only. Student audio, video, transcripts, feedback, personal names and API keys are never sent to GitHub by this action.</p><div class="admin-card"><p>${adminSecretsStatus.githubVaultConfigured?'GitHub vault credentials are present on the server.':'GitHub vault is not configured yet.'}</p><p class="muted-small">Set GITHUB_VAULT_TOKEN as a Cloudflare secret and GITHUB_VAULT_REPO as owner/repository. The token needs repository Contents write permission. Keep student recordings in private R2 storage.</p><div class="admin-actions"><button class="button button-accent" id="create-github-vault-manifest" type="button" ${adminDemoMode||!adminSecretsStatus.githubVaultConfigured?'disabled':''}>Save release manifest to GitHub</button></div><p id="github-vault-message" class="form-message" aria-live="polite"></p></div>`;
+    content.innerHTML=`<h3 class="admin-section-title">AI routing and failover</h3><p class="admin-section-description">Multi-tier failover configured to prioritize Gemini API pool for maximum student concurrency, followed by Cloudflare Workers AI edge inference. Each provider can be independently toggled ON or OFF.</p><div class="admin-grid"><article class="admin-card"><label for="automatic-fallback"><span>Automatic fallback</span><span class="admin-toggle"><input type="checkbox" id="automatic-fallback" ${settings.automaticFallback?'checked':''}><span></span></span></label><p>On: continue to the next enabled provider when one errors or reaches a limit. Off: use manual provider only.</p></article><article class="admin-card"><div class="admin-field"><label for="preferred-provider">Manual primary provider</label><select id="preferred-provider">${Object.entries(providerNames).map(([key,name])=>`<option value="${key}" ${settings.preferredProvider===key?'selected':''}>${escapeHtml(name)}</option>`).join('')}</select></div><p>Used as primary when automatic fallback is off.</p></article><article class="admin-card"><div class="admin-field"><label for="tts-provider">Speech / TTS synthesis provider</label><select id="tts-provider"><option value="cartesia" ${settings.ttsProvider==='cartesia'?'selected':''}>Cartesia Sonic (ultra-low latency)</option><option value="openai" ${settings.ttsProvider==='openai'?'selected':''}>OpenAI TTS (natural voices)</option><option value="deepgram" ${settings.ttsProvider==='deepgram'?'selected':''}>Deepgram Aura (conversational)</option><option value="kokoro" ${settings.ttsProvider==='kokoro'?'selected':''}>Kokoro-82M (open-weight)</option><option value="elevenlabs" ${settings.ttsProvider==='elevenlabs'?'selected':''}>ElevenLabs (turbo v2.5)</option><option value="browser" ${settings.ttsProvider==='browser'?'selected':''}>Browser Speech Synthesis (free & unlimited)</option><option value="auto" ${settings.ttsProvider==='auto'?'selected':''}>Auto: Cartesia → OpenAI → Deepgram → Kokoro → ElevenLabs → Browser</option></select></div><p>Select speech audio engine for pronunciation and narration.</p></article><article class="admin-card"><div class="admin-field"><label for="speech-provider">Speech-to-text provider</label><select id="speech-provider"><option value="auto" ${settings.speechProvider==='auto'?'selected':''}>Automatic: ElevenLabs → Cloudflare → Gemini</option><option value="elevenlabs" ${settings.speechProvider==='elevenlabs'?'selected':''}>ElevenLabs Scribe v2</option><option value="cloudflare" ${settings.speechProvider==='cloudflare'?'selected':''}>Cloudflare Whisper</option><option value="gemini" ${settings.speechProvider==='gemini'?'selected':''}>Gemini transcription</option></select></div><p>Voice-to-text transcription engine.</p></article><article class="admin-card"><div class="admin-field"><label for="quality-mode">Quality / quota mode</label><select id="quality-mode"><option value="best" ${settings.qualityMode==='best'?'selected':''}>Best available</option><option value="balanced" ${settings.qualityMode==='balanced'?'selected':''}>Balanced</option><option value="saver" ${settings.qualityMode==='saver'?'selected':''}>Quota saver</option></select></div><p>Balances AI response depth and server quota.</p></article><article class="admin-card"><label><span>Local scoring fallback</span><span class="provider-status ready">Always available</span></label><p>Browser rule-based heuristic scoring remains active if remote AI is unavailable.</p></article></div><h4 class="admin-section-title" style="margin-top:25px">Provider toggles & priority order</h4><p class="admin-section-description">Toggle each provider on or off. Use the arrows to reorder priority. Disabled providers are skipped.</p><div id="provider-order-list">${order.map((key,index)=>`<div class="admin-provider-row" data-provider-row="${key}"><div><strong>${escapeHtml(providerNames[key]||key)}</strong><small>${key==='gemini'?'Gemini API key pool':key==='cloudflare'?'Cloudflare Workers AI':key==='free'?'Free OpenAI-compatible endpoint':'Local Ollama via HTTPS'}</small></div><div class="provider-rank"><button type="button" data-provider-up="${key}" aria-label="Move ${key} up" ${index===0?'disabled':''}>↑</button><button type="button" data-provider-down="${key}" aria-label="Move ${key} down" ${index===order.length-1?'disabled':''}>↓</button></div><label class="admin-toggle"><input type="checkbox" data-provider-enabled="${key}" ${settings.providerEnabled?.[key]!==false?'checked':''}><span></span></label></div>`).join('')}</div><h4 class="admin-section-title" style="margin-top:22px">Speech & TTS Provider Toggles</h4><div class="admin-grid"><article class="admin-card"><label for="cartesia-toggle"><span>Cartesia Sonic</span><span class="admin-toggle"><input type="checkbox" id="cartesia-toggle" data-provider-enabled="cartesia" ${settings.providerEnabled?.cartesia!==false?'checked':''}><span></span></span></label><p>Ultra-low latency audio synthesis.</p></article><article class="admin-card"><label for="openai-toggle"><span>OpenAI TTS</span><span class="admin-toggle"><input type="checkbox" id="openai-toggle" data-provider-enabled="openai" ${settings.providerEnabled?.openai!==false?'checked':''}><span></span></span></label><p>Natural OpenAI voices.</p></article><article class="admin-card"><label for="deepgram-toggle"><span>Deepgram Aura</span><span class="admin-toggle"><input type="checkbox" id="deepgram-toggle" data-provider-enabled="deepgram" ${settings.providerEnabled?.deepgram!==false?'checked':''}><span></span></span></label><p>Fast conversational TTS.</p></article><article class="admin-card"><label for="kokoro-toggle"><span>Kokoro-82M</span><span class="admin-toggle"><input type="checkbox" id="kokoro-toggle" data-provider-enabled="kokoro" ${settings.providerEnabled?.kokoro?'checked':''}><span></span></span></label><p>Lightweight 82M open-source model.</p></article><article class="admin-card"><label for="elevenlabs-toggle"><span>ElevenLabs</span><span class="admin-toggle"><input type="checkbox" id="elevenlabs-toggle" data-provider-enabled="elevenlabs" ${settings.providerEnabled?.elevenlabs?'checked':''}><span></span></span></label><p>ElevenLabs Turbo v2.5.</p></article></div><div class="admin-actions"><button class="button button-accent" id="save-router-settings" type="button">Save router settings ↗</button></div><h4 class="admin-section-title" style="margin-top:33px">Provider credentials & secrets</h4><p class="admin-section-description">Credentials are encrypted on the server using AES-GCM and stored securely in Cloudflare D1. They are never exposed back to the browser.</p><div class="admin-grid"><div class="admin-card"><div class="admin-field"><label for="gemini-keys">Gemini API keys, one per line</label><textarea id="gemini-keys" rows="3" placeholder="Paste multiple keys for round-robin rotation"></textarea><small id="gemini-key-status">${adminSecretsStatus.geminiCount||0} keys stored server-side.</small></div></div><div class="admin-card"><div class="admin-field"><label for="cartesia-key">Cartesia Sonic API key</label><input id="cartesia-key" type="password" autocomplete="new-password" placeholder="Stored encrypted on the server"><small>${adminSecretsStatus.cartesiaConfigured?'Cartesia key is configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="openai-key">OpenAI API key (TTS & LLM)</label><input id="openai-key" type="password" autocomplete="new-password" placeholder="Stored encrypted on the server"><small>${adminSecretsStatus.openaiConfigured?'OpenAI key is configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="deepgram-key">Deepgram API key</label><input id="deepgram-key" type="password" autocomplete="new-password" placeholder="Stored encrypted on the server"><small>${adminSecretsStatus.deepgramConfigured?'Deepgram key is configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="kokoro-url">Kokoro-82M endpoint URL</label><input id="kokoro-url" type="url" placeholder="https://kokoro-tts-endpoint/v1/audio/speech"><small>${adminSecretsStatus.kokoroConfigured?'Kokoro endpoint configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="elevenlabs-key">ElevenLabs API key</label><input id="elevenlabs-key" type="password" autocomplete="new-password" placeholder="Stored encrypted on the server"><small>${adminSecretsStatus.elevenlabsConfigured?'ElevenLabs key is configured.':'Not configured.'}</small></div></div><div class="admin-card"><div class="admin-field"><label for="free-url">Free LLM endpoint</label><input id="free-url" type="url" placeholder="https://open-source-llm.com/v1"><label for="free-model" style="margin-top:6px;">Model name</label><input id="free-model" placeholder="llama3"><label for="free-key" style="margin-top:6px;">API key</label><input id="free-key" type="password" autocomplete="new-password"></div></div><div class="admin-card"><div class="admin-field"><label for="laptop-url">Laptop endpoint (Ollama tunnel)</label><input id="laptop-url" type="url" placeholder="https://tunnel.ngrok.app"><label for="laptop-model" style="margin-top:6px;">Ollama model</label><input id="laptop-model" value="llama3.2:3b"><label for="laptop-token" style="margin-top:6px;">Tunnel token</label><input id="laptop-token" type="password" autocomplete="new-password"></div></div></div><div class="admin-actions"><button class="button button-accent" id="save-provider-keys" type="button">Encrypt and save credentials ↗</button><button class="button button-outline" id="clear-provider-fields" type="button">Clear fields</button></div><p class="form-message" id="provider-key-message" aria-live="polite"></p>`;
   } else if(tab==='branding') {
-    content.innerHTML=`<h3 class="admin-section-title">Brand and language</h3><p class="admin-section-description">Choose the atmosphere, language and school credit. These controls change the page without a bottom navigation menu.</p><div class="admin-grid"><div class="admin-card"><div class="admin-field"><label for="brand-theme">Visual theme</label><select id="brand-theme"><option value="mix" ${settings.theme==='mix'?'selected':''}>Mix: dark hero + colourful sections</option><option value="dark" ${settings.theme==='dark'?'selected':''}>Dark / cinematic</option><option value="vibrant" ${settings.theme==='vibrant'?'selected':''}>Vibrant / energetic</option><option value="clean" ${settings.theme==='clean'?'selected':''}>Clean / professional</option><option value="orange" ${settings.theme==='orange'?'selected':''}>Orange / newsroom</option></select></div><p>Every theme remains scroll-first, responsive and keyboard accessible.</p></div><div class="admin-card"><div class="admin-field"><label for="brand-language">Language</label><select id="brand-language"><option value="en" ${settings.language==='en'?'selected':''}>English</option><option value="hi" ${settings.language==='hi'?'selected':''}>Hindi UI (beta)</option></select></div><p>Career names remain in English to help students learn role-specific vocabulary.</p></div><div class="admin-card"><label for="show-school-name"><span>Show school name</span><span class="admin-toggle"><input type="checkbox" id="show-school-name" ${settings.showSchoolName?'checked':''}><span></span></span></label><div class="admin-field"><label for="school-name">School credit</label><input id="school-name" value="${escapeHtml(settings.schoolName)}" maxlength="90"></div></div><div class="admin-card"><h4>Copyright line</h4><p>The footer automatically adds the current year. Use of school branding should be approved by the school before public distribution.</p><span class="provider-status ready">© ${new Date().getFullYear()} Open Mic</span></div></div><div class="admin-actions"><button class="button button-accent" id="save-brand-settings" type="button">Save branding ↗</button><button class="button button-outline" id="reset-brand-settings" type="button">Reset to default</button></div>`;
+    content.innerHTML=`<h3 class="admin-section-title">Brand and language</h3><p class="admin-section-description">Choose the atmosphere, language and school credit. These controls change the page without a bottom navigation menu.</p><div class="admin-grid"><div class="admin-card"><div class="admin-field"><label for="brand-theme">Visual theme</label><select id="brand-theme"><option value="mix" ${settings.theme==='mix'?'selected':''}>Mix: dark hero + colourful sections</option><option value="dark" ${settings.theme==='dark'?'selected':''}>Dark / cinematic</option><option value="vibrant" ${settings.theme==='vibrant'?'selected':''}>Vibrant / energetic</option><option value="clean" ${settings.theme==='clean'?'selected':''}>Clean / professional</option></select></div><p>Every theme remains scroll-first, responsive and keyboard accessible.</p></div><div class="admin-card"><div class="admin-field"><label for="brand-language">Language</label><select id="brand-language"><option value="en" ${settings.language==='en'?'selected':''}>English</option><option value="hi" ${settings.language==='hi'?'selected':''}>Hindi UI (beta)</option></select></div><p>Career names remain in English to help students learn role-specific vocabulary.</p></div><div class="admin-card"><label for="show-school-name"><span>Show school name</span><span class="admin-toggle"><input type="checkbox" id="show-school-name" ${settings.showSchoolName?'checked':''}><span></span></span></label><div class="admin-field"><label for="school-name">School credit</label><input id="school-name" value="${escapeHtml(settings.schoolName)}" maxlength="90"></div></div><div class="admin-card"><h4>Copyright line</h4><p>The footer automatically adds the current year. Use of school branding should be approved by the school before public distribution.</p><span class="provider-status ready">© ${new Date().getFullYear()} Open Mic</span></div></div><div class="admin-actions"><button class="button button-accent" id="save-brand-settings" type="button">Save branding ↗</button><button class="button button-outline" id="reset-brand-settings" type="button">Reset to default</button></div>`;
   } else if(tab==='requests') {
     const logs=adminDemoMode?loadDemoLogs():[];
     content.innerHTML=`<h3 class="admin-section-title">Request activity</h3><p class="admin-section-description">Logs contain only task type, provider, status, latency and time. Prompt text, transcripts and audio are not stored in the request log.</p><div class="admin-actions"><button class="button button-outline" id="refresh-request-logs" type="button">Refresh log ↻</button><button class="button button-outline" id="clear-demo-logs" type="button">Clear demo log</button></div><div id="request-log-content"><p class="admin-section-description">${adminDemoMode?'Showing this browser’s demo log.':'Loading server request log…'}</p>${adminDemoMode?renderLogsTable(logs):''}</div>`;
     if(!adminDemoMode)fetch('/api/admin/logs').then(res=>res.ok?res.json():Promise.reject()).then(data=>{const target=$('#request-log-content');if(target)target.innerHTML=renderLogsTable(data.logs||[]);}).catch(()=>{const target=$('#request-log-content');if(target)target.innerHTML='<p class="admin-section-description">Server request logs are not available. Deploy D1 and the admin Worker endpoint.</p>';});
   } else if(tab==='leaderboard') {
     const entries=adminDemoMode?getBoardData():[];
-    content.innerHTML=`<h3 class="admin-section-title">Leaderboard moderation</h3><p class="admin-section-description">Remove entries on request or if consent was not valid. Only nickname, class and opt-in scores are kept—never raw voice or transcript.</p><div class="admin-actions"><button class="button button-outline" id="refresh-admin-board" type="button">Refresh ↻</button><button class="button button-outline admin-danger" id="clear-admin-board" type="button">Clear all entries</button></div><div id="admin-board-content">${adminDemoMode?renderAdminBoard(entries):'<p class="admin-section-description">Loading shared entries…</p>'}</div>`;
+    content.innerHTML=`<h3 class="admin-section-title">Leaderboard moderation & IP security</h3><p class="admin-section-description">Remove entries on request or if consent was not valid. Ban disruptive IP addresses from submitting scores, feedback or media.</p><div class="admin-actions"><button class="button button-outline" id="refresh-admin-board" type="button">Refresh entries ↻</button><button class="button button-outline admin-danger" id="clear-admin-board" type="button">Clear all entries</button></div><div id="admin-board-content">${adminDemoMode?renderAdminBoard(entries):'<p class="admin-section-description">Loading shared entries…</p>'}</div><h4 class="admin-section-title" style="margin-top:32px">Restricted IP addresses</h4><p class="admin-section-description">Permanently block abusive IP addresses across all endpoints.</p><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0;"><input id="ban-ip-address" placeholder="IP address (e.g. 103.21.244.2)" style="flex:1;min-width:180px;"><input id="ban-ip-reason" placeholder="Reason (e.g. repeated spam)" style="flex:1;min-width:180px;"><button type="button" class="button button-accent" id="btn-ban-ip">Ban IP</button></div><div id="admin-banned-ips-wrap"><p class="admin-section-description">Loading banned IPs…</p></div>`;
+    loadAdminBannedIps();
     if(!adminDemoMode)fetch('/api/admin/leaderboard').then(res=>res.ok?res.json():Promise.reject()).then(data=>{const target=$('#admin-board-content');if(target)target.innerHTML=renderAdminBoard(data.entries||[]);}).catch(()=>{const target=$('#admin-board-content');if(target)target.innerHTML='<p class="admin-section-description">Shared leaderboard is unavailable. Configure D1 to moderate entries.</p>';});
+  } else if(tab==='testimonials') {
+    renderAdminTestimonials(content);
   } else if(tab==='feedback') {
-    content.innerHTML=`<h3 class="admin-section-title">Feedback, support and newsroom files</h3><p class="admin-section-description">Feedback can include an optional reply address. Newsroom recordings are private R2 objects and require informed user consent before upload. Download or delete saved recordings from here.</p><div class="admin-actions"><button class="button button-outline" id="refresh-feedback" type="button">Refresh records ↻</button><button class="button button-accent" id="download-feedback" type="button">Export feedback to Excel ↓</button></div><div class="admin-feedback-list" id="admin-feedback-list"><p class="admin-section-description">Loading feedback…</p></div><h4 class="admin-section-title">Saved newsroom recordings</h4><div class="admin-media-list" id="admin-media-list"><p class="admin-section-description">Loading private media records…</p></div>`;
+    content.innerHTML=`<h3 class="admin-section-title">Feedback, support and newsroom files</h3><p class="admin-section-description">Feedback can include an optional reply address. Newsroom recordings are private R2 objects and require informed user consent before upload. Download or delete saved recordings from here.</p><div class="admin-actions"><button class="button button-outline" id="refresh-feedback" type="button">Refresh records ↻</button><button class="button button-accent" id="download-feedback" type="button">Export feedback to Excel ↓</button></div><div class="admin-feedback-list" id="admin-feedback-list"><p class="admin-section-description">Loading feedback…</p></div><h4 class="admin-section-title">Saved newsroom recordings</h4><div class="admin-actions" style="margin-top:8px;margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><button class="button button-accent" id="auto-download-toggle" type="button" style="background:${autoDownloadVideosActive?'#10b981':'#2563eb'};">⚡ Auto-Download Videos to Laptop: ${autoDownloadVideosActive?'ON':'OFF'}</button><button class="button button-outline" id="download-all-media" type="button">Download All Videos ⤓</button><span id="auto-download-status" class="muted-small">${autoDownloadVideosActive?'🟢 Watching for student videos…':'Auto-download paused.'}</span></div><div class="admin-media-list" id="admin-media-list"><p class="admin-section-description">Loading private media records…</p></div>`;
     if(adminDemoMode){const rows=loadLocalFeedback();const target=$('#admin-feedback-list');target.innerHTML=renderFeedbackTable(rows);$('#admin-media-list').innerHTML='<p class="admin-section-description">Server-side media storage is not available in local demo mode.</p>';}
     else {Promise.all([fetch('/api/admin/feedback').then(res=>res.ok?res.json():Promise.reject()),fetch('/api/admin/media').then(res=>res.ok?res.json():Promise.reject())]).then(([f,m])=>{const ft=$('#admin-feedback-list'),mt=$('#admin-media-list');if(ft)ft.innerHTML=renderFeedbackTable(f.entries||[]);if(mt)mt.innerHTML=renderMediaTable(m.entries||[])}).catch(()=>{const ft=$('#admin-feedback-list'),mt=$('#admin-media-list');if(ft)ft.innerHTML='<p class="admin-section-description">Server feedback is unavailable. Deploy D1 and the feedback endpoint.</p>';if(mt)mt.innerHTML='<p class="admin-section-description">Private media list unavailable. Configure D1 and the R2 binding MEDIA.</p>';});}
   }
 }
 function renderLogsTable(logs) {
   if(!logs.length)return '<p class="admin-section-description">No requests logged yet.</p>';
-  return `<div style="overflow-x:auto;margin-top:16px"><table class="admin-log-table"><thead><tr><th>Time</th><th>Task</th><th>Provider</th><th>Status</th><th>Latency</th></tr></thead><tbody>${logs.slice(0,80).map(log=>`<tr><td>${escapeHtml(new Date(log.createdAt||log.time||Date.now()).toLocaleString())}</td><td>${escapeHtml(log.task||'unknown')}</td><td>${escapeHtml(log.provider||'local')}</td><td>${escapeHtml(log.outcome||'success')}</td><td>${Number(log.latencyMs||log.latency_ms||0)} ms</td></tr>`).join('')}</tbody></table></div>`;
+  return `<div style="overflow-x:auto;margin-top:16px"><table class="admin-log-table"><thead><tr><th>Time</th><th>Task</th><th>Provider</th><th>Status</th><th>Latency</th><th>IP Address</th><th>Action</th></tr></thead><tbody>${logs.slice(0,80).map(log=>`<tr><td>${escapeHtml(new Date(log.createdAt||log.time||Date.now()).toLocaleString())}</td><td>${escapeHtml(log.task||'unknown')}</td><td>${escapeHtml(log.provider||'local')}</td><td>${escapeHtml(log.outcome||'success')}</td><td>${Number(log.latencyMs||log.latency_ms||0)} ms</td><td>${escapeHtml(log.ip||'—')}</td><td>${log.ip?`<button class="button button-outline admin-danger" style="min-height:28px;padding:0 8px;font-size:12px" type="button" data-quick-ban-ip="${escapeHtml(log.ip)}" data-ban-reason="Spamming ${escapeHtml(log.task||'AI')}">🚫 Ban IP</button>`:'—'}</td></tr>`).join('')}</tbody></table></div>`;
 }
 function renderAdminBoard(entries) {
   if(!entries.length)return '<p class="admin-section-description">No opt-in entries yet.</p>';
   return `<div style="overflow-x:auto;margin-top:16px"><table class="admin-log-table"><thead><tr><th>Nickname</th><th>Class</th><th>Score</th><th>Consent</th><th>Action</th></tr></thead><tbody>${entries.map(entry=>`<tr><td>${escapeHtml(entry.nickname)}</td><td>${escapeHtml(entry.grade)}</td><td>${Number(entry.score||0)}</td><td>${entry.consent?'Yes':'No'}</td><td><button class="button button-outline" data-delete-entry="${entry.id||entry.createdAt||entry.nickname}" type="button" style="min-height:30px;padding:0 8px">Remove</button></td></tr>`).join('')}</tbody></table></div>`;
 }
-function renderFeedbackTable(entries){if(!entries.length)return '<p class="admin-section-description">No feedback submitted yet.</p>';const labels={feedback:'General feedback',bug:'Report a problem',support:'Support request',feature:'Feature idea',accessibility:'Accessibility request'};return `<div class="admin-table-wrap"><table class="admin-log-table"><thead><tr><th>Date</th><th>Type</th><th>Rating</th><th>Message</th><th>Reply address</th></tr></thead><tbody>${entries.map(item=>`<tr><td>${escapeHtml(new Date(item.createdAt||item.created_at||Date.now()).toLocaleString())}</td><td>${escapeHtml(labels[item.category]||item.category||'General feedback')}</td><td>${Number(item.rating||0)}</td><td>${escapeHtml(item.message||'')}</td><td>${escapeHtml(item.contact||'')}</td></tr>`).join('')}</tbody></table></div>`}
+function renderFeedbackTable(entries){if(!entries.length)return '<p class="admin-section-description">No feedback submitted yet.</p>';const labels={feedback:'General feedback',bug:'Report a problem',support:'Support request',feature:'Feature idea',accessibility:'Accessibility request'};return `<div class="admin-table-wrap"><table class="admin-log-table"><thead><tr><th>Date</th><th>Type</th><th>Rating</th><th>Message</th><th>Reply address</th><th>IP Address</th><th>Action</th></tr></thead><tbody>${entries.map(item=>`<tr><td>${escapeHtml(new Date(item.createdAt||item.created_at||Date.now()).toLocaleString())}</td><td>${escapeHtml(labels[item.category]||item.category||'General feedback')}</td><td>${Number(item.rating||0)}</td><td>${escapeHtml(item.message||'')}</td><td>${escapeHtml(item.contact||'')}</td><td>${escapeHtml(item.ip||'—')}</td><td>${item.ip?`<button class="button button-outline admin-danger" style="min-height:28px;padding:0 8px;font-size:12px" type="button" data-quick-ban-ip="${escapeHtml(item.ip)}" data-ban-reason="Inappropriate language in feedback">🚫 Ban IP</button>`:'—'}</td></tr>`).join('')}</tbody></table></div>`}
 function renderMediaTable(entries){if(!entries.length)return '<p class="admin-section-description">No newsroom videos are saved yet.</p>';return `<div class="admin-table-wrap"><table class="admin-log-table"><thead><tr><th>Date</th><th>Headline</th><th>File</th><th>Size</th><th>Transcription</th><th>Actions</th></tr></thead><tbody>${entries.map(item=>`<tr><td>${escapeHtml(new Date(item.createdAt||item.created_at||Date.now()).toLocaleString())}</td><td>${escapeHtml(item.headline||'Newsroom practice')}</td><td>${escapeHtml(item.filename||'video')}</td><td>${(Number(item.sizeBytes||item.size_bytes||0)/1024/1024).toFixed(1)} MB</td><td>${escapeHtml(item.transcriptionProvider||item.transcription_provider||'Not recorded')}</td><td><a class="button button-outline" href="/api/media?id=${encodeURIComponent(item.id)}" target="_blank" rel="noopener noreferrer">View / download</a> <button class="button button-outline admin-danger" type="button" data-delete-media="${escapeHtml(item.id)}">Delete</button></td></tr>`).join('')}</tbody></table></div>`}
 function loadLocalFeedback(){try{return JSON.parse(localStorage.getItem(STORAGE.feedback)||'[]')}catch{return []}}
+function getDownloadedVideoIds() {
+  try { return new Set(JSON.parse(localStorage.getItem('openmic_downloaded_videos') || '[]')); }
+  catch { return new Set(); }
+}
+function markVideoDownloaded(id) {
+  const set = getDownloadedVideoIds();
+  set.add(String(id));
+  try { localStorage.setItem('openmic_downloaded_videos', JSON.stringify([...set])); } catch {}
+}
+async function saveVideoToLaptop(blob, filename) {
+  try {
+    const res = await fetch('http://127.0.0.1:8765/api/save-video', {
+      method: 'POST',
+      headers: { 'X-Filename': filename },
+      body: blob
+    });
+    if (res.ok) return true;
+  } catch {}
+  return false;
+}
+function triggerBrowserDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 20000);
+}
+async function fetchAndDownloadVideo(entry) {
+  try {
+    const res = await fetch(`/api/media?id=${encodeURIComponent(entry.id)}`);
+    if (!res.ok) return false;
+    const blob = await res.blob();
+    const rawName = entry.filename || `newsroom_${entry.id}.webm`;
+    const cleanName = rawName.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+    const savedLocally = await saveVideoToLaptop(blob, cleanName);
+    triggerBrowserDownload(blob, cleanName);
+    markVideoDownloaded(entry.id);
+    const status = $('#auto-download-status');
+    if (status) {
+      status.textContent = savedLocally
+        ? `⚡ Saved to recordings/ & downloaded: ${cleanName}`
+        : `📥 Downloaded to laptop: ${cleanName}`;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+async function syncNewVideos() {
+  if (!adminAuthenticated || adminDemoMode) return;
+  try {
+    const res = await fetch('/api/admin/media');
+    if (!res.ok) return;
+    const data = await res.json();
+    const entries = data.entries || [];
+    const downloaded = getDownloadedVideoIds();
+    const newEntries = entries.filter(e => !downloaded.has(String(e.id)));
+    if (!newEntries.length) return;
+    for (const entry of newEntries) {
+      await fetchAndDownloadVideo(entry);
+      await new Promise(r => setTimeout(r, 600));
+    }
+    if (adminTab() === 'feedback') {
+      const mt = $('#admin-media-list');
+      if (mt) mt.innerHTML = renderMediaTable(entries);
+    }
+  } catch {}
+}
+function startAutoDownloadPoller() {
+  if (autoDownloadInterval) return;
+  autoDownloadInterval = setInterval(syncNewVideos, 5000);
+  syncNewVideos();
+}
+function stopAutoDownloadPoller() {
+  if (autoDownloadInterval) {
+    clearInterval(autoDownloadInterval);
+    autoDownloadInterval = null;
+  }
+}
+function toggleAutoDownload() {
+  autoDownloadVideosActive = !autoDownloadVideosActive;
+  try { localStorage.setItem('openmic_auto_download_videos', String(autoDownloadVideosActive)); } catch {}
+  if (autoDownloadVideosActive) {
+    startAutoDownloadPoller();
+  } else {
+    stopAutoDownloadPoller();
+  }
+  const btn = $('#auto-download-toggle');
+  if (btn) {
+    btn.style.background = autoDownloadVideosActive ? '#10b981' : '#2563eb';
+    btn.textContent = `⚡ Auto-Download Videos to Laptop: ${autoDownloadVideosActive ? 'ON' : 'OFF'}`;
+  }
+  const status = $('#auto-download-status');
+  if (status) {
+    status.textContent = autoDownloadVideosActive ? '🟢 Watching for student videos…' : 'Auto-download paused.';
+  }
+}
+async function downloadAllMedia() {
+  const btn = $('#download-all-media');
+  if (btn) { btn.disabled = true; btn.textContent = 'Downloading…'; }
+  try {
+    const res = await fetch('/api/admin/media');
+    if (!res.ok) throw new Error('Could not fetch media list.');
+    const data = await res.json();
+    const entries = data.entries || [];
+    if (!entries.length) { showToast('No saved videos found.'); return; }
+    let count = 0;
+    for (const entry of entries) {
+      const ok = await fetchAndDownloadVideo(entry);
+      if (ok) count++;
+      await new Promise(r => setTimeout(r, 600));
+    }
+    showToast(`Downloaded ${count} video(s) to your laptop.`);
+  } catch (err) {
+    showToast(`Download failed: ${err.message}`);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Download All Videos ⤓'; }
+  }
+}
 async function exportFeedbackWorkbook(){
   let entries=[];
   if(adminDemoMode){entries=loadLocalFeedback()}else{try{const response=await fetch('/api/admin/feedback');const data=await response.json();if(!response.ok)throw new Error(data.error||'Could not load feedback');entries=data.entries||[]}catch(error){showToast(`Could not export feedback: ${error.message}`);return}}
@@ -1119,14 +1181,14 @@ async function saveAdminSettings(next) {
 async function saveProviderKeys() {
   if(adminDemoMode){setMessage($('#provider-key-message'),'Demo mode cannot store provider credentials. Deploy the server endpoint and configure CONFIG_ENCRYPTION_KEY.',true);return;}
   const geminiKeys=$('#gemini-keys').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  const payload={geminiKeys,elevenlabsKey:$('#elevenlabs-key')?.value.trim()||'',freeUrl:$('#free-url').value.trim(),freeKey:$('#free-key').value,freeModel:$('#free-model').value.trim(),laptopUrl:$('#laptop-url').value.trim(),laptopToken:$('#laptop-token').value,laptopModel:$('#laptop-model').value.trim(),cartesiaKey:$('#cartesia-key')?.value||'',cartesiaVoiceId:$('#cartesia-voice')?.value.trim()||'',openaiTtsKey:$('#openai-tts-key')?.value||'',openaiTtsVoice:$('#openai-tts-voice')?.value.trim()||'',deepgramKey:$('#deepgram-key')?.value||'',deepgramTtsModel:$('#deepgram-model')?.value.trim()||'',kokoroUrl:$('#kokoro-url')?.value.trim()||'',kokoroToken:$('#kokoro-token')?.value||'',kokoroVoice:$('#kokoro-voice')?.value.trim()||'',telegramBotToken:$('#telegram-bot-token')?.value||'',telegramChatId:$('#telegram-chat-id')?.value.trim()||''};
+  const payload={geminiKeys,cartesiaKey:$('#cartesia-key')?.value.trim()||'',openaiKey:$('#openai-key')?.value.trim()||'',deepgramKey:$('#deepgram-key')?.value.trim()||'',kokoroUrl:$('#kokoro-url')?.value.trim()||'',elevenlabsKey:$('#elevenlabs-key')?.value.trim()||'',freeUrl:$('#free-url').value.trim(),freeKey:$('#free-key').value,freeModel:$('#free-model').value.trim(),laptopUrl:$('#laptop-url').value.trim(),laptopToken:$('#laptop-token').value,laptopModel:$('#laptop-model').value.trim()};
   if(!Object.values(payload).some(value=>Array.isArray(value)?value.length:!!value)){setMessage($('#provider-key-message'),'Enter at least one provider value to save.',true);return;}
   setMessage($('#provider-key-message'),'Encrypting values on the server…');
   try {
     const response=await fetch('/api/admin/keys',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await response.json();
     if(!response.ok)throw new Error(data.error||'Credential storage failed.');
     adminSecretsStatus={...adminSecretsStatus,...data.status};
-    ['gemini-keys','elevenlabs-key','free-key','laptop-token','cartesia-key','openai-tts-key','deepgram-key','kokoro-token','telegram-bot-token'].forEach(id=>{const field=$(`#${id}`);if(field)field.value='';});
+    $('#gemini-keys').value='';$('#elevenlabs-key').value='';$('#free-key').value='';$('#laptop-token').value='';
     setMessage($('#provider-key-message'),'Credentials encrypted and saved. The secret values were cleared from the form.');
     $('#gemini-key-status').textContent=`${adminSecretsStatus.geminiCount||0} keys stored server-side. Values are never shown again.`;
   } catch(error){setMessage($('#provider-key-message'),`${error.message}. No credentials were stored in this browser.`,true);}
@@ -1208,40 +1270,55 @@ function renderSentenceQuestion(){const level=$('#games-level').value;const bank
 function chooseSentenceAnswer(event){const button=event.target.closest('[data-sentence-option]');if(!button||sentenceAnswered)return;const bank=SENTENCE_BANK[$('#games-level').value]||SENTENCE_BANK.growing;const item=bank[sentenceIndex%bank.length];const chosen=Number(button.dataset.sentenceOption);sentenceAnswered=true;$$('.sentence-option').forEach((option,index)=>{option.disabled=true;if(index===item.correct)option.classList.add('correct');if(index===chosen&&chosen!==item.correct)option.classList.add('incorrect')});if(chosen===item.correct){sentenceScore+=1;gameScores.sentence=Math.round(Math.min(100,(sentenceScore/Math.max(1,sentenceIndex+1))*100));$('#sentence-feedback').textContent=`Correct. ${item.why}`}else $('#sentence-feedback').textContent=`Not quite. ${item.why}`;$('#sentence-score').textContent=String(gameScores.sentence);saveComponentScore('words',Math.round((gameScores.wordle+gameScores.matching+gameScores.sentence)/3));$('#sentence-next').disabled=false;}
 function initGames(){startWordle();startMatchingRound();renderSentenceQuestion();}
 function loadCareerChat(){try{careerChatHistory=JSON.parse(localStorage.getItem(STORAGE.chat)||'[]')}catch{careerChatHistory=[]}renderCareerChat()}
-function renderCareerChat(){const target=$('#career-chat-messages');const history=careerChatHistory.slice(-20);target.innerHTML=history.length?history.map(item=>`<div class="career-chat-message ${item.role==='user'?'user':'assistant'}"><strong>${item.role==='user'?'You':'Career guide'}</strong><p>${escapeHtml(item.text).replace(/\n/g,'<br>')}</p></div>`).join(''):'<div class="career-chat-message assistant"><strong>Career guide</strong><p>Tell me about your interests and I’ll ask one question at a time.</p></div>';if(careerChatTyping)target.insertAdjacentHTML('beforeend','<div class="career-chat-message assistant typing-indicator"><strong>Career guide</strong><p>Thinking through your options <span aria-hidden="true">•••</span></p></div>');target.scrollTop=target.scrollHeight;}
-async function revealCareerChatReply(reply){careerChatHistory.push({role:'assistant',text:''});careerChatHistory=careerChatHistory.slice(-24);renderCareerChat();const message=$('#career-chat-messages .career-chat-message.assistant:last-child p');const words=String(reply).split(/(\s+)/);let output='';for(let index=0;index<words.length;index++){output+=words[index];if(message)message.textContent=output;$('#career-chat-messages').scrollTop=$('#career-chat-messages').scrollHeight;if(words[index].trim())await new Promise(resolve=>setTimeout(resolve,22));}careerChatHistory[careerChatHistory.length-1].text=String(reply);try{localStorage.setItem(STORAGE.chat,JSON.stringify(careerChatHistory))}catch{}renderCareerChat();}
-async function sendCareerChat(event){event.preventDefault();const input=$('#career-chat-input');const message=input.value.trim();if(!message)return;careerChatHistory.push({role:'user',text:message});input.value='';const context={grade:$('#career-chat-grade').value,stream:$('#career-chat-stream').value,location:$('#career-chat-location').value,budget:$('#career-chat-budget').value,priority:$('#career-chat-priorities').value};const send=$('#career-chat-send');send.disabled=true;send.textContent='Thinking…';careerChatTyping=true;renderCareerChat();let reply='Let’s narrow this down. Which subjects or activities do you enjoy enough to practise even when they are difficult? Also, tell me whether you would prefer a creative, technical, people-focused or research-based day at work.';try{const result=await requestAI('career-chat',{text:message,history:careerChatHistory.slice(-10),profile:context,prompt:'Reply in normal, simple English. Ask one focused follow-up question at a time until you know the student’s class, favourite subjects, interests, strengths, city/state, yearly budget, willingness to relocate, preferred colleges and course. Build a personalised career and college plan after sufficient details are available. Suggest realistic Indian study routes and colleges only when relevant, distinguish confirmed official admissions pages from general suggestions, and use official course/admission links when reliable URLs are known. Never invent exact fees, cut-offs, current rankings or salary guarantees.'});if(result.text)reply=result.text;}catch(error){reply=`The live AI service is not available right now (${error.message}). I can still help with a first step. What subjects do you enjoy most, which city or state can you study in, and what yearly budget range would be manageable?`;}careerChatTyping=false;await revealCareerChatReply(reply);send.disabled=false;send.innerHTML='Ask the guide <span aria-hidden="true">↗</span>';}
-async function loadPublicTestimonials(){
-  const target=$('#testimonial-public-list');if(!target)return;
-  try{const response=await fetch('/api/testimonials');const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Could not load approved notes.');const entries=Array.isArray(data.entries)?data.entries:[];target.innerHTML=entries.length?entries.map(item=>`<article class="testimonial-quote-card"><p>“${escapeHtml(item.quote)}”</p><footer><strong>${escapeHtml(item.nickname||'Participant')}</strong><span>${escapeHtml(item.grade||'Student')}</span></footer></article>`).join(''):'<p class="muted-small">No approved testimonials have been published yet.</p>';}
-  catch(error){target.innerHTML=`<p class="muted-small">Approved notes will appear here when the shared project server is available. ${escapeHtml(error.message)}</p>`;}
-}
-async function submitTestimonial(event){
-  event.preventDefault();const message=$('#testimonial-message');const nickname=$('#testimonial-nickname').value.trim();const grade=$('#testimonial-grade').value;const quote=$('#testimonial-quote').value.trim();
-  if(!$('#testimonial-consent').checked){setMessage(message,'Please give permission before submitting your testimonial.',true);return;}
-  if(nickname.length<2||quote.length<20){setMessage(message,'Use a nickname and write at least 20 characters.',true);return;}
-  const button=$('#testimonial-form button[type=submit]');button.disabled=true;setMessage(message,'Sending for review…');
-  try{const response=await fetch('/api/testimonials',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nickname,grade,quote,consent:true})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'The server did not accept the testimonial.');$('#testimonial-form').reset();setMessage(message,'Thank you. Your testimonial is saved as pending and will only appear if an administrator approves it.');await loadPublicTestimonials();}
-  catch(error){setMessage(message,`This testimonial was not saved to the shared server: ${error.message}. Please try again after the project server is configured.`,true);}
-  finally{button.disabled=false;}
-}
-async function submitSafetyReport(){
-  const button=$('#safety-report-submit');const status=$('#safety-report-status');button.disabled=true;status.textContent='Sending report to the review queue…';
-  try{const response=await fetch('/api/safety',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({eventType:$('#safety-report-type').value})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||`Server returned ${response.status}`);status.textContent=data.message||'Report saved for admin review.';}
-  catch(error){status.textContent=`Report not saved: ${error.message}. Submit a support request above instead.`;}
-  finally{button.disabled=false;}
+function renderCareerChat(){const target=$('#career-chat-messages');const history=careerChatHistory.slice(-20);target.innerHTML=history.length?history.map(item=>`<div class="career-chat-message ${item.role==='user'?'user':'assistant'}"><strong>${item.role==='user'?'You':'Career guide'}</strong><p>${escapeHtml(item.text).replace(/\n/g,'<br>')}</p></div>`).join(''):'<div class="career-chat-message assistant"><strong>Career guide</strong><p>Tell me about your interests and I’ll ask one question at a time.</p></div>';target.scrollTop=target.scrollHeight;}
+async function sendCareerChat(event){
+  event.preventDefault();
+  const input=$('#career-chat-input');
+  const message=input.value.trim();
+  if(!message)return;
+  careerChatHistory.push({role:'user',text:message});
+  input.value='';
+  renderCareerChat();
+  const container=$('#career-chat-messages');
+  const typingIndicator=document.createElement('div');
+  typingIndicator.className='chat-bubble chat-bubble--assistant typing-bubble';
+  typingIndicator.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+  container.appendChild(typingIndicator);
+  container.scrollTop=container.scrollHeight;
+  const context={grade:$('#career-chat-grade').value,stream:$('#career-chat-stream').value,location:$('#career-chat-location').value,budget:$('#career-chat-budget').value,priority:$('#career-chat-priorities').value};
+  const send=$('#career-chat-send');
+  send.disabled=true;
+  send.textContent='Thinking…';
+  let reply='Let’s narrow this down. Which subjects or activities do you enjoy enough to practise even when they are difficult? Also, tell me whether you would prefer a creative, technical, people-focused or research-based day at work.';
+  try{
+    const result=await requestAI('career-chat',{text:message,history:careerChatHistory.slice(-10),profile:context,prompt:'Reply in normal, simple English. Ask no more than one or two useful follow-up questions at the end. Use the learner’s preferences, suggest realistic Indian study routes and colleges only when relevant, distinguish confirmed official admissions pages from general suggestions, and link to official course/admission pages when a reliable URL is known. Never invent exact fees, cut-offs or salary guarantees.'});
+    if(result.text)reply=result.text;
+  }catch(error){
+    reply=`I can keep helping, but the live AI service is not available right now (${error.message}). To personalise the next step, tell me: ${context.priority==='fees and scholarships'?'what yearly budget range would feel manageable, and would you consider public colleges or scholarships?':context.priority==='admission route and entrance exams'?'which subjects do you plan to take, and which entrance exams are you considering?':context.priority==='colleges and course choices'?'which city or state can you study in, and what subjects do you enjoy most?':'what subjects do you enjoy, what kind of work sounds exciting, and do you prefer practical projects or academic study?'} When the AI provider is configured, this chat can build a tailored comparison.`;
+  }
+  typingIndicator.remove();
+  const assistantBubble=document.createElement('div');
+  assistantBubble.className='career-chat-message assistant';
+  assistantBubble.innerHTML='<strong>Career guide</strong><p></p>';
+  container.appendChild(assistantBubble);
+  const p=assistantBubble.querySelector('p');
+  const words=String(reply).split(/(\s+)/);
+  let output='';
+  for(let i=0; i<words.length; i++){
+    output+=words[i];
+    if(p) p.innerHTML=escapeHtml(output)+'<span class="typing-cursor" aria-hidden="true"> ●</span>';
+    container.scrollTop=container.scrollHeight;
+    if(words[i].trim()) await new Promise(r=>setTimeout(r, 22));
+  }
+  if(p) p.innerHTML=escapeHtml(reply).replace(/\n/g,'<br>');
+  careerChatHistory.push({role:'assistant',text:reply});
+  careerChatHistory=careerChatHistory.slice(-24);
+  try{localStorage.setItem(STORAGE.chat,JSON.stringify(careerChatHistory))}catch{}
+  send.disabled=false;
+  send.innerHTML='Ask the guide <span aria-hidden="true">↗</span>';
 }
 async function submitFeedback(event){event.preventDefault();const message=$('#feedback-message').value.trim();if(!message){setMessage($('#feedback-message-status'),'Write a note before sending.',true);return}if(!$('#feedback-consent').checked){setMessage($('#feedback-message-status'),'Please agree to the storage notice before sending.',true);return}const record={category:$('#feedback-type').value,rating:feedbackRating,message,contact:$('#feedback-contact').value.trim(),consent:true,createdAt:new Date().toISOString()};const button=$('#send-feedback');button.disabled=true;setMessage($('#feedback-message-status'),'Sending…');try{const response=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(record)});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Server did not save this note.');setMessage($('#feedback-message-status'),'Thank you. Your note is saved for the project team.');$('#feedback-form').reset();feedbackRating=5;$('#feedback-rating').value='5';$$('[data-rating]').forEach(item=>{item.classList.toggle('active',Number(item.dataset.rating)<=5);item.setAttribute('aria-pressed',String(Number(item.dataset.rating)===5))});}catch(error){const rows=loadLocalFeedback();rows.unshift(record);try{localStorage.setItem(STORAGE.feedback,JSON.stringify(rows.slice(0,200)))}catch{}setMessage($('#feedback-message-status'),`Saved only on this browser. Shared storage is not available: ${error.message}`,true);}finally{button.disabled=false;}}
 function bindEvents() {
-  $('#debate-mode').addEventListener('change',updateDebateMode);
-  $('#debate-turn-form').addEventListener('submit',submitDebateStageTurn);
-  $('#debate-turn-mic').addEventListener('click',toggleDebateTurnRecording);
-  $('#debate-turn-timer').addEventListener('click',startDebateStageTimer);
-  $('#refresh-anchor-cameras').addEventListener('click',refreshAnchorCameraList);
-  $('#anchor-refresh-devices').addEventListener('click',refreshAnchorCameraList);
-  $('#anchor-camera-source').addEventListener('change',()=>{const other=$('#anchor-camera-device');if(other)other.value=$('#anchor-camera-source').value;showToast('Camera source selected. Start a new newsroom recording to use it.');});
-  $('#anchor-camera-device').addEventListener('change',()=>{const selected=$('#anchor-camera-device').value;const source=$('#anchor-camera-source');if(source&&[...source.options].some(option=>option.value===selected))source.value=selected;else if(source&&selected){source.add(new Option($('#anchor-camera-device').selectedOptions[0]?.textContent||'Selected camera',selected));source.value=selected;}showToast('Camera source selected. Start a new newsroom recording to use it.');});
-  $('#anchor-load-stream').addEventListener('click',loadAnchorStreamPreview);
   $('#career-stream-options').addEventListener('click',event=>{const button=event.target.closest('[data-stream]');if(button)selectCareerStream(button.dataset.stream);});
   $('#career-change-stream').addEventListener('click',()=>{$('#career-stream-step').hidden=false;$('#career-selected-summary').hidden=true;$('#career-browser').hidden=true;selectedCareerStream='';careerShowAll=false;activeCareerFilter='All';$('#career-detail').hidden=true;$('#career-search').value='';$('#career-stream-step').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});
   $('#career-search').addEventListener('input',()=>{careerShowAll=false;renderCareerCards();});
@@ -1266,8 +1343,8 @@ function bindEvents() {
   $('#leaderboard-form').addEventListener('submit',submitLeaderboard);$$('[data-board]').forEach(button=>button.addEventListener('click',()=>{selectedBoard=button.dataset.board;$$('[data-board]').forEach(item=>item.classList.toggle('active',item===button));refreshLeaderboard();}));
   $('#refresh-editor-board').addEventListener('click',()=>refreshLeaderboard('#email-leaderboard-list','editor'));$('#refresh-games-board').addEventListener('click',()=>refreshLeaderboard('#games-leaderboard-list','games'));
   
-  $('#footer-admin-link').addEventListener('click',event=>{event.preventDefault();revealAdmin();});
   $('#brand-mark').addEventListener('click',event=>{if(event.detail>=5){event.preventDefault();revealAdmin();}});$('#hero h1').addEventListener('click',()=>{window._heroAdminClicks=(window._heroAdminClicks||0)+1;if(window._heroAdminClicks>=5){window._heroAdminClicks=0;revealAdmin();}});
+  $('#debate-mode').addEventListener('change',()=>{const mode=$('#debate-mode').value;$('#debate-room-controls').hidden=mode!=='room';if(mode==='duo')showToast('Two-speaker mode: pass the device between speakers and use the same argument form.');});
   let activeDebateRoom='';
   async function refreshDebateRoom(){if(!activeDebateRoom)return;try{const response=await fetch(`/api/debate?room=${encodeURIComponent(activeDebateRoom)}`),data=await response.json();if(!response.ok)throw new Error(data.error||'Room unavailable');$('#debate-room-messages').innerHTML=(data.messages||[]).map(m=>`<article class="debate-room-message"><strong>${escapeHtml(m.name||'Speaker')}</strong><p>${escapeHtml(m.message||'')}</p><small>${escapeHtml(new Date(m.createdAt||Date.now()).toLocaleTimeString())}</small></article>`).join('')||'<p class="muted-small">No replies yet. Start the discussion.</p>';$('#debate-room-status').textContent=`Room ${activeDebateRoom} · ${data.messages?.length||0} messages. Refresh to see new replies.`;}catch(error){$('#debate-room-status').textContent=`Live room unavailable: ${error.message}. Deploy the D1 migration and API first.`;}}
   $('#debate-room-join').addEventListener('click',async()=>{if(!$('#debate-save-consent').checked){showToast('Tick server-storage consent before joining a saved room.');return;}const name=$('#debate-room-name').value.trim();if(!name){showToast('Add a display name or nickname.');return;}try{const response=await fetch('/api/debate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'join',room:$('#debate-room-code').value.trim(),name,consent:true})}),data=await response.json();if(!response.ok)throw new Error(data.error||'Could not join room');activeDebateRoom=data.room;$('#debate-room-code').value=data.room;$('#debate-room-status').textContent=`Joined room ${data.room}. Share this code with the other speaker.`;await refreshDebateRoom();}catch(error){$('#debate-room-status').textContent=error.message;}});
@@ -1276,35 +1353,97 @@ function bindEvents() {
   $('#debate-room-message-form').addEventListener('submit',async event=>{event.preventDefault();const message=$('#debate-room-message').value.trim();if(!activeDebateRoom||!message)return;if(!$('#debate-save-consent').checked){showToast('Server-storage consent is required for saved live debate messages.');return;}try{const response=await fetch('/api/debate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'message',room:activeDebateRoom,name:$('#debate-room-name').value.trim(),message,consent:true})}),data=await response.json();if(!response.ok)throw new Error(data.error||'Could not send reply');$('#debate-room-message').value='';await refreshDebateRoom();saveComponentScore('debate',Math.min(100,Math.max(30,Math.round(message.split(/\s+/).length*2))));}catch(error){showToast(error.message);}});
   let debateRecorder=null,debateChunks=[];
   $('#debate-room-mic').addEventListener('click',async()=>{const button=$('#debate-room-mic');if(debateRecorder?.state==='recording'){debateRecorder.stop();button.textContent='Transcribing…';button.disabled=true;return;}if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){showToast('Audio recording is not supported here. Type your reply instead.');return;}try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});debateChunks=[];debateRecorder=new MediaRecorder(stream);debateRecorder.ondataavailable=event=>{if(event.data.size)debateChunks.push(event.data)};debateRecorder.onstop=async()=>{stream.getTracks().forEach(track=>track.stop());try{const blob=new Blob(debateChunks,{type:debateRecorder.mimeType||'audio/webm'});const file=new File([blob],'debate-reply.webm',{type:blob.type});const result=await requestSpeechTranscription(file);$('#debate-room-message').value=result.text||'';showToast(result.text?'Speech transcribed. Review it before sending.':'No transcript was returned.');}catch(error){showToast(`Transcription failed: ${error.message}. You can type your reply.`)}finally{button.disabled=false;button.textContent='Speak reply';}};debateRecorder.start();button.textContent='Stop & transcribe';showToast('Recording your reply. Press Stop & transcribe when finished.');}catch(error){showToast('Microphone access failed. Check browser permission, or type your reply.');}});
-  $('#admin-exit').addEventListener('click',closeAdmin);$('#admin-login-form').addEventListener('submit',adminLogin);$('#admin-quick-unlock')?.addEventListener('click',quickUnlockAdmin);
+  $('#admin-exit').addEventListener('click',closeAdmin);$('#admin-login-form').addEventListener('submit',adminLogin);
   $('#admin-workspace').addEventListener('click',async event=>{
     const tab=event.target.closest('[data-admin-tab]');if(tab){renderAdminTab(tab.dataset.adminTab);return;}
     const up=event.target.closest('[data-provider-up]');const down=event.target.closest('[data-provider-down]');
     if(up||down){const key=(up||down).dataset.providerUp||(up||down).dataset.providerDown;const arr=[...(settings.providerOrder||DEFAULT_SETTINGS.providerOrder)];const index=arr.indexOf(key);const next=index+(up?-1:1);if(next>=0&&next<arr.length){[arr[index],arr[next]]=[arr[next],arr[index]];settings.providerOrder=arr;renderAdminTab('ai');}return;}
-    const ttsUp=event.target.closest('[data-tts-up]');const ttsDown=event.target.closest('[data-tts-down]');if(ttsUp||ttsDown){const key=(ttsUp||ttsDown).dataset.ttsUp||(ttsUp||ttsDown).dataset.ttsDown;const order=[...(settings.ttsProviderOrder||DEFAULT_SETTINGS.ttsProviderOrder)];const at=order.indexOf(key);const to=at+(ttsUp?-1:1);if(at>=0&&to>=0&&to<order.length){[order[at],order[to]]=[order[to],order[at]];settings.ttsProviderOrder=order;renderAdminTab('ai');}return;}
-    if(event.target.closest('#save-live-stage-settings')||event.target.closest('#save-stage-settings')){const raw=$('#live-stage-url').value.trim();if(raw){try{const url=new URL(raw);if(url.protocol!=='https:')throw new Error();}catch{setMessage($('#live-stage-save-status')||$('#stage-save-status'),'Enter a valid HTTPS stream URL or leave it blank.',true);return;}}await saveAdminSettings({liveStageEnabled:$('#live-stage-enabled').checked,liveStageUrl:raw,horizontalSections:$('#horizontal-sections')?.checked===true});setMessage($('#live-stage-save-status')||$('#stage-save-status'),'Live-stage settings saved. The visitor preview has been refreshed.');return;}
-    if(event.target.closest('#test-stage-preview')){settings.liveStageEnabled=$('#live-stage-enabled').checked;settings.liveStageUrl=$('#live-stage-url').value.trim();renderLiveStage();$('#live-stage').scrollIntoView({behavior:'smooth',block:'center'});return;}
-    const testimonialAction=event.target.closest('[data-testimonial-status]');if(testimonialAction){const response=await fetch('/api/admin/testimonials',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:Number(testimonialAction.dataset.testimonialId),status:testimonialAction.dataset.testimonialStatus})});if(response.ok){showToast('Testimonial status updated.');renderAdminTab('testimonials');}else showToast('Could not update testimonial. Check D1 and the admin session.');return;}
-    const testimonialDelete=event.target.closest('[data-testimonial-delete]');if(testimonialDelete){if(!confirm('Delete this testimonial permanently?'))return;const response=await fetch(`/api/admin/testimonials?id=${encodeURIComponent(testimonialDelete.dataset.testimonialDelete)}`,{method:'DELETE'});if(response.ok){showToast('Testimonial deleted.');renderAdminTab('testimonials');}else showToast('Could not delete testimonial.');return;}
-    const safetyReviewed=event.target.closest('[data-safety-reviewed]');if(safetyReviewed){const response=await fetch('/api/admin/safety',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:Number(safetyReviewed.dataset.safetyId),reviewed:safetyReviewed.dataset.safetyReviewed==='1'})});if(response.ok)renderAdminTab('safety');else showToast('Could not update safety event.');return;}
-    if(event.target.closest('#refresh-testimonials')){renderAdminTab('testimonials');return;}
-    if(event.target.closest('#refresh-safety-events')){renderAdminTab('safety');return;}
     if(event.target.closest('#save-feature-settings')){const features={...settings.features};$$('[data-feature-toggle]').forEach(input=>features[input.dataset.featureToggle]=input.checked);await saveAdminSettings({features});return;}
     if(event.target.closest('#enable-all-features')){await saveAdminSettings({features:Object.fromEntries(Object.keys(FEATURE_LABELS).map(key=>[key,true]))});return;}
     if(event.target.closest('#disable-all-features')){await saveAdminSettings({features:Object.fromEntries(Object.keys(FEATURE_LABELS).map(key=>[key,['hero','careers'].includes(key)?true:false]))});return;}
-    if(event.target.closest('#save-router-settings')){const providerEnabled={...settings.providerEnabled};$$('[data-provider-enabled]').forEach(input=>providerEnabled[input.dataset.providerEnabled]=input.checked);const ttsProviderEnabled={...(settings.ttsProviderEnabled||{})};$$('[data-tts-enabled]').forEach(input=>ttsProviderEnabled[input.dataset.ttsEnabled]=input.checked);await saveAdminSettings({automaticFallback:$('#automatic-fallback').checked,preferredProvider:$('#preferred-provider').value,qualityMode:$('#quality-mode').value,speechProvider:$('#speech-provider').value,providerOrder:settings.providerOrder,providerEnabled,ttsAutomaticFallback:$('#tts-automatic-fallback').checked,ttsPreferredProvider:$('#tts-preferred-provider').value,ttsProviderOrder:settings.ttsProviderOrder||DEFAULT_SETTINGS.ttsProviderOrder,ttsProviderEnabled});return;}
+    if(event.target.closest('#save-router-settings')){const providerEnabled={...settings.providerEnabled};$('[data-provider-enabled]').forEach(input=>providerEnabled[input.dataset.providerEnabled]=input.checked);await saveAdminSettings({automaticFallback:$('#automatic-fallback').checked,preferredProvider:$('#preferred-provider').value,ttsProvider:$('#tts-provider')?.value||settings.ttsProvider||'cartesia',qualityMode:$('#quality-mode').value,speechProvider:$('#speech-provider').value,providerOrder:settings.providerOrder,providerEnabled});return;}
     if(event.target.closest('#save-provider-keys')){await saveProviderKeys();return;}
-    if(event.target.closest('#clear-provider-fields')){['gemini-keys','elevenlabs-key','free-key','laptop-token','cartesia-key','openai-tts-key','deepgram-key','kokoro-token','telegram-bot-token'].forEach(id=>{const field=$(`#${id}`);if(field)field.value='';});['free-url','free-model','laptop-url','cartesia-voice','openai-tts-voice','deepgram-model','kokoro-url','kokoro-voice','telegram-chat-id'].forEach(id=>{const field=$(`#${id}`);if(field)field.value='';});$('#laptop-model').value='llama3.2:3b';return;}
+    if(event.target.closest('#clear-provider-fields')){$('#gemini-keys').value='';$('#cartesia-key')&&($('#cartesia-key').value='');$('#openai-key')&&($('#openai-key').value='');$('#deepgram-key')&&($('#deepgram-key').value='');$('#kokoro-url')&&($('#kokoro-url').value='');$('#elevenlabs-key').value='';$('#free-key').value='';$('#laptop-token').value='';$('#free-url').value='';$('#free-model').value='';$('#laptop-url').value='';$('#laptop-model').value='llama3.2:3b';return;}
     if(event.target.closest('#save-brand-settings')){await saveAdminSettings({theme:$('#brand-theme').value,language:$('#brand-language').value,showSchoolName:$('#show-school-name').checked,schoolName:$('#school-name').value.trim()||DEFAULT_SETTINGS.schoolName});return;}
     if(event.target.closest('#reset-brand-settings')){await saveAdminSettings({theme:DEFAULT_SETTINGS.theme,language:'en',showSchoolName:true,schoolName:DEFAULT_SETTINGS.schoolName});return;}
-    if(event.target.closest('#create-github-vault-manifest')){const button=event.target.closest('#create-github-vault-manifest');button.disabled=true;setMessage($('#github-vault-message'),'Sending metadata-only release manifest…');try{const response=await fetch('/api/admin/vault',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'GitHub vault request failed.');setMessage($('#github-vault-message'),data.htmlUrl?`Manifest saved: ${data.htmlUrl}`:`Manifest saved to ${data.path}.`);}catch(error){setMessage($('#github-vault-message'),error.message,true);}finally{button.disabled=false;}return;}
     if(event.target.closest('#refresh-request-logs')){renderAdminTab('requests');return;}
     if(event.target.closest('#clear-demo-logs')){localStorage.removeItem(STORAGE.demoLogs);renderAdminTab('requests');return;}
     if(event.target.closest('#refresh-admin-board')){renderAdminTab('leaderboard');return;}
     if(event.target.closest('#refresh-feedback')){renderAdminTab('feedback');return;}
+    if(event.target.closest('#refresh-admin-testimonials')){renderAdminTab('testimonials');return;}
     if(event.target.closest('#download-feedback')){await exportFeedbackWorkbook();return;}
+    if(event.target.closest('#auto-download-toggle')){toggleAutoDownload();return;}
+    if(event.target.closest('#download-all-media')){await downloadAllMedia();return;}
     const mediaDelete=event.target.closest('[data-delete-media]');if(mediaDelete){if(!confirm('Permanently delete this saved newsroom recording?'))return;const response=await fetch(`/api/admin/media?id=${encodeURIComponent(mediaDelete.dataset.deleteMedia)}`,{method:'DELETE'});if(response.ok)renderAdminTab('feedback');else showToast('The recording could not be deleted. Check media storage settings.');return;}
     if(event.target.closest('#clear-admin-board')){if(!confirm('Remove every opt-in leaderboard entry?'))return;if(adminDemoMode){localStorage.removeItem(STORAGE.demoLeaderboard);renderAdminTab('leaderboard');}else{const res=await fetch('/api/admin/leaderboard',{method:'DELETE'});if(res.ok)renderAdminTab('leaderboard');else showToast('Could not clear the shared board.');}return;}
+    
+    const banBtn=event.target.closest('#btn-ban-ip');
+    if(banBtn){
+      const ipInput=document.getElementById('ban-ip-address');
+      const reasonInput=document.getElementById('ban-ip-reason');
+      const ip=ipInput?ipInput.value.trim():'';
+      const reason=reasonInput?reasonInput.value.trim():'';
+      if(!ip){showToast('Please enter an IP address to ban.');return;}
+      if(adminDemoMode){
+        const local=JSON.parse(localStorage.getItem('openmic.banned.ips')||'[]');
+        local.push({ip,reason,bannedAt:new Date().toISOString()});
+        localStorage.setItem('openmic.banned.ips',JSON.stringify(local));
+        loadAdminBannedIps();
+        showToast(`Banned IP ${ip}`);
+      } else {
+        const res=await fetch('/api/admin/banned-ips',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip,reason})});
+        const data=await res.json();
+        if(res.ok){
+          loadAdminBannedIps();
+          showToast(`Banned IP ${ip}`);
+          if(ipInput)ipInput.value='';
+          if(reasonInput)reasonInput.value='';
+        } else {
+          showToast(data.error||'Failed to ban IP');
+        }
+      }
+      return;
+    }
+    const unbanBtn=event.target.closest('[data-unban-ip]');
+    if(unbanBtn){
+      const ip=unbanBtn.dataset.unbanIp;
+      if(!confirm(`Unban IP ${ip}?`))return;
+      if(adminDemoMode){
+        let local=JSON.parse(localStorage.getItem('openmic.banned.ips')||'[]');
+        local=local.filter(x=>(typeof x==='string'?x!==ip:x.ip!==ip));
+        localStorage.setItem('openmic.banned.ips',JSON.stringify(local));
+        loadAdminBannedIps();
+        showToast(`Unbanned IP ${ip}`);
+      } else {
+        const res=await fetch(`/api/admin/banned-ips?ip=${encodeURIComponent(ip)}`,{method:'DELETE'});
+        if(res.ok){
+          loadAdminBannedIps();
+          showToast(`Unbanned IP ${ip}`);
+        } else {
+          showToast('Failed to unban IP');
+        }
+      }
+      return;
+    }
+    const quickBan=event.target.closest('[data-quick-ban-ip]');
+    if(quickBan){
+      const ip=quickBan.dataset.quickBanIp;
+      const reason=quickBan.dataset.banReason||'Restricted by administrator';
+      if(!confirm(`Ban IP ${ip} immediately? They will be blocked from AI requests, feedback, and leaderboard.`))return;
+      if(adminDemoMode){
+        const local=JSON.parse(localStorage.getItem('openmic.banned.ips')||'[]');
+        local.push({ip,reason,bannedAt:new Date().toISOString()});
+        localStorage.setItem('openmic.banned.ips',JSON.stringify(local));
+        showToast(`Banned IP ${ip}`);
+      } else {
+        const res=await fetch('/api/admin/banned-ips',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip,reason})});
+        if(res.ok)showToast(`Banned IP ${ip}`);
+        else showToast('Failed to ban IP');
+      }
+      renderAdminTab(adminTab());
+      return;
+    }
+  
     const deleteEntry=event.target.closest('[data-delete-entry]');if(deleteEntry){if(!confirm('Remove this leaderboard entry?'))return;if(adminDemoMode){const entries=getBoardData().filter(entry=>String(entry.id||entry.createdAt||entry.nickname)!==deleteEntry.dataset.deleteEntry);localStorage.setItem(STORAGE.demoLeaderboard,JSON.stringify(entries));renderAdminTab('leaderboard');}else{const response=await fetch(`/api/admin/leaderboard?id=${encodeURIComponent(deleteEntry.dataset.deleteEntry)}`,{method:'DELETE'});if(response.ok)renderAdminTab('leaderboard');else showToast('Could not remove this entry.');}return;}
   });
 }
@@ -1337,16 +1476,11 @@ function init() {
   initGames();
   loadCareerChat();
   loadLocalFeedback();
-  $('#anchor-upload-consent').addEventListener('change',()=>$('#anchor-analyze-save').disabled=!$('#anchor-upload-consent').checked||!anchorVideoBlob);
+  $('#anchor-upload-consent')?.addEventListener('change',()=>$('#anchor-analyze-save')?$('#anchor-analyze-save').disabled=!$('#anchor-upload-consent')?.checked||!anchorVideoBlob:null);
   $('#feedback-rating-picker').addEventListener('click',event=>{const button=event.target.closest('[data-rating]');if(!button)return;feedbackRating=Number(button.dataset.rating);$('#feedback-rating').value=String(feedbackRating);$$('[data-rating]').forEach(item=>{item.classList.toggle('active',Number(item.dataset.rating)<=feedbackRating);item.setAttribute('aria-pressed',String(item===button));});});
   $('#feedback-form').addEventListener('submit',submitFeedback);
   $('#career-chat-form').addEventListener('submit',sendCareerChat);
-  $('#anchor-analyze-save').addEventListener('click',analyzeAndSaveNewsroomVideo);
-  $('#testimonial-form').addEventListener('submit',submitTestimonial);
-  $('#safety-report-submit').addEventListener('click',submitSafetyReport);
-  loadPublicTestimonials();
-  updateDebateMode();
-  renderDebateStage();
+  $('#anchor-analyze-save')?.addEventListener('click',analyzeAndSaveNewsroomVideo);
   $('#career-chat-messages').addEventListener('click',event=>{const choice=event.target.closest('[data-career-chat-choice]');if(choice){$('#career-chat-input').value=choice.dataset.careerChatChoice;$('#career-chat-input').focus();}});
   $('#games-level').addEventListener('change',()=>{const level=$('#games-level').value;$('#game-level-note').textContent=level==='starter'?'Everyday words and clear, short sentences.':level==='advanced'?'Advanced vocabulary and more subtle grammar choices.':'Words you may meet at school, work and presentations.';startWordle();startMatchingRound();renderSentenceQuestion();});
   $$('.game-tab').forEach(tab=>tab.addEventListener('click',()=>{const key=tab.dataset.gameTab;$$('.game-tab').forEach(item=>{item.classList.toggle('active',item===tab);item.setAttribute('aria-selected',String(item===tab));});$$('[data-game-panel]').forEach(panel=>panel.hidden=panel.dataset.gamePanel!==key);}));
@@ -1357,5 +1491,947 @@ function init() {
   updateScrollProgress();
   if(location.hash==='#admin')revealAdmin();
   loadPublicSettings();
+  setupDebateFeatures();
+  setupObsStudioFeed();
+  setupTelegramAndGitHubVault();
+  loadPublicFeedbackAndTestimonials();
 }
 init();
+
+let duoState={activeSpeaker:'A',timerA:45,timerB:45,intervalA:null,intervalB:null,textA:'',textB:'',scoreA:0,scoreB:0};
+function setupDebateFeatures(){
+  const micBtn=$('#debate-builder-mic');
+  if(micBtn){
+    micBtn.addEventListener('click',()=>{
+      const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+      if(!SpeechRecognition){showToast('Browser speech recognition is not supported here. Type your argument instead.');return;}
+      const recog=new SpeechRecognition();
+      recog.lang='en-IN';
+      recog.continuous=false;
+      micBtn.textContent='Listening…';
+      recog.onresult=e=>{
+        const spoken=e.results[0][0].transcript;
+        const evidence=$('#debate-evidence');
+        if(evidence)evidence.value=(evidence.value?evidence.value+' ':'')+spoken;
+        micBtn.textContent='🎙️ Speak argument';
+        showToast('Speech added to supporting reason.');
+      };
+      recog.onerror=()=>{micBtn.textContent='🎙️ Speak argument';showToast('Microphone error or permission denied.');};
+      recog.onend=()=>{micBtn.textContent='🎙️ Speak argument';};
+      recog.start();
+    });
+  }
+  const modeSelect=$('#debate-mode');
+  const btnSolo=$('#btn-mode-solo');
+  const btnDuo=$('#btn-mode-duo');
+  const btnRoom=$('#btn-mode-room');
+  const setDebateMode=mode=>{
+    if(modeSelect)modeSelect.value=mode;
+    [btnSolo,btnDuo,btnRoom].forEach(b=>{if(b)b.classList.toggle('active',b.dataset.mode===mode);});
+    const soloLayout=$('#debate-solo-layout');
+    const duoStage=$('#debate-duo-stage');
+    const roomControls=$('#debate-room-controls');
+    if(soloLayout)soloLayout.hidden=mode!=='solo';
+    if(duoStage)duoStage.hidden=mode!=='duo';
+    if(roomControls)roomControls.hidden=mode!=='room';
+  };
+  if(modeSelect)modeSelect.addEventListener('change',()=>setDebateMode(modeSelect.value));
+  [btnSolo,btnDuo,btnRoom].forEach(b=>{if(b)b.addEventListener('click',()=>setDebateMode(b.dataset.mode));});
+
+  const duoBtnA=$('#duo-btn-a');
+  const duoBtnB=$('#duo-btn-b');
+  const duoMicA=$('#duo-mic-a');
+  const duoMicB=$('#duo-mic-b');
+  const duoTextA=$('#duo-text-a');
+  const duoTextB=$('#duo-text-b');
+  const duoTimerA=$('#duo-timer-a');
+  const duoTimerB=$('#duo-timer-b');
+  const scoreDuoText=(text)=>{
+    const words=text.trim().split(/\s+/).filter(Boolean).length;
+    let score=Math.min(50,words*2);
+    if(/because|therefore|for example|evidence|fact/i.test(text))score+=25;
+    if(/however|although|counter|despite|argue/i.test(text))score+=25;
+    return Math.min(100,score);
+  };
+  if(duoBtnA){
+    duoBtnA.addEventListener('click',()=>{
+      if(duoState.intervalA){
+        clearInterval(duoState.intervalA);
+        duoState.intervalA=null;
+        duoBtnA.textContent='Resume Turn';
+        if(duoBtnB)duoBtnB.disabled=false;
+        return;
+      }
+      duoBtnA.textContent='Pause Turn';
+      duoState.intervalA=setInterval(()=>{
+        duoState.timerA--;
+        if(duoTimerA)duoTimerA.textContent=`${duoState.timerA}s`;
+        if(duoState.timerA<=0){
+          clearInterval(duoState.intervalA);
+          duoState.intervalA=null;
+          duoBtnA.disabled=true;
+          duoBtnA.textContent='Turn Over';
+          if(duoBtnB)duoBtnB.disabled=false;
+          const score=scoreDuoText(duoTextA ? duoTextA.value : '');
+          duoState.scoreA=score;
+          const scEl=$('#duo-score-a');
+          if(scEl)scEl.textContent=`Score: ${score}/100`;
+          const boxA=$('#box-speaker-a');
+          const boxB=$('#box-speaker-b');
+          if(boxA)boxA.classList.remove('active-turn');
+          if(boxB)boxB.classList.add('active-turn');
+          saveComponentScore('debate',Math.max(score,duoState.scoreB));
+          showToast('Speaker 1 turn complete. Speaker 2 is ready!');
+        }
+      },1000);
+    });
+  }
+  if(duoBtnB){
+    duoBtnB.addEventListener('click',()=>{
+      if(duoState.intervalB){
+        clearInterval(duoState.intervalB);
+        duoState.intervalB=null;
+        duoBtnB.textContent='Resume Turn';
+        return;
+      }
+      duoBtnB.textContent='Pause Turn';
+      duoState.intervalB=setInterval(()=>{
+        duoState.timerB--;
+        if(duoTimerB)duoTimerB.textContent=`${duoState.timerB}s`;
+        if(duoState.timerB<=0){
+          clearInterval(duoState.intervalB);
+          duoState.intervalB=null;
+          duoBtnB.disabled=true;
+          duoBtnB.textContent='Turn Over';
+          const score=scoreDuoText(duoTextB ? duoTextB.value : '');
+          duoState.scoreB=score;
+          const scEl=$('#duo-score-b');
+          if(scEl)scEl.textContent=`Score: ${score}/100`;
+          const boxB=$('#box-speaker-b');
+          if(boxB)boxB.classList.remove('active-turn');
+          const finalDebateScore=Math.round((duoState.scoreA+score)/2);
+          saveComponentScore('debate',finalDebateScore);
+          showToast(`Debate round complete! Combined debate score: ${finalDebateScore}`);
+        }
+      },1000);
+    });
+  }
+  const attachDuoMic=(btn,textarea)=>{
+    if(!btn||!textarea)return;
+    btn.addEventListener('click',()=>{
+      const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+      if(!SpeechRecognition){showToast('Speech recognition not available.');return;}
+      const recog=new SpeechRecognition();
+      recog.lang='en-IN';
+      recog.continuous=true;
+      btn.textContent='Listening…';
+      recog.onresult=e=>{
+        const spoken=e.results[e.results.length-1][0].transcript;
+        textarea.value=(textarea.value?textarea.value+' ':'')+spoken;
+      };
+      recog.onerror=()=>{btn.textContent='🎙️ Speak';};
+      recog.onend=()=>{btn.textContent='🎙️ Speak';};
+      recog.start();
+    });
+  };
+  attachDuoMic(duoMicA,duoTextA);
+  attachDuoMic(duoMicB,duoTextB);
+}
+async function loadPublicFeedbackAndTestimonials(){
+  const summaryEl=$('#feedback-ai-summary');
+  const listEl=$('#testimonials-list');
+  if(!summaryEl&&!listEl)return;
+  try{
+    const res=await fetch('/api/feedback');
+    if(!res.ok)return;
+    const data=await res.json();
+    if(summaryEl&&data.summary){
+      summaryEl.innerHTML=`<div class="ai-summary-card"><span class="mini-tag">AI SENTIMENT SUMMARY · ${data.count||0} REVIEWS</span><p>${escapeHtml(data.summary)}</p></div>`;
+    }
+    if(listEl&&Array.isArray(data.entries)&&data.entries.length){
+      listEl.innerHTML=data.entries.slice(0,6).map(e=>`
+        <article class="testimonial-card">
+          <div class="rating-stars">${'★'.repeat(Math.max(1,Math.min(5,e.rating||5)))}</div>
+          <p>“${escapeHtml(e.message)}”</p>
+          <small>${escapeHtml((e.category||'review').toUpperCase())} · Student review</small>
+        </article>
+      `).join('');
+    }
+  }catch{}
+}
+
+let obsMediaStream = null;
+let audioWaveformContext = null;
+let audioWaveformAnalyser = null;
+let audioWaveformAnimationId = null;
+
+function setupAudioWaveformVisualizer(stream, canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !stream) return;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (audioWaveformContext) {
+      audioWaveformContext.close().catch(()=>{});
+    }
+    audioWaveformContext = new AudioCtx();
+    const source = audioWaveformContext.createMediaStreamSource(stream);
+    audioWaveformAnalyser = audioWaveformContext.createAnalyser();
+    audioWaveformAnalyser.fftSize = 256;
+    source.connect(audioWaveformAnalyser);
+    const bufferLength = audioWaveformAnalyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    const ctx = canvas.getContext('2d');
+
+    const draw = () => {
+      audioWaveformAnimationId = requestAnimationFrame(draw);
+      audioWaveformAnalyser.getByteFrequencyData(dataArray);
+      ctx.fillStyle = '#181a20';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const barWidth = (canvas.width / bufferLength) * 2.2;
+      let x = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        const barHeight = (dataArray[i] / 255) * canvas.height;
+        ctx.fillStyle = i % 2 === 0 ? '#ff6b3d' : '#b5a6ff';
+        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+        x += barWidth + 1;
+      }
+    };
+    draw();
+  } catch {}
+}
+
+function stopAudioWaveformVisualizer() {
+  if (audioWaveformAnimationId) {
+    cancelAnimationFrame(audioWaveformAnimationId);
+    audioWaveformAnimationId = null;
+  }
+}
+
+async function enumerateObsVideoDevices() {
+  const select = document.getElementById('obs-device-select');
+  if (!select || !navigator.mediaDevices?.enumerateDevices) return;
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoInputs = devices.filter(d => d.kind === 'videoinput');
+    if (!videoInputs.length) return;
+    select.innerHTML = videoInputs.map(d => `<option value="${escapeHtml(d.deviceId)}">${escapeHtml(d.label || ('Camera ' + d.deviceId.slice(0, 5)))}</option>`).join('');
+    const obsOption = videoInputs.find(d => /obs/i.test(d.label));
+    if (obsOption) select.value = obsOption.deviceId;
+  } catch {}
+}
+
+let obsRecorder = null;
+let obsRecordedChunks = [];
+let obsRecordTimerInterval = 0;
+let obsRecordStartTime = 0;
+
+function setupObsStudioFeed() {
+  enumerateObsVideoDevices();
+  const toggleBtn = document.getElementById('obs-feed-toggle');
+  const container = document.getElementById('obs-feed-container');
+  const connectBtn = document.getElementById('obs-connect-btn');
+  const stopBtn = document.getElementById('obs-stop-btn');
+  const recordBtn = document.getElementById('obs-record-btn');
+  const recordTimer = document.getElementById('obs-record-timer');
+  const recordProgress = document.getElementById('obs-record-progress');
+  const recordLog = document.getElementById('obs-record-log');
+  const placeholder = document.getElementById('obs-video-placeholder');
+  const deviceSelect = document.getElementById('obs-device-select');
+  const streamUrlInput = document.getElementById('obs-stream-url');
+  const videoPreview = document.getElementById('obs-video-preview');
+  const statusTag = document.getElementById('obs-status-tag');
+
+  const logObs = (msg, isSuccess, isError) => {
+    if (!recordLog) return;
+    const p = document.createElement('p');
+    if (isSuccess) p.className = 'success';
+    if (isError) p.className = 'error';
+    p.textContent = msg;
+    recordLog.appendChild(p);
+    recordLog.scrollTop = recordLog.scrollHeight;
+  };
+
+  if (toggleBtn && container) {
+    toggleBtn.addEventListener('click', () => {
+      const willShow = container.hidden;
+      container.hidden = !willShow;
+      toggleBtn.textContent = willShow ? 'Hide OBS Live Stage Feed ▲' : 'Open OBS Live Stage Feed ▼';
+      if (willShow) enumerateObsVideoDevices();
+    });
+  }
+
+  if (connectBtn && videoPreview) {
+    connectBtn.addEventListener('click', async () => {
+      const customUrl = streamUrlInput ? streamUrlInput.value.trim() : '';
+      if (customUrl) {
+        if (obsMediaStream) {
+          obsMediaStream.getTracks().forEach(t => t.stop());
+          obsMediaStream = null;
+        }
+        videoPreview.srcObject = null;
+        videoPreview.src = customUrl;
+        videoPreview.play().catch(()=>{});
+        if (placeholder) placeholder.style.display = 'none';
+        if (statusTag) statusTag.textContent = 'CONNECTING TO STREAM URL...';
+        if (recordBtn) recordBtn.disabled = false;
+        showToast('Connecting to external OBS stream feed…');
+        return;
+      }
+
+      const deviceId = deviceSelect ? deviceSelect.value : undefined;
+      const constraints = {
+        video: deviceId ? { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } } : true,
+        audio: true
+      };
+
+      try {
+        if (obsMediaStream) {
+          obsMediaStream.getTracks().forEach(t => t.stop());
+        }
+        obsMediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        videoPreview.src = '';
+        videoPreview.srcObject = obsMediaStream;
+        await videoPreview.play();
+        if (placeholder) placeholder.style.display = 'none';
+        if (statusTag) statusTag.textContent = 'ONLINE · OBS VIRTUAL CAMERA';
+        if (stopBtn) stopBtn.disabled = false;
+        if (recordBtn) recordBtn.disabled = false;
+        connectBtn.textContent = 'Re-sync Stream';
+        setupAudioWaveformVisualizer(obsMediaStream, 'obs-waveform-canvas');
+        showToast('Live interview feed from OBS Studio connected!');
+      } catch (err) {
+        if (statusTag) statusTag.textContent = 'FEED ERROR';
+        showToast('Could not access selected camera or OBS feed: ' + (err.message || 'Permission denied'));
+      }
+    });
+  }
+
+  if (stopBtn && videoPreview) {
+    stopBtn.addEventListener('click', () => {
+      if (obsRecorder && obsRecorder.state === 'recording') {
+        try { obsRecorder.stop(); } catch(e) {}
+      }
+      if (obsRecordTimerInterval) clearInterval(obsRecordTimerInterval);
+      if (obsMediaStream) {
+        obsMediaStream.getTracks().forEach(t => t.stop());
+        obsMediaStream = null;
+      }
+      videoPreview.srcObject = null;
+      videoPreview.src = '';
+      stopAudioWaveformVisualizer();
+      if (placeholder) placeholder.style.display = 'block';
+      if (statusTag) statusTag.textContent = 'STANDBY · FEED PAUSED';
+      stopBtn.disabled = true;
+      if (recordBtn) recordBtn.disabled = true;
+      if (connectBtn) connectBtn.textContent = 'Start Live Feed';
+      showToast('OBS Live feed stopped.');
+    });
+  }
+
+  if (recordBtn && videoPreview) {
+    recordBtn.addEventListener('click', async () => {
+      if (obsRecorder && obsRecorder.state === 'recording') {
+        recordBtn.disabled = true;
+        recordBtn.textContent = 'Finalizing Recording…';
+        if (obsRecordTimerInterval) clearInterval(obsRecordTimerInterval);
+        obsRecorder.stop();
+        return;
+      }
+
+      const streamToRecord = obsMediaStream || (videoPreview.captureStream ? videoPreview.captureStream() : null);
+      if (!streamToRecord) {
+        showToast('Please start the OBS live feed before recording.');
+        return;
+      }
+
+      const s = getVaultSettings();
+      if (!s.ghToken || !s.ghOwner || !s.ghRepo) {
+        showToast('Please configure GitHub Vault settings in remote storage vault section first.');
+        const vaultSec = document.getElementById('github-vault');
+        if (vaultSec) vaultSec.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+
+      obsRecordedChunks = [];
+      const mime = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t => MediaRecorder.isTypeSupported(t));
+      try {
+        obsRecorder = mime ? new MediaRecorder(streamToRecord, { mimeType: mime }) : new MediaRecorder(streamToRecord);
+      } catch(e) {
+        obsRecorder = new MediaRecorder(streamToRecord);
+      }
+
+      obsRecorder.ondataavailable = e => {
+        if (e.data && e.data.size > 0) obsRecordedChunks.push(e.data);
+      };
+
+      obsRecorder.onstop = async () => {
+        const fullBlob = new Blob(obsRecordedChunks, { type: obsRecorder.mimeType || 'video/webm' });
+        recordBtn.textContent = 'Splitting & Uploading to GitHub…';
+        logObs(`🎬 Incoming OBS stream captured: ${(fullBlob.size / 1024).toFixed(1)} KB. Slicing into split video chunks…`, true);
+
+        const localUrl = URL.createObjectURL(fullBlob);
+        const downloadP = document.createElement('p');
+        downloadP.innerHTML = `<a href="${localUrl}" download="obs-interview-${Date.now()}.webm" style="color:#ff6b3d;text-decoration:underline;font-weight:bold;">Download recorded OBS clip (${Math.round(fullBlob.size / 1024)} KB) ↓</a>`;
+        recordLog.appendChild(downloadP);
+
+        const labels = ['obs_header_sync', 'obs_interview_part1', 'obs_interview_part2', 'obs_trailer_sync'];
+
+        try {
+          const res = await chunkAndUploadLabeledVideoToGitHub(
+            fullBlob,
+            `obs-live-interview-${Date.now()}.webm`,
+            labels,
+            pct => {
+              if (recordProgress) recordProgress.style.width = pct + '%';
+            },
+            (msg, isSuccess) => logObs(msg, isSuccess)
+          );
+          logObs(`🎉 OBS video successfully split and committed to GitHub: ${res.owner}/${res.repo} in ${res.totalChunks} chunks!`, true);
+          showToast('OBS video split and stored in GitHub vault successfully!');
+        } catch(err) {
+          logObs('GitHub upload error: ' + err.message, false, true);
+          showToast('Failed to push chunks: ' + err.message);
+        } finally {
+          recordBtn.disabled = false;
+          recordBtn.textContent = 'Record & Split-Store to GitHub';
+          if (recordTimer) recordTimer.textContent = '';
+        }
+      };
+
+      obsRecordStartTime = Date.now();
+      obsRecorder.start(500);
+      recordBtn.textContent = 'Stop & Split-Store to GitHub ⏹';
+      logObs('🔴 Recording incoming OBS stream...', false);
+      if (recordProgress) recordProgress.style.width = '0%';
+
+      obsRecordTimerInterval = setInterval(() => {
+        const elapsed = Math.round((Date.now() - obsRecordStartTime) / 1000);
+        const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const secs = String(elapsed % 60).padStart(2, '0');
+        if (recordTimer) recordTimer.textContent = `REC ${mins}:${secs}`;
+      }, 1000);
+    });
+  }
+}
+
+const VAULT_STORAGE_KEY = 'openmic.vault.v12';
+
+function getVaultSettings() {
+  try {
+    return JSON.parse(localStorage.getItem(VAULT_STORAGE_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveVaultSettings(settings) {
+  try {
+    localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(settings));
+  } catch {}
+}
+
+async function sendTelegramAlert(message, customToken, customChatId) {
+  const settings = getVaultSettings();
+  const token = customToken || settings.tgToken;
+  const chatId = customChatId || settings.tgChatId;
+  if (!token || !chatId) return false;
+  try {
+    const res = await fetch('/api/telegram', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'send', message, token, chatId })
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function chunkAndUploadToGitHub(fileOrBlob, originalName, progressCallback, logCallback) {
+  const settings = getVaultSettings();
+  const owner = settings.ghOwner;
+  const repo = settings.ghRepo;
+  const branch = settings.ghBranch || 'main';
+  const token = settings.ghToken;
+
+  if (!owner || !repo || !token) {
+    throw new Error('Please configure your GitHub Owner, Repo and Token in Cloud Vault first.');
+  }
+
+  const fileName = originalName || fileOrBlob.name || ('recording_' + Date.now() + '.webm');
+  const fileSize = fileOrBlob.size;
+  const CHUNK_SIZE = 2 * 1024 * 1024;
+  const totalChunks = Math.ceil(fileSize / CHUNK_SIZE) || 1;
+  const sessionId = 'rec_' + Date.now();
+  const chunkManifest = [];
+
+  logCallback(`Beginning chunked upload: ${fileName} (${Math.round(fileSize / 1024)} KB) into ${totalChunks} chunks…`, false);
+
+  for (let i = 0; i < totalChunks; i++) {
+    const start = i * CHUNK_SIZE;
+    const end = Math.min(fileSize, start + CHUNK_SIZE);
+    const chunkBlob = fileOrBlob.slice(start, end);
+    const base64Data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(chunkBlob);
+    });
+
+    const chunkPath = `uploads/${sessionId}/chunk_${String(i).padStart(3, '0')}.bin`;
+    const res = await fetch('/api/github-vault', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token, owner, repo, branch,
+        path: chunkPath,
+        content: base64Data,
+        message: `Upload chunk ${i + 1}/${totalChunks} for ${fileName}`
+      })
+    });
+
+    const result = await res.json();
+    if (!res.ok) {
+      throw new Error(result.error || `Chunk ${i + 1} upload failed`);
+    }
+
+    chunkManifest.push({ index: i, path: chunkPath, sha: result.commitSha });
+    const pct = Math.round(((i + 1) / totalChunks) * 100);
+    progressCallback(pct);
+    logCallback(`✓ Chunk ${i + 1}/${totalChunks} committed: ${chunkPath}`, false);
+  }
+
+  const manifestData = {
+    sessionId,
+    fileName,
+    fileSize,
+    mimeType: fileOrBlob.type || 'video/webm',
+    totalChunks,
+    chunkSize: CHUNK_SIZE,
+    chunks: chunkManifest,
+    uploadedAt: new Date().toISOString()
+  };
+
+  const manifestJsonB64 = btoa(unescape(encodeURIComponent(JSON.stringify(manifestData, null, 2))));
+  await fetch('/api/github-vault', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token, owner, repo, branch,
+      path: `uploads/${sessionId}/manifest.json`,
+      content: manifestJsonB64,
+      message: `Finalize manifest for ${fileName}`
+    })
+  });
+
+  logCallback(`🎉 Complete! All chunks stored in GitHub repo ${owner}/${repo}/uploads/${sessionId}/`, true);
+
+  const tgMsg = `<b>Open Mic v14 Video Vault</b>\nSaved <code>${fileName}</code> (${Math.round(fileSize / 1024)} KB) in ${totalChunks} chunks to GitHub repository <b>${owner}/${repo}</b>.\nSession ID: <code>${sessionId}</code>`;
+  sendTelegramAlert(tgMsg).then(ok => {
+    if (ok) logCallback('✓ Dispatched Telegram notification alert.', true);
+  });
+
+  return { sessionId, totalChunks, owner, repo };
+}
+
+async function generateTestVideoBlob(durationMs = 3000) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 640;
+  canvas.height = 360;
+  const ctx = canvas.getContext('2d');
+  let audioCtx, dest, osc;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    dest = audioCtx.createMediaStreamDestination();
+    osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+    osc.connect(gain);
+    gain.connect(dest);
+    osc.start();
+  } catch(e) {}
+  const stream = canvas.captureStream(30);
+  if (dest && dest.stream) {
+    dest.stream.getAudioTracks().forEach(track => stream.addTrack(track));
+  }
+  const mime = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t => MediaRecorder.isTypeSupported(t));
+  const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+  const chunks = [];
+  recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  const startTime = Date.now();
+  let animId = 0;
+  const colors = ['#e11d48', '#ea580c', '#d97706', '#16a34a', '#0284c7', '#7c3aed', '#db2777'];
+  const drawTestFrame = () => {
+    const elapsed = Date.now() - startTime;
+    const progress = Math.min(1, elapsed / durationMs);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const barWidth = canvas.width / colors.length;
+    colors.forEach((col, idx) => {
+      ctx.fillStyle = col;
+      ctx.fillRect(idx * barWidth, 0, barWidth, 200);
+    });
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(0, 200, canvas.width, 160);
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillRect(0, 200, canvas.width * progress, 8);
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 22px Syne, sans-serif';
+    ctx.fillText('OPEN MIC v14 · TEST VIDEO CHUNKER', 24, 246);
+    ctx.font = '15px monospace';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText(`Timestamp: ${new Date().toISOString()} · ${(progress * 100).toFixed(0)}%`, 24, 280);
+    ctx.fillText(`Signal: 440Hz Sine · 640x360 30fps`, 24, 308);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('LABEL: REPOSITORY VAULT MULTIPART VERIFICATION', 24, 336);
+    if (elapsed < durationMs) {
+      animId = requestAnimationFrame(drawTestFrame);
+    }
+  };
+  drawTestFrame();
+  recorder.start(200);
+  await new Promise(r => setTimeout(r, durationMs + 200));
+  recorder.stop();
+  if (animId) cancelAnimationFrame(animId);
+  if (osc) {
+    try { osc.stop(); } catch(e) {}
+    try { audioCtx.close(); } catch(e) {}
+  }
+  stream.getTracks().forEach(t => t.stop());
+  await new Promise(r => { recorder.onstop = r; });
+  return new Blob(chunks, { type: recorder.mimeType || 'video/webm' });
+}
+
+async function chunkAndUploadLabeledVideoToGitHub(fileOrBlob, fileName, chunkLabels = [], progressCallback, logCallback) {
+  const CHUNK_SIZE = 1 * 1024 * 1024;
+  const fileSize = fileOrBlob.size;
+  const totalChunks = Math.max(1, Math.ceil(fileSize / CHUNK_SIZE));
+  const sessionId = 'testvid_' + Date.now();
+  const settings = getVaultSettings();
+  const token = settings.ghToken;
+  const owner = settings.ghOwner;
+  const repo = settings.ghRepo;
+  const branch = settings.ghBranch || 'main';
+
+  if (!token || !owner || !repo) {
+    throw new Error('Please configure and save your GitHub Owner, Repo, and Personal Access Token first.');
+  }
+
+  logCallback(`Starting labelled chunk upload: ${fileName} (${Math.round(fileSize / 1024)} KB) into ${totalChunks} chunk(s) to ${owner}/${repo}@${branch}…`, false);
+
+  const defaultLabels = ['header_sync', 'payload_body', 'keyframe_stream', 'trailer_checksum'];
+  const chunkManifest = [];
+
+  for (let i = 0; i < totalChunks; i++) {
+    const start = i * CHUNK_SIZE;
+    const end = Math.min(fileSize, start + CHUNK_SIZE);
+    const chunkBlob = fileOrBlob.slice(start, end);
+    const label = chunkLabels[i] || defaultLabels[i % defaultLabels.length] || `part_${i + 1}`;
+    const base64Data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(chunkBlob);
+    });
+
+    const chunkFileName = `chunk_${String(i).padStart(3, '0')}_${label}.bin`;
+    const chunkPath = `uploads/${sessionId}/${chunkFileName}`;
+
+    logCallback(`⏳ Uploading labelled chunk ${i + 1}/${totalChunks} [${label}]…`, false);
+
+    const res = await fetch('/api/github-vault', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token, owner, repo, branch,
+        path: chunkPath,
+        content: base64Data,
+        message: `Upload labelled chunk ${i + 1}/${totalChunks} [${label}] for ${fileName}`
+      })
+    });
+
+    const result = await res.json();
+    if (!res.ok) {
+      throw new Error(result.error || `Chunk ${i + 1} (${label}) upload failed`);
+    }
+
+    chunkManifest.push({
+      index: i,
+      label,
+      sizeBytes: chunkBlob.size,
+      path: chunkPath,
+      sha: result.commitSha,
+      htmlUrl: result.htmlUrl
+    });
+
+    const pct = Math.round(((i + 1) / totalChunks) * 100);
+    progressCallback(pct);
+    logCallback(`✓ Labelled chunk ${i + 1}/${totalChunks} committed: ${chunkPath}`, false);
+  }
+
+  const manifestData = {
+    sessionId,
+    fileName,
+    fileSize,
+    mimeType: fileOrBlob.type || 'video/webm',
+    totalChunks,
+    chunkSize: CHUNK_SIZE,
+    chunks: chunkManifest,
+    uploadedAt: new Date().toISOString(),
+    status: 'complete'
+  };
+
+  const manifestJsonB64 = btoa(unescape(encodeURIComponent(JSON.stringify(manifestData, null, 2))));
+  const manifestPath = `uploads/${sessionId}/manifest.json`;
+
+  await fetch('/api/github-vault', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token, owner, repo, branch,
+      path: manifestPath,
+      content: manifestJsonB64,
+      message: `Finalize labelled manifest for ${fileName}`
+    })
+  });
+
+  logCallback(`🎉 Complete! All ${totalChunks} labelled chunk(s) stored in ${owner}/${repo}/uploads/${sessionId}/`, true);
+
+  const tgMsg = `<b>Open Mic v14 Labeled Video Vault</b>\nSaved <code>${fileName}</code> (${Math.round(fileSize / 1024)} KB) in <b>${totalChunks} labeled chunk(s)</b> to GitHub repository <b>${owner}/${repo}</b>.\nSession: <code>${sessionId}</code>\nManifest: <code>${manifestPath}</code>`;
+  sendTelegramAlert(tgMsg).then(ok => {
+    if (ok) logCallback('✓ Dispatched Telegram notification alert.', true);
+  });
+
+  return { sessionId, totalChunks, owner, repo, manifestPath };
+}
+
+window.uploadVideoToGitHubVault = chunkAndUploadToGitHub;
+window.pushTestVideoToGitHubVault = chunkAndUploadLabeledVideoToGitHub;
+
+function setupTelegramAndGitHubVault() {
+  const settings = getVaultSettings();
+
+  const tgTokenInput = document.getElementById('vault-tg-token');
+  const tgChatInput = document.getElementById('vault-tg-chat');
+  const tgTestBtn = document.getElementById('vault-tg-test');
+  const tgStatusChip = document.getElementById('vault-tg-status');
+
+  const ghOwnerInput = document.getElementById('vault-gh-owner');
+  const ghRepoInput = document.getElementById('vault-gh-repo');
+  const ghBranchInput = document.getElementById('vault-gh-branch');
+  const ghTokenInput = document.getElementById('vault-gh-token');
+  const ghSaveBtn = document.getElementById('vault-gh-save');
+  const ghStatusChip = document.getElementById('vault-gh-status');
+
+  const filePicker = document.getElementById('vault-file-picker');
+  const uploadBtn = document.getElementById('vault-upload-btn');
+  const progressFill = document.getElementById('vault-progress-fill');
+  const logBox = document.getElementById('vault-log-box');
+
+  if (tgTokenInput && settings.tgToken) tgTokenInput.value = settings.tgToken;
+  if (tgChatInput && settings.tgChatId) tgChatInput.value = settings.tgChatId;
+  if (ghOwnerInput && settings.ghOwner) ghOwnerInput.value = settings.ghOwner;
+  if (ghRepoInput && settings.ghRepo) ghRepoInput.value = settings.ghRepo;
+  if (ghBranchInput && settings.ghBranch) ghBranchInput.value = settings.ghBranch;
+  if (ghTokenInput && settings.ghToken) ghTokenInput.value = settings.ghToken;
+
+  if (tgStatusChip && settings.tgToken && settings.tgChatId) {
+    tgStatusChip.className = 'vault-status-chip connected';
+    tgStatusChip.textContent = 'CONFIGURED';
+  }
+  if (ghStatusChip && settings.ghOwner && settings.ghRepo && settings.ghToken) {
+    ghStatusChip.className = 'vault-status-chip connected';
+    ghStatusChip.textContent = 'READY';
+  }
+
+  const logMessage = (msg, isSuccess) => {
+    if (!logBox) return;
+    const p = document.createElement('p');
+    p.className = isSuccess ? 'success' : '';
+    p.textContent = msg;
+    logBox.appendChild(p);
+    logBox.scrollTop = logBox.scrollHeight;
+  };
+
+  if (tgTestBtn) {
+    tgTestBtn.addEventListener('click', async () => {
+      const token = tgTokenInput ? tgTokenInput.value.trim() : '';
+      const chatId = tgChatInput ? tgChatInput.value.trim() : '';
+      if (!token || !chatId) {
+        showToast('Please enter both Telegram Bot Token and Chat ID.');
+        return;
+      }
+      tgTestBtn.textContent = 'Sending…';
+      try {
+        const res = await fetch('/api/telegram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'test', token, chatId })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const s = getVaultSettings();
+          s.tgToken = token;
+          s.tgChatId = chatId;
+          saveVaultSettings(s);
+          if (tgStatusChip) {
+            tgStatusChip.className = 'vault-status-chip connected';
+            tgStatusChip.textContent = 'ONLINE';
+          }
+          logMessage('✓ Telegram test message sent successfully!', true);
+          showToast('Telegram connection verified!');
+        } else {
+          logMessage('Telegram test error: ' + (data.error || 'Unknown error'), false);
+          showToast('Telegram test error: ' + (data.error || 'Failed'));
+        }
+      } catch (err) {
+        logMessage('Network error reaching Telegram endpoint: ' + err.message, false);
+      } finally {
+        tgTestBtn.textContent = 'Test Telegram Alert';
+      }
+    });
+  }
+
+  if (ghSaveBtn) {
+    ghSaveBtn.addEventListener('click', () => {
+      const owner = ghOwnerInput ? ghOwnerInput.value.trim() : '';
+      const repo = ghRepoInput ? ghRepoInput.value.trim() : '';
+      const branch = ghBranchInput ? ghBranchInput.value.trim() || 'main' : 'main';
+      const token = ghTokenInput ? ghTokenInput.value.trim() : '';
+
+      if (!owner || !repo || !token) {
+        showToast('Please enter GitHub Owner, Repo name, and Personal Access Token.');
+        return;
+      }
+
+      const s = getVaultSettings();
+      s.ghOwner = owner;
+      s.ghRepo = repo;
+      s.ghBranch = branch;
+      s.ghToken = token;
+      saveVaultSettings(s);
+
+      if (ghStatusChip) {
+        ghStatusChip.className = 'vault-status-chip connected';
+        ghStatusChip.textContent = 'CONFIGURED';
+      }
+      logMessage(`✓ GitHub vault saved: ${owner}/${repo} (${branch})`, true);
+      showToast('GitHub repository settings saved!');
+    });
+  }
+
+  if (uploadBtn && filePicker) {
+    uploadBtn.addEventListener('click', async () => {
+      const file = filePicker.files && filePicker.files[0];
+      if (!file) {
+        showToast('Please select a video or media file to upload.');
+        return;
+      }
+
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = 'Chunking & Uploading…';
+      if (progressFill) progressFill.style.width = '0%';
+
+      try {
+        await chunkAndUploadToGitHub(
+          file,
+          file.name,
+          pct => {
+            if (progressFill) progressFill.style.width = pct + '%';
+          },
+          (msg, isSuccess) => logMessage(msg, isSuccess)
+        );
+        showToast('File stored successfully in chunks on your GitHub repository!');
+      } catch (err) {
+        logMessage('Upload error: ' + err.message, false);
+        showToast('Upload error: ' + err.message);
+      } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = 'Start Chunked Upload';
+      }
+    });
+  }
+
+  const testVideoBtn = document.getElementById('vault-test-video-btn');
+  const testPrefixInput = document.getElementById('vault-test-label-prefix');
+  const testDurationSelect = document.getElementById('vault-test-duration');
+  const testVideoStatus = document.getElementById('vault-test-video-status');
+
+  if (testVideoBtn) {
+    testVideoBtn.addEventListener('click', async () => {
+      const s = getVaultSettings();
+      if (!s.ghToken || !s.ghOwner || !s.ghRepo) {
+        showToast('Please configure and save your GitHub Owner, Repo, and Token above first.');
+        return;
+      }
+      testVideoBtn.disabled = true;
+      testVideoBtn.textContent = 'Generating test video…';
+      if (progressFill) progressFill.style.width = '0%';
+      const duration = Number(testDurationSelect ? testDurationSelect.value : 3500) || 3500;
+      const prefix = (testPrefixInput ? testPrefixInput.value.trim() : '') || 'openmic_test';
+      logMessage(`🎬 Rendering ${duration / 1000}s SMPTE test video pattern with 440Hz tone…`, false);
+      try {
+        const testBlob = await generateTestVideoBlob(duration);
+        logMessage(`✓ Test video generated (${Math.round(testBlob.size / 1024)} KB). Slicing into labelled chunks…`, true);
+        testVideoBtn.textContent = 'Pushing labelled chunks…';
+        const labels = [
+          `${prefix}_part01_header_sync`,
+          `${prefix}_part02_audio_video_payload`,
+          `${prefix}_part03_manifest_trailer`,
+          `${prefix}_part04_postroll`
+        ];
+        await chunkAndUploadLabeledVideoToGitHub(
+          testBlob,
+          `${prefix}-sample.webm`,
+          labels,
+          pct => {
+            if (progressFill) progressFill.style.width = pct + '%';
+          },
+          (msg, isSuccess) => logMessage(msg, isSuccess)
+        );
+        showToast('Test video successfully pushed in labelled chunks to GitHub repository!');
+        if (testVideoStatus) testVideoStatus.textContent = `Pushed to ${s.ghOwner}/${s.ghRepo}`;
+      } catch (err) {
+        logMessage('Test video push error: ' + err.message, false);
+        showToast('Test video error: ' + err.message);
+      } finally {
+        testVideoBtn.disabled = false;
+        testVideoBtn.textContent = 'Push Test Video in Labelled Chunks to Git Repo';
+      }
+    });
+  }
+}
+
+function renderBannedIpsTable(ips) {
+  if(!ips||!ips.length)return '<p class="admin-section-description">No IP addresses are currently banned.</p>';
+  return `<div style="overflow-x:auto;margin-top:12px"><table class="admin-log-table"><thead><tr><th>IP Address</th><th>Reason</th><th>Date Banned</th><th>Action</th></tr></thead><tbody>${ips.map(item=>{
+    const ip=typeof item==='string'?item:item.ip;
+    const reason=item.reason||'No reason recorded';
+    const date=item.bannedAt?new Date(item.bannedAt).toLocaleString():'';
+    return `<tr><td><code>${escapeHtml(ip)}</code></td><td>${escapeHtml(reason)}</td><td>${escapeHtml(date)}</td><td><button type="button" class="button button-outline" data-unban-ip="${escapeHtml(ip)}" style="min-height:30px;padding:0 8px">Unban</button></td></tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+async function loadAdminBannedIps() {
+  const wrap=document.getElementById('admin-banned-ips-wrap');
+  if(!wrap)return;
+  if(adminDemoMode){
+    const local=JSON.parse(localStorage.getItem('openmic.banned.ips')||'[]');
+    wrap.innerHTML=renderBannedIpsTable(local);
+    return;
+  }
+  try {
+    const res=await fetch('/api/admin/banned-ips');
+    if(res.ok){
+      const data=await res.json();
+      wrap.innerHTML=renderBannedIpsTable(data.ips||[]);
+    } else {
+      wrap.innerHTML='<p class="admin-section-description">Could not load banned IPs.</p>';
+    }
+  } catch {
+    wrap.innerHTML='<p class="admin-section-description">Could not load banned IPs.</p>';
+  }
+}

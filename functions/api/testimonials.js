@@ -1,10 +1,16 @@
-import {json,parseJson,safeString,originAllowed,notifyTelegram} from '../_shared.js';
+import {json,parseJson,safeString,originAllowed,notifyTelegram,verifyAdmin} from '../_shared.js';
 
 const GRADES=['Class 8 and below','Class 8','Class 9','Class 10','Class 11','Class 12','College / other'];
 
-export async function onRequestGet({env}) {
+export async function onRequestGet({request,env}) {
   if(!env.DB)return json({entries:[]});
+  const url=new URL(request.url);
+  const showAll=url.searchParams.get('all')==='1';
   try {
+    if(showAll&&await verifyAdmin(request,env)){
+      const result=await env.DB.prepare("SELECT id,created_at AS createdAt,nickname,grade,quote,status,approved_at AS approvedAt FROM testimonials ORDER BY created_at DESC LIMIT 50").all();
+      return json({entries:result.results||[]});
+    }
     const result=await env.DB.prepare("SELECT id,created_at AS createdAt,nickname,grade,quote FROM testimonials WHERE status='approved' ORDER BY approved_at DESC LIMIT 24").all();
     return json({entries:result.results||[]});
   } catch(error) { return json({error:error.message||'Testimonials are not ready; apply migration 0004_v15.sql.'},503); }
@@ -15,6 +21,16 @@ export async function onRequestPost({request,env}) {
   if(!env.DB)return json({error:'Shared testimonials require the D1 database.'},503);
   const body=await parseJson(request);
   if(!body)return json({error:'Invalid request.'},400);
+
+  if(body.action==='moderate'){
+    if(!await verifyAdmin(request,env))return json({error:'Admin authentication required.'},401);
+    const id=Number(body.id);
+    const status=body.status==='approved'?'approved':'rejected';
+    const approvedAt=status==='approved'?new Date().toISOString():null;
+    await env.DB.prepare("UPDATE testimonials SET status=?, approved_at=? WHERE id=?").bind(status,approvedAt,id).run();
+    return json({ok:true,id,status});
+  }
+
   if(body.consent!==true)return json({error:'Permission is required before sending a testimonial for moderation.'},400);
   const nickname=safeString(body.nickname,24).trim().replace(/[<>\r\n]/g,'');
   const grade=safeString(body.grade,32).trim();
