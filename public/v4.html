@@ -101,6 +101,22 @@
     .waveform-bar {
       animation: wavePulse 1.2s ease-in-out infinite;
     }
+    .alex-card {
+      background: #ffffff;
+      border: 1px solid rgba(195, 198, 213, 0.45);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(27, 28, 29, 0.04), 0 1px 2px rgba(27, 28, 29, 0.03);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .alex-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(109, 94, 0, 0.4);
+      box-shadow: 0 12px 30px rgba(27, 28, 29, 0.08), 0 0 20px rgba(249, 227, 122, 0.25);
+    }
+    button:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 2px solid #094cb2 !important;
+      outline-offset: 2px !important;
+    }
 </style>
 </head>
 <body class="bg-background text-on-surface font-body antialiased selection:bg-tertiary-fixed selection:text-on-tertiary-fixed pb-24">
@@ -117,7 +133,7 @@
 </div>
 </div>
 <div class="flex items-center gap-2">
-<div class="flex items-center bg-surface-container-low rounded-lg p-1 border border-outline-variant/40 text-[11px] font-mono">
+<div class="flex items-center bg-surface-container-low rounded-lg p-1 border border-outline-variant/40 text-[11px] font-mono overflow-x-auto max-w-[260px]">
 <a href="index.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v1 Pavilion">v1</a>
 <a href="v2.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v2 Premier">v2</a>
 <a href="v3.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v3 Open Mic">v3</a>
@@ -125,6 +141,13 @@
 <a href="v5.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v5 Mobility">v5</a>
 <a href="v6.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v6 Theatrical">v6</a>
 <a href="v7.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v7 Open Mic Fixed">v7</a>
+<a href="v8.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v8 Arena">v8</a>
+<a href="v9.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v9 Newsroom">v9</a>
+<a href="v10.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v10 Cyberpunk">v10</a>
+<a href="v12.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v12 Glassmorphism">v12</a>
+<a href="v14.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v14 Split Vault">v14</a>
+<a href="v15.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v15 Autonomous">v15</a>
+<a href="v16.html" class="px-1.5 py-0.5 rounded text-on-surface-variant hover:text-on-surface" title="v16 Fusion">v16</a>
 </div>
 </div>
 </div>
@@ -155,13 +178,21 @@
 </div>
 <div class="my-3 p-3 rounded-xl bg-surface-container-lowest border border-outline-variant/30">
 <p class="text-[10px] font-label uppercase text-tertiary font-bold mb-2">Switch CareerFair Experience</p>
-<div class="grid grid-cols-6 gap-1 text-center font-mono text-xs">
+<div class="grid grid-cols-4 gap-1 text-center font-mono text-xs">
 <a href="index.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v1</a>
 <a href="v2.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v2</a>
 <a href="v3.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v3</a>
 <span class="p-1.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-bold">v4</span>
 <a href="v5.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v5</a>
 <a href="v6.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v6</a>
+<a href="v7.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v7</a>
+<a href="v8.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v8</a>
+<a href="v9.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v9</a>
+<a href="v10.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v10</a>
+<a href="v12.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v12</a>
+<a href="v14.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v14</a>
+<a href="v15.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v15</a>
+<a href="v16.html" class="p-1.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface">v16</a>
 </div>
 </div>
 <nav class="space-y-1 pt-2">

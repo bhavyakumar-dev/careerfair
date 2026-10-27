@@ -218,17 +218,19 @@ body {
 
 .glass-panel {
   background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   transition: var(--transition-smooth);
+  position: relative;
 }
 
 .glass-panel:hover {
   border-color: var(--border-hover);
   box-shadow: var(--shadow-glow);
+  transform: translateY(-4px);
 }
 
 .btn {
@@ -246,18 +248,29 @@ body {
   border: none;
   outline: none;
   transition: var(--transition-smooth);
+  position: relative;
+  user-select: none;
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 3px;
 }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--accent-cyan) 0%, #0070F3 100%);
   color: #030712;
   font-weight: 800;
-  box-shadow: 0 4px 20px -2px rgba(0, 240, 255, 0.5);
+  box-shadow: 0 4px 20px -2px rgba(0, 240, 255, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px -2px rgba(0, 240, 255, 0.7);
+  box-shadow: 0 8px 32px -2px rgba(0, 240, 255, 0.75), inset 0 1px 1px 0 rgba(255, 255, 255, 0.55);
   color: #000;
 }
 
@@ -265,25 +278,28 @@ body {
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
   border: 1px solid var(--border-glass);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
   transform: translateY(-2px);
+  box-shadow: 0 8px 25px -4px rgba(0, 0, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .btn-gold {
   background: linear-gradient(135deg, var(--accent-amber) 0%, #FF5E00 100%);
   color: #030712;
   font-weight: 800;
-  box-shadow: 0 4px 20px -2px rgba(255, 184, 0, 0.5);
+  box-shadow: 0 4px 20px -2px rgba(255, 184, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .btn-gold:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px -2px rgba(255, 184, 0, 0.75);
+  box-shadow: 0 8px 32px -2px rgba(255, 184, 0, 0.8), inset 0 1px 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 .btn-danger {
@@ -485,8 +501,16 @@ body {
   padding: 24px;
   text-align: center;
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.02);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
   border: 1px solid var(--border-glass);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  transition: var(--transition-smooth);
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(0, 240, 255, 0.45);
+  box-shadow: 0 14px 30px -8px rgba(0, 0, 0, 0.65), 0 0 22px -4px rgba(0, 240, 255, 0.22);
 }
 
 .stat-number {
@@ -584,6 +608,18 @@ body {
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition-smooth);
+}
+
+.cluster-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--cluster-color, var(--border-hover));
+  box-shadow: 0 22px 48px -10px rgba(0, 0, 0, 0.85), 0 0 32px -5px var(--cluster-color, rgba(0, 240, 255, 0.35));
 }
 
 .cluster-card::before {

@@ -1020,3 +1020,55 @@ window.checkBeeSpelling = () => {
     renderBeeWord();
   }, 1400);
 };
+
+window.closeActiveGameModals = () => {
+  document.querySelectorAll('.game-modal.active').forEach(m => m.classList.remove('active'));
+  if (chainInterval) { clearInterval(chainInterval); chainInterval = null; }
+  if (beeInterval) { clearInterval(beeInterval); beeInterval = null; }
+  if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.game-modal').forEach(m => {
+    m.addEventListener('click', e => {
+      if (e.target === m) window.closeActiveGameModals();
+    });
+  });
+  document.querySelectorAll('.close-modal').forEach(btn => {
+    btn.addEventListener('click', () => window.closeActiveGameModals());
+  });
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') window.closeActiveGameModals();
+  });
+  const GAME_TRIGGERS = [
+    { modal: 'duel-modal', fn: () => window.initDuel() },
+    { modal: 'meter-modal', fn: () => window.initMeter() },
+    { modal: 'rhetoric-modal', fn: () => window.initRhetoric() },
+    { modal: 'etym-modal', fn: () => window.initEtymology('juggernaut') },
+    { modal: 'chain-modal', fn: () => window.initWordChain() },
+    { modal: 'quote-modal', fn: () => window.initQuoteQuiz() },
+    { modal: 'quiz-modal', fn: () => window.initCareerQuiz() },
+    { modal: 'filter-modal', fn: () => window.initCollegeFilter() },
+    { modal: 'story-modal', fn: () => window.initStoryAdventure() },
+    { modal: 'debate-modal', fn: () => window.initDebateSpinner() },
+    { modal: 'type-modal', fn: () => window.initTypingChallenge() },
+    { modal: 'accent-modal', fn: () => window.initAccentGame() },
+    { modal: 'word-modal', fn: () => window.initDailyWord() },
+    { modal: 'spell-modal', fn: () => window.initSpellingBee() }
+  ];
+  document.querySelectorAll('.games-grid .game-card').forEach((card, idx) => {
+    const btn = card.querySelector('.game-btn');
+    const trigger = GAME_TRIGGERS[idx];
+    if (btn && trigger) {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const m = document.getElementById(trigger.modal);
+        if (m) {
+          window.closeActiveGameModals();
+          m.classList.add('active');
+          trigger.fn();
+        }
+      });
+    }
+  });
+});

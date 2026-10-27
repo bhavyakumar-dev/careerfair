@@ -856,6 +856,21 @@ export default {
       if (pathname === "/v6" || pathname === "/v6/" || pathname === "/v6.html") {
         return env.ASSETS.fetch(new Request(new URL("/v6/index.html", request.url), request));
       }
+      if (pathname === "/v6/games" || pathname === "/v6/games/") {
+        return env.ASSETS.fetch(new Request(new URL("/v6/games.html", request.url), request));
+      }
+      if (pathname === "/v6/history" || pathname === "/v6/history/") {
+        return env.ASSETS.fetch(new Request(new URL("/v6/history.html", request.url), request));
+      }
+      if (pathname === "/v6/careers" || pathname === "/v6/careers/") {
+        return env.ASSETS.fetch(new Request(new URL("/v6/careers.html", request.url), request));
+      }
+      if (pathname === "/v6/colleges" || pathname === "/v6/colleges/") {
+        return env.ASSETS.fetch(new Request(new URL("/v6/colleges.html", request.url), request));
+      }
+      if (pathname === "/v6/feedback" || pathname === "/v6/feedback/") {
+        return env.ASSETS.fetch(new Request(new URL("/v6/feedback.html", request.url), request));
+      }
       if (pathname === "/v7" || pathname === "/v7/" || pathname === "/v7.html") {
         return env.ASSETS.fetch(new Request(new URL("/v7.html", request.url), request));
       }

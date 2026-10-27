@@ -721,7 +721,7 @@ async function toggleAnchorRecording() {
       anchorVideoBlob=new Blob(anchorRecorderChunks,{type:anchorRecorder.mimeType||'video/webm'});
       if(anchorVideoUrl)URL.revokeObjectURL(anchorVideoUrl);anchorVideoUrl=URL.createObjectURL(anchorVideoBlob);
       state.hidden=false;state.innerHTML=`<video controls playsinline class="newsroom-preview-video" src="${anchorVideoUrl}"></video><a class="button button-light" download="open-mic-newsroom-final.webm" href="${anchorVideoUrl}">Download final video ↓</a><p class="muted-small">Your headline and subheading are burned into this file. To analyse and store it, tick the consent box and choose Analyze video &amp; save.</p>`;
-      $('#anchor-record').textContent='Record me';$('#anchor-analyze-save').disabled=!$('#anchor-upload-consent').checked;$('#anchor-upload-consent').checked=false;$('#newsroom-analysis').hidden=true;
+      $('#anchor-record').textContent='Record me';if($('#anchor-analyze-save'))$('#anchor-analyze-save').disabled=!($('#anchor-upload-consent')?.checked);if($('#anchor-upload-consent'))$('#anchor-upload-consent').checked=false;if($('#newsroom-analysis'))$('#newsroom-analysis').hidden=true;
     };
     drawFrame();anchorRecorder.start(800);$('#anchor-record').textContent='Stop recording';state.hidden=false;state.textContent='Recording with your headline and subheading overlay. Select Stop recording when you are done.';$('#anchor-analyze-save').disabled=true;
   } catch(error) {anchorCameraStream?.getTracks().forEach(track=>track.stop());anchorCameraStream=null;showToast(`Camera or microphone permission was not granted: ${error.message||'check browser permissions'}.`);}
@@ -735,7 +735,7 @@ async function extractVideoFrames(blob){
   }finally{URL.revokeObjectURL(url);video.removeAttribute('src');video.load()}
 }
 async function analyzeAndSaveNewsroomVideo(){
-  const target=$('#newsroom-analysis');const button=$('#anchor-analyze-save');if(!anchorVideoBlob){showToast('Record a newsroom video first.');return;}if(!$('#anchor-upload-consent').checked){showToast('Please give permission before uploading the recording.');return;}
+  const target=$('#newsroom-analysis');const button=$('#anchor-analyze-save');if(!anchorVideoBlob){showToast('Record a newsroom video first.');return;}if(!$('#anchor-upload-consent')?.checked){showToast('Please give permission before uploading the recording.');return;}
   if(anchorVideoBlob.size>25*1024*1024){showToast('Keep the final video under 25 MB. Lower recording length or resolution, then record again.');return;}
   button.disabled=true;button.textContent='Saving video securely…';target.hidden=false;target.innerHTML='<p>Saving the recording to the private project server before analysis…</p>';
   const token=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random()}`;const form=new FormData();form.append('file',anchorVideoBlob,'open-mic-newsroom.webm');form.append('headline',$('#anchor-headline').value.trim());form.append('subheadline',$('#anchor-subheadline').value.trim());form.append('consent','true');form.append('submissionToken',token);
@@ -1415,11 +1415,11 @@ function init() {
   initGames();
   loadCareerChat();
   loadLocalFeedback();
-  $('#anchor-upload-consent').addEventListener('change',()=>$('#anchor-analyze-save').disabled=!$('#anchor-upload-consent').checked||!anchorVideoBlob);
+  $('#anchor-upload-consent')?.addEventListener('change',()=>$('#anchor-analyze-save')?$('#anchor-analyze-save').disabled=!$('#anchor-upload-consent')?.checked||!anchorVideoBlob:null);
   $('#feedback-rating-picker').addEventListener('click',event=>{const button=event.target.closest('[data-rating]');if(!button)return;feedbackRating=Number(button.dataset.rating);$('#feedback-rating').value=String(feedbackRating);$$('[data-rating]').forEach(item=>{item.classList.toggle('active',Number(item.dataset.rating)<=feedbackRating);item.setAttribute('aria-pressed',String(item===button));});});
   $('#feedback-form').addEventListener('submit',submitFeedback);
   $('#career-chat-form').addEventListener('submit',sendCareerChat);
-  $('#anchor-analyze-save').addEventListener('click',analyzeAndSaveNewsroomVideo);
+  $('#anchor-analyze-save')?.addEventListener('click',analyzeAndSaveNewsroomVideo);
   $('#career-chat-messages').addEventListener('click',event=>{const choice=event.target.closest('[data-career-chat-choice]');if(choice){$('#career-chat-input').value=choice.dataset.careerChatChoice;$('#career-chat-input').focus();}});
   $('#games-level').addEventListener('change',()=>{const level=$('#games-level').value;$('#game-level-note').textContent=level==='starter'?'Everyday words and clear, short sentences.':level==='advanced'?'Advanced vocabulary and more subtle grammar choices.':'Words you may meet at school, work and presentations.';startWordle();startMatchingRound();renderSentenceQuestion();});
   $$('.game-tab').forEach(tab=>tab.addEventListener('click',()=>{const key=tab.dataset.gameTab;$$('.game-tab').forEach(item=>{item.classList.toggle('active',item===tab);item.setAttribute('aria-selected',String(item===tab));});$$('[data-game-panel]').forEach(panel=>panel.hidden=panel.dataset.gamePanel!==key);}));
